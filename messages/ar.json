@@ -1,0 +1,130 @@
+{
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "tryAgain": "حاول مرة أخرى",
+    "goHome": "الصفحة الرئيسية",
+    "welcome": "مرحباً",
+    "close": "إغلاق",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "search": "بحث",
+    "filter": "تصفية",
+    "sort": "ترتيب",
+    "next": "التالي",
+    "previous": "السابق",
+    "home": "الرئيسية",
+    "collections": "المجموعات",
+    "products": "المنتجات",
+    "cart": "السلة",
+    "menu": "القائمة",
+    "settings": "الإعدادات"
+  },
+  "landing": {
+    "title": "مرحباً بك في StoreFront",
+    "description": "منصة تجارة إلكترونية متعددة المتاجر. يمكنك الوصول إلى متجرك باستخدام صيغة الرابط:",
+    "urlFormat": "/store/رمز-المتجر",
+    "exampleStores": "متاجر تجريبية (للاختبار):",
+    "tryDemoStore": "جرب المتجر التجريبي",
+    "tryTestStore": "جرب متجر الاختبار"
+  },
+  "store": {
+    "welcome": "مرحباً بك في {storeName}",
+    "browseProducts": "تصفح المنتجات",
+    "description": "اكتشف مجموعتنا الرائعة من المنتجات",
+    "shoppingCart": "عربة التسوق",
+    "categories": {
+      "title": "تسوق حسب المجموعة",
+      "viewAll": "عرض الكل",
+      "pageTitle": "جميع المجموعات",
+      "pageDescription": "تصفح مجموعتنا الكاملة من المجموعات",
+      "searchPlaceholder": "ابحث عن المجموعات...",
+      "noCategories": "لا توجد مجموعات متاحة",
+      "noResultsOnPage": "لا توجد مجموعات في هذه الصفحة. يرجى الانتقال إلى صفحة أخرى.",
+      "backToFirstPage": "العودة إلى الصفحة الأولى",
+      "previous": "السابق",
+      "next": "التالي",
+      "of": "من"
+    },
+    "products": {
+      "title": "المنتجات المميزة",
+      "viewAll": "عرض الكل",
+      "pageTitle": "جميع المنتجات",
+      "pageDescription": "تصفح مجموعتنا الكاملة من المنتجات",
+      "searchPlaceholder": "ابحث عن المنتجات...",
+      "noProducts": "لا توجد منتجات متاحة",
+      "addToCart": "أضف إلى السلة",
+      "selectVariant": "اختر النوع",
+      "inStock": "متوفر",
+      "outOfStock": "غير متوفر",
+      "price": "السعر",
+      "description": "الوصف",
+      "specifications": "المواصفات",
+      "quantity": "الكمية",
+      "backToStore": "العودة إلى المتجر",
+      "noImageAvailable": "لا توجد صورة متاحة",
+      "taxIncluded": "شامل الضريبة",
+      "available": "متاح"
+    }
+  },
+  "features": {
+    "quality": {
+      "title": "منتجات عالية الجودة",
+      "description": "نقدم فقط أفضل المنتجات لعملائنا"
+    },
+    "delivery": {
+      "title": "توصيل سريع",
+      "description": "توصيل سريع وموثوق إلى باب منزلك"
+    },
+    "support": {
+      "title": "دعم العملاء",
+      "description": "فريق دعم متخصص جاهز لمساعدتك"
+    }
+  },
+  "errors": {
+    "notFound": {
+      "title": "المتجر غير موجود",
+      "description": "لم يتم العثور على المتجر \"{code}\". يرجى التحقق من الرابط والمحاولة مرة أخرى."
+    },
+    "inactive": {
+      "title": "المتجر غير متاح",
+      "description": "هذا المتجر غير نشط حالياً ولا يقبل الطلبات."
+    },
+    "network": {
+      "title": "خطأ في الاتصال",
+      "description": "تعذر الاتصال بالمتجر. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى."
+    },
+    "unknown": {
+      "title": "حدث خطأ ما",
+      "description": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقاً."
+    },
+    "generic": "حدث خطأ ما",
+    "categories": {
+      "loadFailed": "تعذر تحميل المجموعات. يرجى المحاولة مرة أخرى لاحقاً."
+    },
+    "pageNotFound": {
+      "title": "الصفحة غير موجودة",
+      "code": "404",
+      "description": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها."
+    }
+  },
+  "footer": {
+    "quickLinks": "روابط سريعة",
+    "connectWithUs": "تواصل معنا",
+    "copyright": "© {year} {storeName}. جميع الحقوق محفوظة."
+  },
+  "theme": {
+    "light": "فاتح",
+    "dark": "داكن",
+    "system": "النظام",
+    "toggleTheme": "تبديل المظهر"
+  },
+  "language": {
+    "english": "الإنجليزية",
+    "arabic": "العربية",
+    "changeLanguage": "تغيير اللغة"
+  }
+}

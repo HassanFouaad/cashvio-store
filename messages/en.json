@@ -1,0 +1,130 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "tryAgain": "Try Again",
+    "goHome": "Go Home",
+    "welcome": "Welcome",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "next": "Next",
+    "previous": "Previous",
+    "home": "Home",
+    "collections": "Collections",
+    "products": "Products",
+    "cart": "Cart",
+    "menu": "Menu",
+    "settings": "Settings"
+  },
+  "landing": {
+    "title": "Welcome to StoreFront",
+    "description": "Multi-tenant e-commerce platform. Access your store using the URL format:",
+    "urlFormat": "/store/YOUR-STORE-CODE",
+    "exampleStores": "Example stores (for testing):",
+    "tryDemoStore": "Try Demo Store",
+    "tryTestStore": "Try Test Store"
+  },
+  "store": {
+    "welcome": "Welcome to {storeName}",
+    "browseProducts": "Browse Products",
+    "description": "Discover our amazing collection of products",
+    "shoppingCart": "Shopping cart",
+    "categories": {
+      "title": "Shop by Collection",
+      "viewAll": "View All",
+      "pageTitle": "All Collections",
+      "pageDescription": "Browse our complete collection of collections",
+      "searchPlaceholder": "Search collections...",
+      "noCategories": "No collections available",
+      "noResultsOnPage": "No collections on this page. Please navigate to another page.",
+      "backToFirstPage": "Back to First Page",
+      "previous": "Previous",
+      "next": "Next",
+      "of": "of"
+    },
+    "products": {
+      "title": "Featured Products",
+      "viewAll": "View All",
+      "pageTitle": "All Products",
+      "pageDescription": "Browse our complete collection of products",
+      "searchPlaceholder": "Search products...",
+      "noProducts": "No products available",
+      "addToCart": "Add to Cart",
+      "selectVariant": "Select Variant",
+      "inStock": "In Stock",
+      "outOfStock": "Out of Stock",
+      "price": "Price",
+      "description": "Description",
+      "specifications": "Specifications",
+      "quantity": "Quantity",
+      "backToStore": "Back to store",
+      "noImageAvailable": "No Image Available",
+      "taxIncluded": "Tax included",
+      "available": "available"
+    }
+  },
+  "features": {
+    "quality": {
+      "title": "Quality Products",
+      "description": "We offer only the best quality products for our customers"
+    },
+    "delivery": {
+      "title": "Fast Delivery",
+      "description": "Quick and reliable delivery to your doorstep"
+    },
+    "support": {
+      "title": "Customer Support",
+      "description": "Dedicated support team ready to help you"
+    }
+  },
+  "errors": {
+    "notFound": {
+      "title": "Store Not Found",
+      "description": "The store \"{code}\" could not be found. Please check the URL and try again."
+    },
+    "inactive": {
+      "title": "Store Unavailable",
+      "description": "This store is currently inactive and not accepting orders."
+    },
+    "network": {
+      "title": "Connection Error",
+      "description": "Unable to connect to the store. Please check your internet connection and try again."
+    },
+    "unknown": {
+      "title": "Something Went Wrong",
+      "description": "An unexpected error occurred. Please try again later."
+    },
+    "generic": "Something went wrong",
+    "categories": {
+      "loadFailed": "Unable to load collections. Please try again later."
+    },
+    "pageNotFound": {
+      "title": "Page Not Found",
+      "code": "404",
+      "description": "The page you're looking for doesn't exist or has been moved."
+    }
+  },
+  "footer": {
+    "quickLinks": "Quick Links",
+    "connectWithUs": "Connect With Us",
+    "copyright": "© {year} {storeName}. All rights reserved."
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "toggleTheme": "Toggle theme"
+  },
+  "language": {
+    "english": "English",
+    "arabic": "Arabic",
+    "changeLanguage": "Change language"
+  }
+}

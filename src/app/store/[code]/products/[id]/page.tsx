@@ -1,0 +1,60 @@
+import { getProductByIdWithErrorHandling } from "@/features/products/api/get-products";
+import { getStoreByCode } from "@/features/store/api/get-store";
+import { ProductDetails } from "@/features/products/components/product-details";
+import { Metadata } from "next";
+import { getTranslations, getLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
+
+interface ProductPageProps {
+  params: Promise<{ code: string; id: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ code: string; id: string }>;
+}): Promise<Metadata> {
+  const { code, id } = await params;
+  const store = await getStoreByCode(code);
+  const { product } = await getProductByIdWithErrorHandling(id, store.id);
+
+  if (!product) {
+    return {
+      title: "Product Not Found",
+    };
+  }
+
+  return {
+    title: `${product.name} - ${store.name}`,
+    description: product.description || `Buy ${product.name} at ${store.name}`,
+  };
+}
+
+export default async function ProductPage({ params }: ProductPageProps) {
+  const { code, id } = await params;
+  const store = await getStoreByCode(code);
+  const locale = await getLocale();
+  const t = await getTranslations();
+
+  const { product, error } = await getProductByIdWithErrorHandling(
+    id,
+    store.id
+  );
+
+  if (error || !product) {
+    notFound();
+  }
+
+  return (
+    <div className="w-full max-w-full overflow-x-hidden py-6 sm:py-8">
+      <div className="container">
+        <ProductDetails
+          product={product}
+          currency={store.currency}
+          storeCode={code}
+          locale={locale}
+        />
+      </div>
+    </div>
+  );
+}
