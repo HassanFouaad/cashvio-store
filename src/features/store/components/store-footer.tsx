@@ -1,7 +1,14 @@
-import Link from 'next/link';
-import { Facebook, Instagram, Youtube, Globe, Phone, Music2 } from 'lucide-react';
-import { getTranslations } from 'next-intl/server';
-import { PublicStoreDto } from '../types/store.types';
+import {
+  Facebook,
+  Globe,
+  Instagram,
+  Music2,
+  Phone,
+  Youtube,
+} from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import Link from "next/link";
+import { PublicStoreDto } from "../types/store.types";
 
 interface StoreFooterProps {
   store: PublicStoreDto;
@@ -19,7 +26,9 @@ export async function StoreFooter({ store }: StoreFooterProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 w-full">
           {/* Store Info */}
           <div className="w-full">
-            <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3 break-words">{store.name}</h3>
+            <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3 break-words">
+              {store.name}
+            </h3>
             <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
               {store.country && `${store.country}`}
             </p>
@@ -33,30 +42,32 @@ export async function StoreFooter({ store }: StoreFooterProps) {
 
           {/* Quick Links */}
           <div className="w-full">
-            <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3">{t('footer.quickLinks')}</h3>
+            <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3">
+              {t("footer.quickLinks")}
+            </h3>
             <ul className="space-y-1.5 sm:space-y-2">
               <li>
                 <Link
-                  href={`/store/${store.code}`}
+                  href="/"
                   className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {t('common.home')}
+                  {t("common.home")}
                 </Link>
               </li>
               <li>
                 <Link
-                  href={`/store/${store.code}/categories`}
+                  href="/categories"
                   className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {t('common.collections')}
+                  {t("common.collections")}
                 </Link>
               </li>
               <li>
                 <Link
-                  href={`/store/${store.code}/products`}
+                  href="/products"
                   className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {t('common.products')}
+                  {t("common.products")}
                 </Link>
               </li>
             </ul>
@@ -65,7 +76,9 @@ export async function StoreFooter({ store }: StoreFooterProps) {
           {/* Social Media */}
           {socialMedia && (
             <div className="w-full sm:col-span-2 md:col-span-1">
-              <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3">{t('footer.connectWithUs')}</h3>
+              <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3">
+                {t("footer.connectWithUs")}
+              </h3>
               <div className="flex gap-3 sm:gap-4">
                 {socialMedia.facebook && (
                   <a
@@ -129,7 +142,10 @@ export async function StoreFooter({ store }: StoreFooterProps) {
 
         <div className="mt-5 sm:mt-8 pt-5 sm:pt-8 border-t text-center w-full">
           <p className="text-[10px] sm:text-xs text-muted-foreground break-words leading-relaxed">
-            {t('footer.copyright', { year: currentYear, storeName: store.name })}
+            {t("footer.copyright", {
+              year: currentYear,
+              storeName: store.name,
+            })}
           </p>
         </div>
       </div>

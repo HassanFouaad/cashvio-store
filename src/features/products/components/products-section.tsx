@@ -6,13 +6,11 @@ import Link from "next/link";
 
 interface ProductsSectionProps {
   products: PublicProductDto[];
-  storeCode: string;
   currency: string;
 }
 
 export async function ProductsSection({
   products,
-  storeCode,
   currency,
 }: ProductsSectionProps) {
   const t = await getTranslations("store");
@@ -37,7 +35,7 @@ export async function ProductsSection({
             {t("products.title")}
           </h2>
           <Link
-            href={`/store/${storeCode}/products`}
+            href="/products"
             className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium text-primary hover:text-primary/80 transition-colors group"
           >
             {t("products.viewAll")}
@@ -51,7 +49,6 @@ export async function ProductsSection({
             <div key={product.id}>
               <ProductCard
                 product={product}
-                storeCode={storeCode}
                 currency={currency}
                 locale={locale}
                 translations={productTranslations}

@@ -1,20 +1,16 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import { PublicCategoryDto } from '@/features/categories/types/category.types';
+import { PublicCategoryDto } from "@/features/categories/types/category.types";
+import Image from "next/image";
+import Link from "next/link";
 
 interface CategoryCardProps {
   category: PublicCategoryDto;
-  storeCode: string;
 }
 
-export function CategoryCard({ category, storeCode }: CategoryCardProps) {
+export function CategoryCard({ category }: CategoryCardProps) {
   const hasImage = category.imageUrl;
 
   return (
-    <Link
-      href={`/store/${storeCode}/categories/${category.id}`}
-      className="group block w-full"
-    >
+    <Link href={`/categories/${category.id}`} className="group block w-full">
       <div className="flex flex-col gap-2 sm:gap-3">
         {/* Category Image */}
         <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">

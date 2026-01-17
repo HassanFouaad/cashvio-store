@@ -9,7 +9,6 @@ import Link from "next/link";
 
 interface ProductCardProps {
   product: PublicProductDto;
-  storeCode: string;
   currency: string;
   locale: string;
   translations: {
@@ -25,7 +24,6 @@ interface ProductCardProps {
  */
 export function ProductCard({
   product,
-  storeCode,
   currency,
   locale,
   translations,
@@ -37,7 +35,7 @@ export function ProductCard({
 
   return (
     <Link
-      href={`/store/${storeCode}/products/${product.id}`}
+      href={`/products/${product.id}`}
       className="group block"
     >
       <div className="relative aspect-square overflow-hidden rounded-lg bg-muted mb-3">

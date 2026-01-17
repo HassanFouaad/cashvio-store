@@ -6,12 +6,10 @@ import { PublicCategoryDto } from '@/features/categories/types/category.types';
 
 interface CategoriesSectionProps {
   categories: PublicCategoryDto[];
-  storeCode: string;
 }
 
 export async function CategoriesSection({
   categories,
-  storeCode,
 }: CategoriesSectionProps) {
   const t = await getTranslations('store');
 
@@ -28,7 +26,7 @@ export async function CategoriesSection({
             {t('categories.title')}
           </h2>
           <Link
-            href={`/store/${storeCode}/categories`}
+            href="/categories"
             className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium text-primary hover:text-primary/80 transition-colors group"
           >
             {t('categories.viewAll')}
@@ -45,7 +43,7 @@ export async function CategoriesSection({
                   key={category.id}
                   className="w-[120px] sm:w-[150px] md:w-[180px] shrink-0"
                 >
-                  <CategoryCard category={category} storeCode={storeCode} />
+                  <CategoryCard category={category} />
                 </div>
               ))}
             </div>

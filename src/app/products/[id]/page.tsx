@@ -1,20 +1,32 @@
+import { headers } from "next/headers";
 import { getProductByIdWithErrorHandling } from "@/features/products/api/get-products";
 import { getStoreByCode } from "@/features/store/api/get-store";
+import { getStoreCode } from "@/features/store/utils/store-resolver";
 import { ProductDetails } from "@/features/products/components/product-details";
 import { Metadata } from "next";
 import { getTranslations, getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 interface ProductPageProps {
-  params: Promise<{ code: string; id: string }>;
+  params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ code: string; id: string }>;
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const { code, id } = await params;
+  const headersList = await headers();
+  const hostname = headersList.get("host") || "";
+  const code = getStoreCode(hostname);
+
+  if (!code) {
+    return {
+      title: "Product Not Found",
+    };
+  }
+
+  const { id } = await params;
   const store = await getStoreByCode(code);
   const { product } = await getProductByIdWithErrorHandling(id, store.id);
 
@@ -31,7 +43,15 @@ export async function generateMetadata({
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { code, id } = await params;
+  const headersList = await headers();
+  const hostname = headersList.get("host") || "";
+  const code = getStoreCode(hostname);
+
+  if (!code) {
+    throw new Error("Invalid store subdomain");
+  }
+
+  const { id } = await params;
   const store = await getStoreByCode(code);
   const locale = await getLocale();
   const t = await getTranslations();
@@ -51,7 +71,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <ProductDetails
           product={product}
           currency={store.currency}
-          storeCode={code}
           locale={locale}
         />
       </div>

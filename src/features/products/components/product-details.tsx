@@ -57,7 +57,7 @@ export function ProductDetails({
     <div className="space-y-6 sm:space-y-8">
       {/* Back button */}
       <Link
-        href={`/store/${storeCode}`}
+        href="/"
         className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ChevronLeft className="h-4 w-4 rtl:rotate-180" />

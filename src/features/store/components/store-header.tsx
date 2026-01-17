@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { ShoppingCart, Menu } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { PublicStoreDto } from '../types/store.types';
-import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { LanguageSwitcher } from '@/components/language-switcher';
-import { MobileMenu } from '@/components/mobile-menu';
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { MobileMenu } from "@/components/mobile-menu";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
+import { Menu, ShoppingCart } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
+import { PublicStoreDto } from "../types/store.types";
 
 interface StoreHeaderProps {
   store: PublicStoreDto;
@@ -26,7 +26,7 @@ export function StoreHeader({ store }: StoreHeaderProps) {
         <div className="container flex h-14 sm:h-16 items-center justify-between">
           {/* Logo and Store Name */}
           <Link
-            href={`/store/${store.code}`}
+            href="/"
             className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink overflow-hidden"
             title={store.name}
           >
@@ -55,16 +55,16 @@ export function StoreHeader({ store }: StoreHeaderProps) {
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-4 lg:gap-6">
             <Link
-              href={`/store/${store.code}`}
+              href="/"
               className="text-sm font-medium transition-colors hover:text-primary whitespace-nowrap"
             >
-              {t('common.home')}
+              {t("common.home")}
             </Link>
             <Link
-              href={`/store/${store.code}/products`}
+              href="/products"
               className="text-sm font-medium transition-colors hover:text-primary whitespace-nowrap"
             >
-              {t('common.products')}
+              {t("common.products")}
             </Link>
           </nav>
 
@@ -74,27 +74,27 @@ export function StoreHeader({ store }: StoreHeaderProps) {
               <ThemeToggle />
               <LanguageSwitcher />
             </div>
-            
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="relative h-9 w-9 sm:h-10 sm:w-10" 
-              title={t('store.shoppingCart')}
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative h-9 w-9 sm:h-10 sm:w-10"
+              title={t("store.shoppingCart")}
             >
               <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="sr-only">{t('store.shoppingCart')}</span>
+              <span className="sr-only">{t("store.shoppingCart")}</span>
               {/* Cart badge will be added later */}
             </Button>
 
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="md:hidden h-9 w-9"
               onClick={() => setIsMobileMenuOpen(true)}
-              title={t('common.menu')}
+              title={t("common.menu")}
             >
               <Menu className="h-4 w-4" />
-              <span className="sr-only">{t('common.menu')}</span>
+              <span className="sr-only">{t("common.menu")}</span>
             </Button>
           </div>
         </div>
