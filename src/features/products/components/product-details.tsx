@@ -1,26 +1,27 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { PublicProductDto } from "@/features/products/types/product.types";
+import {
+  findVariantById,
+  sortProductImages,
+} from "@/features/products/utils/product-helpers";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { ChevronLeft, Minus, Plus, ShoppingCart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { PublicProductDto } from "@/features/products/types/product.types";
-import { findVariantById, sortProductImages } from "@/features/products/utils/product-helpers";
 
 interface ProductDetailsProps {
   product: PublicProductDto;
   currency: string;
-  storeCode: string;
   locale: string;
 }
 
 export function ProductDetails({
   product,
   currency,
-  storeCode,
   locale,
 }: ProductDetailsProps) {
   const t = useTranslations("store.products");
