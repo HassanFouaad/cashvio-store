@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -43,14 +42,21 @@ export function MobileMenu({ storeCode, isOpen, onClose }: MobileMenuProps) {
           <nav className="flex-1 overflow-y-auto p-4">
             <div className="space-y-1 mb-6">
               <Link
-                href={`/store/${storeCode}`}
+                href="/"
                 onClick={onClose}
                 className="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-lg hover:bg-muted transition-colors"
               >
                 {t('common.home')}
               </Link>
               <Link
-                href={`/store/${storeCode}/products`}
+                href="/categories"
+                onClick={onClose}
+                className="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-lg hover:bg-muted transition-colors"
+              >
+                {t('common.collections')}
+              </Link>
+              <Link
+                href="/products"
                 onClick={onClose}
                 className="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-lg hover:bg-muted transition-colors"
               >

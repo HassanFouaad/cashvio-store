@@ -1,13 +1,14 @@
-"use client";
+'use client';
 
 import { Button } from "@/components/ui/button";
+import { useCartStore } from "@/features/cart/store";
 import { PublicProductDto } from "@/features/products/types/product.types";
 import {
   findVariantById,
   sortProductImages,
 } from "@/features/products/utils/product-helpers";
 import { formatCurrency } from "@/lib/utils/formatters";
-import { ChevronLeft, Minus, Plus, ShoppingCart } from "lucide-react";
+import { Check, ChevronLeft, Loader2, Minus, Plus, ShoppingCart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,14 +18,26 @@ interface ProductDetailsProps {
   product: PublicProductDto;
   currency: string;
   locale: string;
+  storeId: string;
 }
 
+/**
+ * Product details component with add to cart functionality
+ * Client component - requires interactivity for cart actions
+ */
 export function ProductDetails({
   product,
   currency,
   locale,
+  storeId,
 }: ProductDetailsProps) {
   const t = useTranslations("store.products");
+  const tCart = useTranslations("cart");
+  
+  // Zustand store actions
+  const addItem = useCartStore((state) => state.addItem);
+  const isInCartFn = useCartStore((state) => state.isInCart);
+  const getItemQuantityFn = useCartStore((state) => state.getItemQuantity);
 
   // State
   const [selectedVariantId, setSelectedVariantId] = useState(
@@ -32,6 +45,8 @@ export function ProductDetails({
   );
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isAdding, setIsAdding] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
 
   // Use utility functions
   const selectedVariant = findVariantById(
@@ -40,6 +55,10 @@ export function ProductDetails({
   );
   const sortedImages = sortProductImages(product.images);
   const currentImage = sortedImages[selectedImageIndex];
+
+  // Check if current variant is in cart
+  const variantInCart = selectedVariantId ? isInCartFn(selectedVariantId) : false;
+  const cartQuantity = selectedVariantId ? getItemQuantityFn(selectedVariantId) : 0;
 
   // Handlers
   const handleQuantityChange = (delta: number) => {
@@ -51,8 +70,35 @@ export function ProductDetails({
     }
   };
 
+  const handleAddToCart = () => {
+    if (!selectedVariant || !canAddToCart) return;
+
+    setIsAdding(true);
+    
+    // Add item to cart
+    addItem({
+      product,
+      variant: selectedVariant,
+      quantity,
+      currency,
+      storeId,
+    });
+
+    // Show success feedback
+    setTimeout(() => {
+      setIsAdding(false);
+      setJustAdded(true);
+      setQuantity(1);
+      
+      // Reset justAdded after animation
+      setTimeout(() => {
+        setJustAdded(false);
+      }, 2000);
+    }, 300);
+  };
+
   const isInStock = selectedVariant?.inStock || false;
-  const canAddToCart = isInStock && quantity > 0;
+  const canAddToCart = isInStock && quantity > 0 && selectedVariant !== undefined;
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -152,11 +198,14 @@ export function ProductDetails({
               >
                 {isInStock ? t("inStock") : t("outOfStock")}
               </span>
-              {isInStock && selectedVariant && (
-                <span className="text-sm text-muted-foreground">
-                  ({selectedVariant.availableQuantity} {t("available")})
-                </span>
-              )}
+              {/* Only show available quantity if less than 5 items left */}
+              {isInStock &&
+                selectedVariant &&
+                selectedVariant.availableQuantity < 5 && (
+                  <span className="text-sm font-medium text-orange-600 dark:text-orange-500">
+                    ({selectedVariant.availableQuantity} {t("leftInStock")})
+                  </span>
+                )}
             </div>
           </div>
 
@@ -239,10 +288,38 @@ export function ProductDetails({
           )}
 
           {/* Add to Cart Button */}
-          <Button size="lg" className="w-full gap-2" disabled={!canAddToCart}>
-            <ShoppingCart className="h-5 w-5" />
-            {t("addToCart")}
-          </Button>
+          <div className="space-y-2">
+            <Button
+              size="lg"
+              className="w-full gap-2"
+              disabled={!canAddToCart || isAdding}
+              onClick={handleAddToCart}
+            >
+              {isAdding ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  {tCart("addedToCart")}
+                </>
+              ) : justAdded ? (
+                <>
+                  <Check className="h-5 w-5" />
+                  {tCart("addedToCart")}
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="h-5 w-5" />
+                  {t("addToCart")}
+                </>
+              )}
+            </Button>
+
+            {/* Show cart quantity if item already in cart */}
+            {variantInCart && !justAdded && (
+              <p className="text-sm text-center text-muted-foreground">
+                {cartQuantity} {cartQuantity === 1 ? tCart("item") : tCart("items")} {t("inStock").toLowerCase()}
+              </p>
+            )}
+          </div>
 
           {/* Tags */}
           {product.tags && product.tags.length > 0 && (

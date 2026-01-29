@@ -44,16 +44,15 @@ export async function ProductsSection({
         </div>
 
         {/* Products Grid - 2 rows of 6 on desktop, responsive on mobile */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-4 md:gap-6">
           {products.map((product) => (
-            <div key={product.id}>
-              <ProductCard
-                product={product}
-                currency={currency}
-                locale={locale}
-                translations={productTranslations}
-              />
-            </div>
+            <ProductCard
+              key={product.id}
+              product={product}
+              currency={currency}
+              locale={locale}
+              translations={productTranslations}
+            />
           ))}
         </div>
       </div>

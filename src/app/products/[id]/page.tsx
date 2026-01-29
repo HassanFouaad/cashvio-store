@@ -72,6 +72,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           product={product}
           currency={store.currency}
           locale={locale}
+          storeId={store.id}
         />
       </div>
     </div>

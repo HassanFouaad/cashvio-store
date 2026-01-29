@@ -8,6 +8,13 @@ export enum ProductStatus {
   ARCHIVED = 'ARCHIVED',
 }
 
+export enum ProductSortBy {
+  CREATED_AT = 'createdAt',
+  NAME = 'name',
+  PRICE_LOW_TO_HIGH = 'priceLowToHigh',
+  PRICE_HIGH_TO_LOW = 'priceHighToLow',
+}
+
 export interface PublicProductVariantDto {
   id: string;
   sku: string;
@@ -55,4 +62,6 @@ export interface ProductFilters {
   categoryId?: string;
   page?: number;
   limit?: number;
+  sortBy?: ProductSortBy;
+  inStock?: boolean;
 }

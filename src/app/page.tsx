@@ -74,47 +74,6 @@ export default async function HomePage() {
 
       {/* Products Section */}
       <ProductsSection products={products} currency={store.currency} />
-
-      {/* Features Section */}
-      <section className="w-full max-w-full bg-muted/50 py-6 sm:py-10 md:py-16">
-        <div className="container">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 w-full">
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary text-primary-foreground font-bold text-base sm:text-lg mb-2">
-                1
-              </div>
-              <h3 className="text-base sm:text-lg font-semibold px-2">
-                {t("features.quality.title")}
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed px-2">
-                {t("features.quality.description")}
-              </p>
-            </div>
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary text-primary-foreground font-bold text-base sm:text-lg mb-2">
-                2
-              </div>
-              <h3 className="text-base sm:text-lg font-semibold px-2">
-                {t("features.delivery.title")}
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed px-2">
-                {t("features.delivery.description")}
-              </p>
-            </div>
-            <div className="text-center space-y-2 sm:col-span-2 md:col-span-1">
-              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary text-primary-foreground font-bold text-base sm:text-lg mb-2">
-                3
-              </div>
-              <h3 className="text-base sm:text-lg font-semibold px-2">
-                {t("features.support.title")}
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed px-2">
-                {t("features.support.description")}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

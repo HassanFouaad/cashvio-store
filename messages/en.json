@@ -21,7 +21,15 @@
     "products": "Products",
     "cart": "Cart",
     "menu": "Menu",
-    "settings": "Settings"
+    "settings": "Settings",
+    "contact": "Contact"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "phone": "Phone",
+    "website": "Website",
+    "tapToOpen": "Tap to open",
+    "reachUs": "Get in touch with {storeName}"
   },
   "landing": {
     "title": "Welcome to StoreFront",
@@ -45,6 +53,8 @@
       "noCategories": "No collections available",
       "noResultsOnPage": "No collections on this page. Please navigate to another page.",
       "backToFirstPage": "Back to First Page",
+      "backToCollections": "Back to Collections",
+      "browseProductsIn": "Browse products in {category}",
       "previous": "Previous",
       "next": "Next",
       "of": "of"
@@ -56,10 +66,13 @@
       "pageDescription": "Browse our complete collection of products",
       "searchPlaceholder": "Search products...",
       "noProducts": "No products available",
+      "noResultsOnPage": "No products on this page. Please navigate to another page.",
+      "backToFirstPage": "Back to First Page",
       "addToCart": "Add to Cart",
       "selectVariant": "Select Variant",
       "inStock": "In Stock",
       "outOfStock": "Out of Stock",
+      "leftInStock": "left in stock",
       "price": "Price",
       "description": "Description",
       "specifications": "Specifications",
@@ -67,7 +80,19 @@
       "backToStore": "Back to store",
       "noImageAvailable": "No Image Available",
       "taxIncluded": "Tax included",
-      "available": "available"
+      "available": "available",
+      "sortBy": {
+        "label": "Sort by",
+        "newest": "Newest",
+        "name": "Name",
+        "priceLowToHigh": "Price: Low to High",
+        "priceHighToLow": "Price: High to Low"
+      },
+      "filters": {
+        "inStockOnly": "In Stock",
+        "activeFilters": "Filters"
+      },
+      "resultsCount": "{count} products"
     }
   },
   "features": {
@@ -105,6 +130,9 @@
     "categories": {
       "loadFailed": "Unable to load collections. Please try again later."
     },
+    "products": {
+      "loadFailed": "Unable to load products. Please try again later."
+    },
     "pageNotFound": {
       "title": "Page Not Found",
       "code": "404",
@@ -126,5 +154,31 @@
     "english": "English",
     "arabic": "Arabic",
     "changeLanguage": "Change language"
+  },
+  "cart": {
+    "pageTitle": "Shopping Cart",
+    "pageDescription": "Review your items before checkout",
+    "yourCart": "Your Cart",
+    "emptyTitle": "Your cart is empty",
+    "emptyDescription": "Looks like you haven't added anything to your cart yet. Start browsing our products!",
+    "startShopping": "Start Shopping",
+    "continueShopping": "Continue Shopping",
+    "clearAll": "Clear All",
+    "remove": "Remove",
+    "noImage": "No image",
+    "outOfStock": "Out of stock",
+    "maxQuantityReached": "Max quantity reached",
+    "orderSummary": "Order Summary",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "calculatedAtCheckout": "Calculated at checkout",
+    "tax": "Tax",
+    "total": "Total",
+    "item": "item",
+    "items": "items",
+    "proceedToCheckout": "Proceed to Checkout",
+    "someItemsOutOfStock": "Some items in your cart are out of stock",
+    "addedToCart": "Added to cart",
+    "itemAddedToCart": "{name} has been added to your cart"
   }
 }

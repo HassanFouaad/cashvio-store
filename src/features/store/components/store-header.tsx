@@ -1,10 +1,10 @@
 "use client";
 
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { MobileMenu } from "@/components/mobile-menu";
+import { MobileSettingsSheet } from "@/components/mobile-settings-sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { Menu, ShoppingCart } from "lucide-react";
+import { Settings, ShoppingCart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,7 +18,7 @@ interface StoreHeaderProps {
 export function StoreHeader({ store }: StoreHeaderProps) {
   const t = useTranslations();
   const logoUrl = store.storeFront?.logoUrl;
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
     <>
@@ -27,7 +27,7 @@ export function StoreHeader({ store }: StoreHeaderProps) {
           {/* Logo and Store Name */}
           <Link
             href="/"
-            className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink overflow-hidden"
+            className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden"
             title={store.name}
           >
             {logoUrl ? (
@@ -47,18 +47,24 @@ export function StoreHeader({ store }: StoreHeaderProps) {
                 {store.name.charAt(0).toUpperCase()}
               </div>
             )}
-            <span className="text-base sm:text-xl font-bold truncate max-w-[120px] sm:max-w-[200px] md:max-w-none">
+            <span className="text-base sm:text-xl font-bold truncate md:max-w-none">
               {store.name}
             </span>
           </Link>
 
-          {/* Navigation */}
+          {/* Navigation - Desktop only */}
           <nav className="hidden md:flex items-center gap-4 lg:gap-6">
             <Link
               href="/"
               className="text-sm font-medium transition-colors hover:text-primary whitespace-nowrap"
             >
               {t("common.home")}
+            </Link>
+            <Link
+              href="/categories"
+              className="text-sm font-medium transition-colors hover:text-primary whitespace-nowrap"
+            >
+              {t("common.collections")}
             </Link>
             <Link
               href="/products"
@@ -70,15 +76,17 @@ export function StoreHeader({ store }: StoreHeaderProps) {
 
           {/* Actions */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-            <div className="hidden sm:flex items-center gap-1 sm:gap-2">
+            {/* Desktop: Theme and Language toggles */}
+            <div className="hidden md:flex items-center gap-1 sm:gap-2">
               <ThemeToggle />
               <LanguageSwitcher />
             </div>
 
+            {/* Desktop: Cart button (mobile uses bottom nav) */}
             <Button
               variant="ghost"
               size="icon"
-              className="relative h-9 w-9 sm:h-10 sm:w-10"
+              className="relative h-9 w-9 sm:h-10 sm:w-10 hidden md:flex"
               title={t("store.shoppingCart")}
             >
               <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -86,25 +94,25 @@ export function StoreHeader({ store }: StoreHeaderProps) {
               {/* Cart badge will be added later */}
             </Button>
 
+            {/* Mobile: Settings button for theme/language */}
             <Button
               variant="ghost"
               size="icon"
               className="md:hidden h-9 w-9"
-              onClick={() => setIsMobileMenuOpen(true)}
-              title={t("common.menu")}
+              onClick={() => setIsSettingsOpen(true)}
+              title={t("common.settings")}
             >
-              <Menu className="h-4 w-4" />
-              <span className="sr-only">{t("common.menu")}</span>
+              <Settings className="h-4 w-4" />
+              <span className="sr-only">{t("common.settings")}</span>
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Menu */}
-      <MobileMenu
-        storeCode={store.code}
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
+      {/* Mobile Settings Sheet */}
+      <MobileSettingsSheet
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
     </>
   );

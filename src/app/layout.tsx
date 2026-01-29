@@ -1,5 +1,8 @@
 import { DynamicFavicon } from "@/components/dynamic-favicon";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { VisitorTracker } from "@/components/visitor-tracker";
 import { appConfig, validateEnvironment } from "@/config/env.config";
+import { CartInitializer } from "@/features/cart/components";
 import { getStoreWithErrorHandling } from "@/features/store/api/get-store";
 import { StoreFooter } from "@/features/store/components/store-footer";
 import { StoreHeader } from "@/features/store/components/store-header";
@@ -7,6 +10,7 @@ import { StoreFrontStatus } from "@/features/store/types/store.types";
 import { getStoreCode } from "@/features/store/utils/store-resolver";
 import { QueryProvider } from "@/providers/query-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { VisitorProvider } from "@/providers/visitor-provider";
 import {
   Locale,
   Theme,
@@ -18,7 +22,7 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { Cairo, Inter } from "next/font/google";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import "./globals.css";
 
 // Validate environment on startup
@@ -107,6 +111,8 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  userScalable: true,
+  viewportFit: "cover", // For safe area on iOS
 };
 
 export default async function RootLayout({
@@ -125,6 +131,10 @@ export default async function RootLayout({
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
   const storeCode = getStoreCode(hostname);
+
+  // Get visitor ID from cookie (set by middleware)
+  const cookieStore = await cookies();
+  const visitorId = cookieStore.get("sf_visitor_id")?.value;
 
   // Get store data if subdomain exists
   let store = null;
@@ -149,17 +159,30 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <QueryProvider>
-              {store ? (
-                <div className="flex min-h-screen flex-col">
-                  <StoreHeader store={store} />
-                  <main className="flex-1">{children}</main>
-                  <StoreFooter store={store} />
-                </div>
-              ) : (
-                children
-              )}
-            </QueryProvider>
+            <VisitorProvider initialVisitorId={visitorId}>
+              <QueryProvider>
+                {store ? (
+                  <div className="flex min-h-screen flex-col">
+                    {/* Initialize cart store with store info - renders nothing */}
+                    <CartInitializer storeId={store.id} currency={store.currency} />
+                    <VisitorTracker storeId={store.id} />
+                    <StoreHeader store={store} />
+                    <main className="flex-1">{children}</main>
+                    {/* Footer - hidden on mobile, shown on desktop */}
+                    <div className="hidden md:block">
+                      <StoreFooter store={store} />
+                    </div>
+                    {/* Mobile Bottom Navigation - only on mobile */}
+                    <MobileBottomNav 
+                      socialMedia={store.storeFront?.socialMedia}
+                      storeName={store.name}
+                    />
+                  </div>
+                ) : (
+                  children
+                )}
+              </QueryProvider>
+            </VisitorProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

@@ -25,6 +25,10 @@ export const getProducts = cache(
         limit: (filters.limit || 12).toString(),
         ...(filters.name && { name: filters.name }),
         ...(filters.categoryId && { categoryId: filters.categoryId }),
+        ...(filters.sortBy && { sortBy: filters.sortBy }),
+        ...(filters.inStock !== undefined && {
+          inStock: filters.inStock.toString(),
+        }),
       });
 
       const response = await apiClient.getPaginated<PublicProductDto>(

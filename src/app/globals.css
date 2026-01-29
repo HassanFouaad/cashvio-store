@@ -187,3 +187,93 @@ h1, h2, h3, h4, h5, h6, p {
 [dir="rtl"] .divide-x-reverse > :not([hidden]) ~ :not([hidden]) {
   --tw-divide-x-reverse: 1;
 }
+
+/* ============================================
+   MOBILE NATIVE EXPERIENCE STYLES
+   ============================================ */
+
+/* Safe Area Support for notched devices (iPhone X+, etc.) */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  /* Safe area for left/right on landscape */
+  .container {
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
+  
+  @media (min-width: 640px) {
+    .container {
+      padding-left: max(1.5rem, env(safe-area-inset-left));
+      padding-right: max(1.5rem, env(safe-area-inset-right));
+    }
+  }
+}
+
+/* Touch interaction improvements for mobile */
+@media (max-width: 767px) {
+  /* Remove tap highlight on mobile browsers */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Active state feedback for touch */
+  .touch-feedback:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+    transition: transform 0.1s ease, opacity 0.1s ease;
+  }
+}
+
+/* Mobile card hover/active states */
+@media (hover: none) and (pointer: coarse) {
+  /* On touch devices, show active states instead of hover */
+  .group:hover .group-hover\:scale-105 {
+    transform: none;
+  }
+  
+  .group:hover .group-hover\:scale-110 {
+    transform: none;
+  }
+  
+  .group:active .group-hover\:scale-105 {
+    transform: scale(1.02);
+  }
+  
+  .group:active .group-hover\:scale-110 {
+    transform: scale(1.05);
+  }
+}
+
+/* Mobile Bottom Navigation Safe Area */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .mobile-nav-spacer {
+    height: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Floating action button positioning for mobile */
+@media (max-width: 767px) {
+  .fixed-bottom-cta {
+    bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Skeleton loading animation - smoother for mobile */
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-skeleton {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* Mobile bottom navigation padding */
+@media (max-width: 767px) {
+  main {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}

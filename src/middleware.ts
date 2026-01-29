@@ -3,7 +3,20 @@ import { getStoreCode } from "./features/store/utils/store-resolver";
 import { CookieName, isValidLocale, Locale } from "./types/enums";
 
 const COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year
+const VISITOR_COOKIE_MAX_AGE = 365 * 24 * 60 * 60 * 2; // 2 years
 const DEFAULT_LOCALE = Locale.ARABIC;
+const VISITOR_ID_COOKIE = "sf_visitor_id";
+
+/**
+ * Generate a UUID v4 for visitor ID
+ */
+function generateVisitorId(): string {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
 export function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") || "";
@@ -17,57 +30,86 @@ export function middleware(request: NextRequest) {
       request.nextUrl.pathname === "/" ||
       request.nextUrl.pathname.startsWith("/_next")
     ) {
-      return handleLocale(request);
+      return handleLocaleAndVisitor(request);
     }
 
     // For any other paths on main domain, redirect to home
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Store code found - proceed with locale handling
-  return handleLocale(request);
+  // Store code found - proceed with locale and visitor handling
+  return handleLocaleAndVisitor(request);
 }
 
-function handleLocale(request: NextRequest) {
-  // Check if locale is in cookie
+function handleLocaleAndVisitor(request: NextRequest) {
+  // Track whether we need to set cookies
+  let needsLocaleCookie = false;
+  let needsVisitorCookie = false;
+  let detectedLocale: Locale = DEFAULT_LOCALE;
+  let visitorId = "";
+
+  // Check locale cookie
   const localeCookie = request.cookies.get(CookieName.LOCALE)?.value;
 
-  if (localeCookie && isValidLocale(localeCookie)) {
-    return NextResponse.next();
-  }
+  if (!localeCookie || !isValidLocale(localeCookie)) {
+    needsLocaleCookie = true;
 
-  // Auto-detect locale from Accept-Language header
-  const acceptLanguage = request.headers.get("accept-language");
-  let detectedLocale: Locale = DEFAULT_LOCALE;
+    // Auto-detect locale from Accept-Language header
+    const acceptLanguage = request.headers.get("accept-language");
 
-  if (acceptLanguage) {
-    // Parse accept-language header
-    const languages = acceptLanguage.split(",").map((lang) => {
-      const [code, priority = "q=1"] = lang.trim().split(";");
-      return {
-        code: code.split("-")[0], // Get just 'en' from 'en-US'
-        priority: parseFloat(priority.replace("q=", "")),
-      };
-    });
+    if (acceptLanguage) {
+      // Parse accept-language header
+      const languages = acceptLanguage.split(",").map((lang) => {
+        const [code, priority = "q=1"] = lang.trim().split(";");
+        return {
+          code: code.split("-")[0], // Get just 'en' from 'en-US'
+          priority: parseFloat(priority.replace("q=", "")),
+        };
+      });
 
-    // Sort by priority
-    languages.sort((a, b) => b.priority - a.priority);
+      // Sort by priority
+      languages.sort((a, b) => b.priority - a.priority);
 
-    // Find first supported locale
-    for (const lang of languages) {
-      if (isValidLocale(lang.code)) {
-        detectedLocale = lang.code;
-        break;
+      // Find first supported locale
+      for (const lang of languages) {
+        if (isValidLocale(lang.code)) {
+          detectedLocale = lang.code;
+          break;
+        }
       }
     }
   }
 
-  // Set cookie with detected locale
+  // Check visitor ID cookie
+  const visitorCookie = request.cookies.get(VISITOR_ID_COOKIE)?.value;
+
+  if (!visitorCookie) {
+    needsVisitorCookie = true;
+    visitorId = generateVisitorId();
+  }
+
+  // If no cookies need to be set, just pass through
+  if (!needsLocaleCookie && !needsVisitorCookie) {
+    return NextResponse.next();
+  }
+
+  // Set required cookies
   const response = NextResponse.next();
-  response.cookies.set(CookieName.LOCALE, detectedLocale, {
-    maxAge: COOKIE_MAX_AGE,
-    path: "/",
-  });
+
+  if (needsLocaleCookie) {
+    response.cookies.set(CookieName.LOCALE, detectedLocale, {
+      maxAge: COOKIE_MAX_AGE,
+      path: "/",
+    });
+  }
+
+  if (needsVisitorCookie) {
+    response.cookies.set(VISITOR_ID_COOKIE, visitorId, {
+      maxAge: VISITOR_COOKIE_MAX_AGE,
+      path: "/",
+      sameSite: "lax",
+    });
+  }
 
   return response;
 }

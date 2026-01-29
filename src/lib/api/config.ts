@@ -19,9 +19,13 @@ export const endpoints = {
   },
   categories: {
     list: '/public/categories',
+    getById: (id: string) => `/public/categories/${id}`,
   },
   products: {
     getPublic: () => '/public/products',
     getPublicById: (id: string) => `/public/products/${id}`,
+  },
+  visitors: {
+    track: '/public/visitors/track',
   },
 } as const;

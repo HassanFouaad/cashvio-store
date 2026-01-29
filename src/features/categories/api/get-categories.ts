@@ -2,6 +2,8 @@
 
 import { apiClient } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/config';
+import { ApiException } from '@/lib/api/types';
+import { cache } from 'react';
 import {
   ListCategoriesQuery,
   PaginatedCategoriesResponse,
@@ -50,3 +52,49 @@ export async function getCategoriesWithErrorHandling(
     };
   }
 }
+
+/**
+ * Fetch a single category by ID
+ * Uses React cache() to deduplicate requests
+ */
+export const getCategoryById = cache(
+  async (categoryId: string, tenantId: string): Promise<PublicCategoryDto> => {
+    try {
+      const searchParams = new URLSearchParams({ tenantId });
+
+      const category = await apiClient.get<PublicCategoryDto>(
+        `${endpoints.categories.getById(categoryId)}?${searchParams.toString()}`
+      );
+
+      return category;
+    } catch (error) {
+      if (error instanceof ApiException) {
+        throw error;
+      }
+      throw new ApiException(500, 'Failed to fetch category');
+    }
+  }
+);
+
+/**
+ * Fetch a single category with error handling
+ */
+export const getCategoryByIdWithErrorHandling = cache(
+  async (
+    categoryId: string,
+    tenantId: string
+  ): Promise<{
+    category: PublicCategoryDto | null;
+    error: string | null;
+  }> => {
+    try {
+      const category = await getCategoryById(categoryId, tenantId);
+      return { category, error: null };
+    } catch (error) {
+      if (error instanceof ApiException) {
+        return { category: null, error: error.message };
+      }
+      return { category: null, error: 'An unexpected error occurred' };
+    }
+  }
+);

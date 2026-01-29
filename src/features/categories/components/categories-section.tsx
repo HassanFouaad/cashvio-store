@@ -34,14 +34,14 @@ export async function CategoriesSection({
           </Link>
         </div>
 
-        {/* Horizontal Scrolling Categories */}
-        <div className="relative">
-          <div className="overflow-x-auto scrollbar-thin pb-2">
+        {/* Horizontal Scrolling Categories - Enhanced for mobile native feel */}
+        <div className="relative -mx-3 sm:mx-0">
+          <div className="overflow-x-auto scrollbar-thin pb-2 snap-x snap-mandatory scroll-smooth px-3 sm:px-0" style={{ WebkitOverflowScrolling: 'touch' }}>
             <div className="flex gap-3 sm:gap-4 md:gap-6 min-w-max px-0.5">
               {categories.map((category) => (
                 <div
                   key={category.id}
-                  className="w-[120px] sm:w-[150px] md:w-[180px] shrink-0"
+                  className="w-[110px] sm:w-[150px] md:w-[180px] shrink-0 snap-start"
                 >
                   <CategoryCard category={category} />
                 </div>
@@ -49,9 +49,9 @@ export async function CategoriesSection({
             </div>
           </div>
 
-          {/* Fade Gradients for Scroll Indication */}
-          <div className="pointer-events-none absolute top-0 start-0 h-full w-8 bg-gradient-to-e from-background to-transparent" />
-          <div className="pointer-events-none absolute top-0 end-0 h-full w-8 bg-gradient-to-s from-background to-transparent" />
+          {/* Fade Gradients for Scroll Indication - Hidden on mobile for cleaner look */}
+          <div className="pointer-events-none absolute top-0 start-0 h-full w-8 bg-gradient-to-e from-background to-transparent hidden sm:block" />
+          <div className="pointer-events-none absolute top-0 end-0 h-full w-8 bg-gradient-to-s from-background to-transparent hidden sm:block" />
         </div>
       </div>
     </section>

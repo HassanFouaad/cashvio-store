@@ -21,7 +21,15 @@
     "products": "المنتجات",
     "cart": "السلة",
     "menu": "القائمة",
-    "settings": "الإعدادات"
+    "settings": "الإعدادات",
+    "contact": "تواصل"
+  },
+  "contact": {
+    "title": "تواصل معنا",
+    "phone": "الهاتف",
+    "website": "الموقع",
+    "tapToOpen": "انقر للفتح",
+    "reachUs": "تواصل مع {storeName}"
   },
   "landing": {
     "title": "مرحباً بك في StoreFront",
@@ -45,6 +53,8 @@
       "noCategories": "لا توجد مجموعات متاحة",
       "noResultsOnPage": "لا توجد مجموعات في هذه الصفحة. يرجى الانتقال إلى صفحة أخرى.",
       "backToFirstPage": "العودة إلى الصفحة الأولى",
+      "backToCollections": "العودة إلى المجموعات",
+      "browseProductsIn": "تصفح المنتجات في {category}",
       "previous": "السابق",
       "next": "التالي",
       "of": "من"
@@ -56,10 +66,13 @@
       "pageDescription": "تصفح مجموعتنا الكاملة من المنتجات",
       "searchPlaceholder": "ابحث عن المنتجات...",
       "noProducts": "لا توجد منتجات متاحة",
+      "noResultsOnPage": "لا توجد منتجات في هذه الصفحة. يرجى الانتقال إلى صفحة أخرى.",
+      "backToFirstPage": "العودة إلى الصفحة الأولى",
       "addToCart": "أضف إلى السلة",
       "selectVariant": "اختر النوع",
       "inStock": "متوفر",
       "outOfStock": "غير متوفر",
+      "leftInStock": "متبقي في المخزون",
       "price": "السعر",
       "description": "الوصف",
       "specifications": "المواصفات",
@@ -67,7 +80,19 @@
       "backToStore": "العودة إلى المتجر",
       "noImageAvailable": "لا توجد صورة متاحة",
       "taxIncluded": "شامل الضريبة",
-      "available": "متاح"
+      "available": "متاح",
+      "sortBy": {
+        "label": "ترتيب حسب",
+        "newest": "الأحدث",
+        "name": "الاسم",
+        "priceLowToHigh": "السعر: من الأقل للأعلى",
+        "priceHighToLow": "السعر: من الأعلى للأقل"
+      },
+      "filters": {
+        "inStockOnly": "متوفر",
+        "activeFilters": "الفلاتر"
+      },
+      "resultsCount": "{count} منتج"
     }
   },
   "features": {
@@ -105,6 +130,9 @@
     "categories": {
       "loadFailed": "تعذر تحميل المجموعات. يرجى المحاولة مرة أخرى لاحقاً."
     },
+    "products": {
+      "loadFailed": "تعذر تحميل المنتجات. يرجى المحاولة مرة أخرى لاحقاً."
+    },
     "pageNotFound": {
       "title": "الصفحة غير موجودة",
       "code": "404",
@@ -126,5 +154,31 @@
     "english": "الإنجليزية",
     "arabic": "العربية",
     "changeLanguage": "تغيير اللغة"
+  },
+  "cart": {
+    "pageTitle": "سلة التسوق",
+    "pageDescription": "راجع منتجاتك قبل الدفع",
+    "yourCart": "سلتك",
+    "emptyTitle": "سلتك فارغة",
+    "emptyDescription": "يبدو أنك لم تضف أي شيء إلى سلتك بعد. ابدأ بتصفح منتجاتنا!",
+    "startShopping": "ابدأ التسوق",
+    "continueShopping": "متابعة التسوق",
+    "clearAll": "إزالة الكل",
+    "remove": "إزالة",
+    "noImage": "لا صورة",
+    "outOfStock": "غير متوفر",
+    "maxQuantityReached": "تم الوصول للحد الأقصى",
+    "orderSummary": "ملخص الطلب",
+    "subtotal": "المجموع الفرعي",
+    "shipping": "الشحن",
+    "calculatedAtCheckout": "يحسب عند الدفع",
+    "tax": "الضريبة",
+    "total": "الإجمالي",
+    "item": "منتج",
+    "items": "منتجات",
+    "proceedToCheckout": "متابعة الدفع",
+    "someItemsOutOfStock": "بعض المنتجات في سلتك غير متوفرة",
+    "addedToCart": "تمت الإضافة للسلة",
+    "itemAddedToCart": "تمت إضافة {name} إلى سلتك"
   }
 }

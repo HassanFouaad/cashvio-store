@@ -169,6 +169,46 @@ class ApiClient {
   }
 
   /**
+   * POST request that expects no content (204)
+   * Used for fire-and-forget operations like tracking
+   */
+  async postNoContent<D = unknown>(
+    endpoint: string,
+    data?: D,
+    options?: FetchOptions
+  ): Promise<void> {
+    const url = `${this.baseUrl}${endpoint}`;
+    const response = await this.fetchWithTimeout(url, {
+      ...options,
+      method: "POST",
+      headers: {
+        ...apiConfig.headers,
+        ...options?.headers,
+      },
+      body: data ? JSON.stringify(data) : undefined,
+    });
+
+    if (!response.ok && response.status !== 204) {
+      const contentType = response.headers.get("content-type");
+      const isJson = contentType?.includes("application/json");
+
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+
+      if (isJson) {
+        try {
+          const errorData = await response.json();
+          errorMessage =
+            errorData.error?.message || errorData.message || errorMessage;
+        } catch {
+          // If JSON parsing fails, use default error message
+        }
+      }
+
+      throw new ApiException(response.status, errorMessage);
+    }
+  }
+
+  /**
    * PUT request
    */
   async put<T, D = unknown>(
