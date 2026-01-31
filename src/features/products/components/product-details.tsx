@@ -1,18 +1,11 @@
-'use client';
-
-import { Button } from "@/components/ui/button";
-import { useCartStore } from "@/features/cart/store";
 import { PublicProductDto } from "@/features/products/types/product.types";
-import {
-  findVariantById,
-  sortProductImages,
-} from "@/features/products/utils/product-helpers";
+import { sortProductImages } from "@/features/products/utils/product-helpers";
 import { formatCurrency } from "@/lib/utils/formatters";
-import { Check, ChevronLeft, Loader2, Minus, Plus, ShoppingCart } from "lucide-react";
-import { useTranslations } from "next-intl";
-import Image from "next/image";
+import { ChevronLeft } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { useState } from "react";
+import { AddToCartSection } from "./add-to-cart-section";
+import { ProductImageGallery } from "./product-image-gallery";
 
 interface ProductDetailsProps {
   product: PublicProductDto;
@@ -22,157 +15,56 @@ interface ProductDetailsProps {
 }
 
 /**
- * Product details component with add to cart functionality
- * Client component - requires interactivity for cart actions
+ * Product details - Server Component
+ * Renders all SEO-critical content server-side
+ * Only interactive parts (cart, gallery) are client components
  */
-export function ProductDetails({
+export async function ProductDetails({
   product,
   currency,
   locale,
   storeId,
 }: ProductDetailsProps) {
-  const t = useTranslations("store.products");
-  const tCart = useTranslations("cart");
-  
-  // Zustand store actions
-  const addItem = useCartStore((state) => state.addItem);
-  const isInCartFn = useCartStore((state) => state.isInCart);
-  const getItemQuantityFn = useCartStore((state) => state.getItemQuantity);
+  const t = await getTranslations("store.products");
 
-  // State
-  const [selectedVariantId, setSelectedVariantId] = useState(
-    product.variants?.[0]?.id || null
-  );
-  const [quantity, setQuantity] = useState(1);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [isAdding, setIsAdding] = useState(false);
-  const [justAdded, setJustAdded] = useState(false);
-
-  // Use utility functions
-  const selectedVariant = findVariantById(
-    product.variants,
-    selectedVariantId || ""
-  );
+  // Server-side data preparation
   const sortedImages = sortProductImages(product.images);
-  const currentImage = sortedImages[selectedImageIndex];
+  const defaultVariant = product.variants?.[0];
 
-  // Check if current variant is in cart
-  const variantInCart = selectedVariantId ? isInCartFn(selectedVariantId) : false;
-  const cartQuantity = selectedVariantId ? getItemQuantityFn(selectedVariantId) : 0;
-
-  // Handlers
-  const handleQuantityChange = (delta: number) => {
-    const newQuantity = quantity + delta;
-    const maxQuantity = selectedVariant?.availableQuantity || 0;
-
-    if (newQuantity >= 1 && newQuantity <= maxQuantity) {
-      setQuantity(newQuantity);
-    }
-  };
-
-  const handleAddToCart = () => {
-    if (!selectedVariant || !canAddToCart) return;
-
-    setIsAdding(true);
-    
-    // Add item to cart
-    addItem({
-      product,
-      variant: selectedVariant,
-      quantity,
-      currency,
-      storeId,
-    });
-
-    // Show success feedback
-    setTimeout(() => {
-      setIsAdding(false);
-      setJustAdded(true);
-      setQuantity(1);
-      
-      // Reset justAdded after animation
-      setTimeout(() => {
-        setJustAdded(false);
-      }, 2000);
-    }, 300);
-  };
-
-  const isInStock = selectedVariant?.inStock || false;
-  const canAddToCart = isInStock && quantity > 0 && selectedVariant !== undefined;
+  // Get stock status from default variant for initial SSR
+  const isInStock = defaultVariant?.inStock ?? false;
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Back button */}
+      {/* Back button - SEO friendly navigation */}
       <Link
         href="/"
         className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
-        {t("backToStore", { defaultValue: "Back to store" })}
+        {t("backToStore")}
       </Link>
 
       {/* Product Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
-        {/* Left Column - Images */}
-        <div className="space-y-4">
-          {/* Main Image */}
-          <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
-            {currentImage ? (
-              <Image
-                src={currentImage.imageUrl}
-                alt={currentImage.altText || product.name}
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-                priority
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-muted-foreground">
-                <span>{t("noImageAvailable")}</span>
-              </div>
-            )}
-          </div>
+        {/* Left Column - Images (Client for interactivity) */}
+        <ProductImageGallery
+          images={sortedImages}
+          productName={product.name}
+          noImageText={t("noImageAvailable")}
+        />
 
-          {/* Thumbnail Grid */}
-          {sortedImages.length > 1 && (
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 sm:gap-3">
-              {sortedImages.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImageIndex(index)}
-                  className={`relative aspect-square overflow-hidden rounded-md border-2 transition-all ${
-                    index === selectedImageIndex
-                      ? "border-primary"
-                      : "border-transparent hover:border-muted-foreground/30"
-                  }`}
-                >
-                  <Image
-                    src={image.thumbnailUrl || image.imageUrl}
-                    alt={image.altText || `${product.name} ${index + 1}`}
-                    fill
-                    sizes="120px"
-                    className="object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Right Column - Product Info */}
+        {/* Right Column - Product Info (Server rendered for SEO) */}
         <div className="space-y-6">
-          {/* Product Title & Price */}
+          {/* Product Title - Critical SEO content */}
           <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold">{product.name}</h1>
 
-            {selectedVariant && (
+            {/* Price display - Server rendered for SEO */}
+            {defaultVariant && (
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl sm:text-3xl font-bold">
-                  {formatCurrency(
-                    selectedVariant.sellingPrice,
-                    currency,
-                    locale
-                  )}
+                  {formatCurrency(defaultVariant.sellingPrice, currency, locale)}
                 </span>
                 {product.taxIncluded && product.taxRate && (
                   <span className="text-sm text-muted-foreground">
@@ -182,7 +74,7 @@ export function ProductDetails({
               </div>
             )}
 
-            {/* Stock Status */}
+            {/* Stock Status - Server rendered */}
             <div className="flex items-center gap-2">
               <div
                 className={`h-2 w-2 rounded-full ${
@@ -198,18 +90,18 @@ export function ProductDetails({
               >
                 {isInStock ? t("inStock") : t("outOfStock")}
               </span>
-              {/* Only show available quantity if less than 5 items left */}
+              {/* Low stock warning */}
               {isInStock &&
-                selectedVariant &&
-                selectedVariant.availableQuantity < 5 && (
+                defaultVariant &&
+                defaultVariant.availableQuantity < 5 && (
                   <span className="text-sm font-medium text-orange-600 dark:text-orange-500">
-                    ({selectedVariant.availableQuantity} {t("leftInStock")})
+                    ({defaultVariant.availableQuantity} {t("leftInStock")})
                   </span>
                 )}
             </div>
           </div>
 
-          {/* Description */}
+          {/* Description - Critical SEO content */}
           {product.description && (
             <div className="space-y-2">
               <h2 className="text-lg font-semibold">{t("description")}</h2>
@@ -219,109 +111,18 @@ export function ProductDetails({
             </div>
           )}
 
-          {/* Variant Selector */}
-          {product.variants && product.variants.length > 1 && (
-            <div className="space-y-3">
-              <h2 className="text-sm font-semibold">{t("selectVariant")}</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {product.variants.map((variant) => (
-                  <button
-                    key={variant.id}
-                    onClick={() => {
-                      setSelectedVariantId(variant.id);
-                      setQuantity(1);
-                    }}
-                    disabled={!variant.inStock}
-                    className={`relative px-4 py-3 text-sm rounded-lg border-2 transition-all ${
-                      variant.id === selectedVariantId
-                        ? "border-primary bg-primary/5"
-                        : "border-muted hover:border-muted-foreground/30"
-                    } ${
-                      !variant.inStock
-                        ? "opacity-50 cursor-not-allowed"
-                        : "cursor-pointer"
-                    }`}
-                  >
-                    <div className="font-medium">{variant.name}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {formatCurrency(variant.sellingPrice, currency, locale)}
-                    </div>
-                    {!variant.inStock && (
-                      <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-destructive">
-                        {t("outOfStock")}
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
+          {/* Cart Section - Client component for interactivity */}
+          {product.variants && product.variants.length > 0 && (
+            <AddToCartSection
+              product={product}
+              variants={product.variants}
+              currency={currency}
+              locale={locale}
+              storeId={storeId}
+            />
           )}
 
-          {/* Quantity Selector */}
-          {isInStock && (
-            <div className="space-y-3">
-              <h2 className="text-sm font-semibold">{t("quantity")}</h2>
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleQuantityChange(-1)}
-                  disabled={quantity <= 1}
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="min-w-[3rem] text-center text-lg font-medium">
-                  {quantity}
-                </span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleQuantityChange(1)}
-                  disabled={
-                    quantity >= (selectedVariant?.availableQuantity || 0)
-                  }
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Add to Cart Button */}
-          <div className="space-y-2">
-            <Button
-              size="lg"
-              className="w-full gap-2"
-              disabled={!canAddToCart || isAdding}
-              onClick={handleAddToCart}
-            >
-              {isAdding ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  {tCart("addedToCart")}
-                </>
-              ) : justAdded ? (
-                <>
-                  <Check className="h-5 w-5" />
-                  {tCart("addedToCart")}
-                </>
-              ) : (
-                <>
-                  <ShoppingCart className="h-5 w-5" />
-                  {t("addToCart")}
-                </>
-              )}
-            </Button>
-
-            {/* Show cart quantity if item already in cart */}
-            {variantInCart && !justAdded && (
-              <p className="text-sm text-center text-muted-foreground">
-                {cartQuantity} {cartQuantity === 1 ? tCart("item") : tCart("items")} {t("inStock").toLowerCase()}
-              </p>
-            )}
-          </div>
-
-          {/* Tags */}
+          {/* Tags - Server rendered for SEO */}
           {product.tags && product.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 pt-4 border-t">
               {product.tags.map((tag) => (

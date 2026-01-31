@@ -4,6 +4,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { MobileSettingsSheet } from "@/components/mobile-settings-sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { useCartItemCount } from "@/features/cart/store";
 import { Settings, ShoppingCart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -19,6 +20,9 @@ export function StoreHeader({ store }: StoreHeaderProps) {
   const t = useTranslations();
   const logoUrl = store.storeFront?.logoUrl;
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  
+  // Get cart item count from Zustand store
+  const cartItemCount = useCartItemCount();
 
   return (
     <>
@@ -83,16 +87,23 @@ export function StoreHeader({ store }: StoreHeaderProps) {
             </div>
 
             {/* Desktop: Cart button (mobile uses bottom nav) */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative h-9 w-9 sm:h-10 sm:w-10 hidden md:flex"
-              title={t("store.shoppingCart")}
-            >
-              <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="sr-only">{t("store.shoppingCart")}</span>
-              {/* Cart badge will be added later */}
-            </Button>
+            <Link href="/cart" className="hidden md:block">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative h-9 w-9 sm:h-10 sm:w-10"
+                title={t("store.shoppingCart")}
+              >
+                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="sr-only">{t("store.shoppingCart")}</span>
+                {/* Cart badge */}
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                    {cartItemCount > 99 ? '99+' : cartItemCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
 
             {/* Mobile: Settings button for theme/language */}
             <Button

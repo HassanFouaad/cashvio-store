@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
 import { useCartStore, useCartTotals } from "@/features/cart/store";
 import { formatCurrency } from "@/lib/utils/formatters";
@@ -84,13 +84,17 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
       )}
 
       {/* Checkout Button */}
-      <Button
-        className="w-full"
-        size="lg"
-        disabled={hasOutOfStockItems}
+      <Link
+        href="/checkout"
+        className={cn(
+          buttonVariants({ size: "lg" }),
+          "w-full",
+          hasOutOfStockItems && "pointer-events-none opacity-50"
+        )}
+        aria-disabled={hasOutOfStockItems}
       >
         {t("proceedToCheckout")}
-      </Button>
+      </Link>
 
       {/* Continue Shopping */}
       <Link 

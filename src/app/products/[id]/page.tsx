@@ -1,10 +1,10 @@
-import { headers } from "next/headers";
 import { getProductByIdWithErrorHandling } from "@/features/products/api/get-products";
+import { ProductDetails } from "@/features/products/components/product-details";
 import { getStoreByCode } from "@/features/store/api/get-store";
 import { getStoreCode } from "@/features/store/utils/store-resolver";
-import { ProductDetails } from "@/features/products/components/product-details";
 import { Metadata } from "next";
-import { getTranslations, getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
 interface ProductPageProps {

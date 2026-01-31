@@ -18,10 +18,8 @@ export const apiConfig = {
    * Base URL for the backend API
    * @default http://localhost:3000/api/v1
    */
-  baseUrl: getOptionalEnvVar(
-    "NEXT_PUBLIC_API_URL",
-    "https://console.cash-vio.com/api/v1"
-  ),
+  baseUrl: process.env.NEXT_PUBLIC_API_URL ?? 
+  getOptionalEnvVar("NEXT_API_URL", "http://localhost:3000/api/v1"),
 
   /**
    * Request timeout in milliseconds

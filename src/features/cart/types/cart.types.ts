@@ -3,7 +3,7 @@
  * Following application patterns for type definitions
  */
 
-import { PublicProductDto, PublicProductVariantDto, PublicProductImageDto } from '@/features/products/types/product.types';
+import { PublicProductDto, PublicProductVariantDto } from '@/features/products/types/product.types';
 
 /**
  * Represents a single item in the cart
@@ -36,7 +36,7 @@ export interface CartItem {
 }
 
 /**
- * Cart state stored in localStorage
+ * Cart state stored in localStorage (used by Zustand persist)
  */
 export interface CartState {
   /** Array of cart items */
@@ -76,38 +76,6 @@ export interface AddToCartParams {
   quantity: number;
   currency: string;
   storeId: string;
-}
-
-/**
- * Parameters for updating cart item quantity
- */
-export interface UpdateCartItemParams {
-  itemId: string;
-  quantity: number;
-}
-
-/**
- * Cart context value exposed to components
- */
-export interface CartContextValue {
-  /** Current cart state */
-  cart: CartState | null;
-  /** Whether cart is loading from storage */
-  isLoading: boolean;
-  /** Cart totals */
-  totals: CartTotals;
-  /** Add item to cart */
-  addItem: (params: AddToCartParams) => void;
-  /** Remove item from cart */
-  removeItem: (itemId: string) => void;
-  /** Update item quantity */
-  updateQuantity: (params: UpdateCartItemParams) => void;
-  /** Clear entire cart */
-  clearCart: () => void;
-  /** Check if a specific variant is in cart */
-  isInCart: (variantId: string) => boolean;
-  /** Get quantity of a specific variant in cart */
-  getItemQuantity: (variantId: string) => number;
 }
 
 /**

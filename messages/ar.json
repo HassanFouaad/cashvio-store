@@ -176,9 +176,34 @@
     "total": "الإجمالي",
     "item": "منتج",
     "items": "منتجات",
+    "inCart": "في السلة",
     "proceedToCheckout": "متابعة الدفع",
     "someItemsOutOfStock": "بعض المنتجات في سلتك غير متوفرة",
     "addedToCart": "تمت الإضافة للسلة",
     "itemAddedToCart": "تمت إضافة {name} إلى سلتك"
+  },
+  "checkout": {
+    "pageTitle": "إتمام الطلب",
+    "pageDescription": "أكمل طلبك",
+    "fulfillmentMethod": "كيف تريد استلام طلبك؟",
+    "methods": {
+      "delivery": "توصيل",
+      "pickup": "استلام",
+      "dine_in": "تناول في المكان"
+    },
+    "customerInfo": "معلوماتك",
+    "name": "الاسم",
+    "namePlaceholder": "أدخل اسمك",
+    "phone": "رقم الهاتف",
+    "phonePlaceholder": "أدخل رقم هاتفك",
+    "notes": "ملاحظات الطلب (اختياري)",
+    "notesPlaceholder": "هل لديك أي تعليمات خاصة للطلب؟",
+    "discount": "خصم",
+    "serviceFees": "رسوم الخدمة",
+    "deliveryFees": "رسوم التوصيل",
+    "placeOrder": "تأكيد الطلب",
+    "backToCart": "العودة للسلة",
+    "calculating": "جاري الحساب...",
+    "previewError": "فشل في حساب إجمالي الطلب. يرجى المحاولة مرة أخرى."
   }
 }

@@ -176,9 +176,34 @@
     "total": "Total",
     "item": "item",
     "items": "items",
+    "inCart": "in cart",
     "proceedToCheckout": "Proceed to Checkout",
     "someItemsOutOfStock": "Some items in your cart are out of stock",
     "addedToCart": "Added to cart",
     "itemAddedToCart": "{name} has been added to your cart"
+  },
+  "checkout": {
+    "pageTitle": "Checkout",
+    "pageDescription": "Complete your order",
+    "fulfillmentMethod": "How would you like to receive your order?",
+    "methods": {
+      "delivery": "Delivery",
+      "pickup": "Pickup",
+      "dine_in": "Dine In"
+    },
+    "customerInfo": "Your Information",
+    "name": "Name",
+    "namePlaceholder": "Enter your name",
+    "phone": "Phone Number",
+    "phonePlaceholder": "Enter your phone number",
+    "notes": "Order Notes (Optional)",
+    "notesPlaceholder": "Any special instructions for your order?",
+    "discount": "Discount",
+    "serviceFees": "Service Fees",
+    "deliveryFees": "Delivery Fees",
+    "placeOrder": "Place Order",
+    "backToCart": "Back to Cart",
+    "calculating": "Calculating...",
+    "previewError": "Failed to calculate order totals. Please try again."
   }
 }

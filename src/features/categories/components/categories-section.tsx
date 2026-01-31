@@ -1,8 +1,8 @@
-import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import { getTranslations } from 'next-intl/server';
 import { CategoryCard } from '@/features/categories/components/category-card';
 import { PublicCategoryDto } from '@/features/categories/types/category.types';
+import { ArrowRight } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 
 interface CategoriesSectionProps {
   categories: PublicCategoryDto[];

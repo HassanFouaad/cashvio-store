@@ -1,11 +1,11 @@
 'use client';
 
-import { useCartStore, useCartTotals } from "@/features/cart/store";
-import { useTranslations } from "next-intl";
-import { CartItem } from "./cart-item";
-import { CartEmpty } from "./cart-empty";
 import { Button } from "@/components/ui/button";
+import { useCartStore, useCartTotals } from "@/features/cart/store";
 import { Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { CartEmpty } from "./cart-empty";
+import { CartItem } from "./cart-item";
 
 interface CartListProps {
   currency: string;

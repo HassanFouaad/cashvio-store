@@ -16,6 +16,7 @@ export const apiConfig = {
 export const endpoints = {
   stores: {
     getByCode: (code: string) => `/public/stores/${code}`,
+    getFulfillmentMethods: (storeId: string) => `/public/stores/${storeId}/fulfillment-methods`,
   },
   categories: {
     list: '/public/categories',
@@ -24,6 +25,9 @@ export const endpoints = {
   products: {
     getPublic: () => '/public/products',
     getPublicById: (id: string) => `/public/products/${id}`,
+  },
+  orders: {
+    preview: '/public/orders/preview',
   },
   visitors: {
     track: '/public/visitors/track',

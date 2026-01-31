@@ -1,4 +1,5 @@
 /**
  * Cart store barrel export
  */
-export { useCartStore, useCartTotals, useCartItemCount } from './cart-store';
+export { useCartItemCount, useCartStore, useCartTotals } from './cart-store';
+

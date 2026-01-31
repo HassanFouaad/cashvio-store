@@ -8,6 +8,13 @@ import { Locale, CookieName } from '@/types/enums';
 
 const COOKIE_MAX_AGE = 31536000; // 1 year
 
+/**
+ * Language Switcher for Store-front
+ *
+ * Sets store-specific locale cookie.
+ * This is intentionally NOT a cross-domain cookie because
+ * different stores may have different locale preferences.
+ */
 export function LanguageSwitcher() {
   const t = useTranslations('language');
   const locale = useLocale();
@@ -15,8 +22,8 @@ export function LanguageSwitcher() {
 
   const changeLanguage = (newLocale: Locale) => {
     startTransition(() => {
-      // Set cookie for locale
-      document.cookie = `${CookieName.LOCALE}=${newLocale}; path=/; max-age=${COOKIE_MAX_AGE}`;
+      // Set store-specific locale cookie (no domain = current host only)
+      document.cookie = `${CookieName.LOCALE}=${newLocale}; path=/; max-age=${COOKIE_MAX_AGE}; samesite=lax`;
       // Reload to apply new locale
       window.location.reload();
     });

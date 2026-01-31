@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
@@ -8,7 +8,7 @@ import Link from "next/link";
 
 /**
  * Empty cart state component
- * Shown when cart has no items
+ * Client component - rendered inside CartList (client component)
  */
 export function CartEmpty() {
   const t = useTranslations("cart");

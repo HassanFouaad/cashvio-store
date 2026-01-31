@@ -1,15 +1,15 @@
 'use client';
 
 import { StoreFrontSocialMediaDto } from '@/features/store/types/store.types';
-import { 
-  Facebook, 
-  Globe, 
-  Instagram, 
-  Music2, 
-  Phone, 
-  X, 
-  Youtube,
-  ExternalLink
+import {
+    ExternalLink,
+    Facebook,
+    Globe,
+    Instagram,
+    Music2,
+    Phone,
+    X,
+    Youtube
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Drawer } from 'vaul';

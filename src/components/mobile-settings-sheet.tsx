@@ -15,6 +15,12 @@ interface MobileSettingsSheetProps {
 
 const COOKIE_MAX_AGE = 31536000; // 1 year
 
+/**
+ * Mobile Settings Sheet for Store-front
+ *
+ * Manages store-specific locale and theme settings.
+ * Locale cookie is intentionally store-specific (no cross-domain).
+ */
 export function MobileSettingsSheet({ isOpen, onClose }: MobileSettingsSheetProps) {
   const t = useTranslations();
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -35,7 +41,8 @@ export function MobileSettingsSheet({ isOpen, onClose }: MobileSettingsSheetProp
   const toggleLocale = () => {
     startTransition(() => {
       const newLocale = locale === Locale.ENGLISH ? Locale.ARABIC : Locale.ENGLISH;
-      document.cookie = `${CookieName.LOCALE}=${newLocale}; path=/; max-age=${COOKIE_MAX_AGE}`;
+      // Store-specific locale cookie (no domain = current host only)
+      document.cookie = `${CookieName.LOCALE}=${newLocale}; path=/; max-age=${COOKIE_MAX_AGE}; samesite=lax`;
       window.location.reload();
     });
   };

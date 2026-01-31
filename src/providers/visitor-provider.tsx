@@ -65,6 +65,9 @@ function getVisitorIdFromCookie(): string | null {
 
 /**
  * Set visitor ID cookie
+ *
+ * Note: This is a store-specific cookie (no domain set).
+ * Each store has its own visitor tracking.
  */
 function setVisitorIdCookie(visitorId: string): void {
   if (typeof document === "undefined") {
@@ -74,8 +77,8 @@ function setVisitorIdCookie(visitorId: string): void {
   const expires = new Date();
   expires.setTime(expires.getTime() + VISITOR_COOKIE_MAX_AGE * 1000);
 
-  // Set cookie with SameSite=Lax for cross-subdomain support
-  document.cookie = `${VISITOR_ID_COOKIE}=${encodeURIComponent(visitorId)}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+  // Store-specific visitor cookie (no domain = current host only)
+  document.cookie = `${VISITOR_ID_COOKIE}=${encodeURIComponent(visitorId)}; expires=${expires.toUTCString()}; path=/; samesite=lax`;
 }
 
 interface VisitorProviderProps {

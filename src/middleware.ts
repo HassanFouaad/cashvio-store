@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { getStoreCode } from "./features/store/utils/store-resolver";
 import { CookieName, isValidLocale, Locale } from "./types/enums";
 
+/**
+ * Middleware Cookie Configuration
+ *
+ * Store-front uses store-specific cookies for:
+ * - Locale (NEXT_LOCALE): Specific to each store
+ * - Visitor ID (sf_visitor_id): Specific to each store
+ *
+ * Note: These are intentionally NOT cross-domain cookies because:
+ * - Different stores may have different locales
+ * - Visitor tracking should be store-specific
+ *
+ * For cross-app preferences (theme/language for console/portal),
+ * those use 'cv_' prefixed cookies with cross-domain settings.
+ */
+
 const COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year
 const VISITOR_COOKIE_MAX_AGE = 365 * 24 * 60 * 60 * 2; // 2 years
 const DEFAULT_LOCALE = Locale.ARABIC;
@@ -100,6 +115,8 @@ function handleLocaleAndVisitor(request: NextRequest) {
     response.cookies.set(CookieName.LOCALE, detectedLocale, {
       maxAge: COOKIE_MAX_AGE,
       path: "/",
+      sameSite: "lax",
+      // No domain - store-specific cookie
     });
   }
 
@@ -108,6 +125,7 @@ function handleLocaleAndVisitor(request: NextRequest) {
       maxAge: VISITOR_COOKIE_MAX_AGE,
       path: "/",
       sameSite: "lax",
+      // No domain - store-specific cookie
     });
   }
 
