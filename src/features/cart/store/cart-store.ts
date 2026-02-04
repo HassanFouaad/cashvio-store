@@ -344,7 +344,7 @@ export function computeCartValidation(cart: ApiCart | null): CartValidationResul
   let hasOutOfStockItems = false;
 
   for (const item of cart.items) {
-    if (!item.variant.inStock) {
+    if (!item.variant.inStock && item.variant.inventoryTrackable) {
       hasOutOfStockItems = true;
       itemsWithIssues.push({
         variantId: item.variant.id,
@@ -352,7 +352,7 @@ export function computeCartValidation(cart: ApiCart | null): CartValidationResul
         requested: item.quantity,
         available: 0,
       });
-    } else if (item.quantity > item.variant.availableQuantity) {
+    } else if (item.quantity > item.variant.availableQuantity && item.variant.inventoryTrackable) {
       itemsWithIssues.push({
         variantId: item.variant.id,
         productName: item.productName || item.variant.name,
@@ -378,7 +378,7 @@ export function useCartHasStockIssues(): boolean {
   if (!cart || cart.items.length === 0) return false;
   
   return cart.items.some(item => 
-    !item.variant.inStock || item.quantity > item.variant.availableQuantity
+ ( (item.variant.inventoryTrackable) && (!item.variant.inStock || item.quantity > item.variant.availableQuantity))
   );
 }
 
@@ -396,6 +396,6 @@ export function useCanCheckout(): boolean {
   
   // Check for stock issues
   return !cart.items.some(item => 
-    !item.variant.inStock || item.quantity > item.variant.availableQuantity
+    (item.variant.inventoryTrackable) && (!item.variant.inStock || item.quantity > item.variant.availableQuantity)
   );
 }

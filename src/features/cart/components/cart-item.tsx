@@ -26,19 +26,25 @@ export function CartItem({ item, currency, locale }: CartItemProps) {
   const { updateQuantity, removeItem } = useCartStore();
   const isPending = useIsItemPending(item.variant.id);
   const { variant } = item;
+  
+  // Non-trackable inventory products are always considered unlimited stock
+  const isUnlimitedStock = variant.inventoryTrackable === false;
 
-  // Check if quantity exceeds available stock
+  // Check if quantity exceeds available stock (not applicable for unlimited stock)
   const quantityExceedsStock = useMemo(() => {
+    if (isUnlimitedStock) return false;
     return item.quantity > variant.availableQuantity;
-  }, [item.quantity, variant.availableQuantity]);
+  }, [item.quantity, variant.availableQuantity, isUnlimitedStock]);
 
-  // Calculate the valid quantity (capped at available)
+  // Calculate the valid quantity (capped at available, or unlimited for non-trackable)
   const validQuantity = useMemo(() => {
+    if (isUnlimitedStock) return item.quantity;
     return Math.min(item.quantity, variant.availableQuantity);
-  }, [item.quantity, variant.availableQuantity]);
+  }, [item.quantity, variant.availableQuantity, isUnlimitedStock]);
 
   const handleIncrease = () => {
-    if (item.quantity < variant.availableQuantity) {
+    // For unlimited stock, always allow increase
+    if (isUnlimitedStock || item.quantity < variant.availableQuantity) {
       updateQuantity(variant.id, item.quantity + 1);
     }
   };
@@ -61,7 +67,8 @@ export function CartItem({ item, currency, locale }: CartItemProps) {
     }
   };
 
-  const maxReached = item.quantity >= variant.availableQuantity;
+  // Max reached is never true for unlimited stock products
+  const maxReached = !isUnlimitedStock && item.quantity >= variant.availableQuantity;
 
   return (
     <div 

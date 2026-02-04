@@ -66,21 +66,30 @@ export function getMostExpensiveVariant(
 
 /**
  * Check if a product has any variants in stock
+ * Non-trackable inventory products are always considered in stock
  */
 export function isProductInStock(
   product: PublicProductDto | PublicProductVariantDto[]
 ): boolean {
+  // If product has inventoryTrackable=false, always in stock
+  if (!Array.isArray(product) && product.inventoryTrackable === false) {
+    return true;
+  }
   const variants = Array.isArray(product) ? product : product.variants || [];
   return variants.some((v) => v.inStock);
 }
 
 /**
  * Get the total available quantity across all variants
+ * Returns null for non-trackable inventory products (unlimited/not tracked)
  */
 export function getTotalAvailableQuantity(
-  variants: PublicProductVariantDto[] | undefined
-): number {
+  variants: PublicProductVariantDto[] | undefined,
+  inventoryTrackable: boolean = true
+): number | null {
   if (!variants || variants.length === 0) return 0;
+  // Non-trackable inventory products: return null to indicate unlimited
+  if (!inventoryTrackable) return null;
 
   return variants.reduce(
     (total, variant) => total + variant.availableQuantity,
@@ -152,21 +161,29 @@ export function hasVariedPricing(product: PublicProductDto): boolean {
 
 /**
  * Get in-stock variants only
+ * If product is not tracking inventory, all variants are considered in stock
  */
 export function getInStockVariants(
-  variants: PublicProductVariantDto[] | undefined
+  variants: PublicProductVariantDto[] | undefined,
+  inventoryTrackable: boolean = true
 ): PublicProductVariantDto[] {
   if (!variants) return [];
+  // Non-trackable inventory products: all variants are in stock
+  if (!inventoryTrackable) return variants;
   return variants.filter((v) => v.inStock);
 }
 
 /**
  * Get out-of-stock variants only
+ * If product is not tracking inventory, no variants are considered out of stock
  */
 export function getOutOfStockVariants(
-  variants: PublicProductVariantDto[] | undefined
+  variants: PublicProductVariantDto[] | undefined,
+  inventoryTrackable: boolean = true
 ): PublicProductVariantDto[] {
   if (!variants) return [];
+  // Non-trackable inventory products: no variants are out of stock
+  if (!inventoryTrackable) return [];
   return variants.filter((v) => !v.inStock);
 }
 

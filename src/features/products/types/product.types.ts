@@ -22,6 +22,7 @@ export interface PublicProductVariantDto {
   sellingPrice: number;
   availableQuantity: number;
   inStock: boolean;
+  inventoryTrackable: boolean;
 }
 
 export interface PublicProductImageDto {
@@ -41,6 +42,7 @@ export interface PublicProductDto {
   tags?: string[];
   taxRate?: number | null;
   taxIncluded: boolean;
+  inventoryTrackable: boolean;
   images?: PublicProductImageDto[];
   variants?: PublicProductVariantDto[];
 }

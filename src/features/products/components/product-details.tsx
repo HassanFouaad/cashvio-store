@@ -90,9 +90,11 @@ export async function ProductDetails({
               >
                 {isInStock ? t("inStock") : t("outOfStock")}
               </span>
-              {/* Low stock warning */}
+              {/* Low stock warning - only show for trackable inventory products */}
               {isInStock &&
+                product.inventoryTrackable &&
                 defaultVariant &&
+                defaultVariant.availableQuantity > 0 &&
                 defaultVariant.availableQuantity < 5 && (
                   <span className="text-sm font-medium text-destructive">
                     ({defaultVariant.availableQuantity} {t("leftInStock")})

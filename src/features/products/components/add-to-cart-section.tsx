@@ -60,6 +60,10 @@ export function AddToCartSection({
   const selectedVariant = variants.find((v) => v.id === selectedVariantId);
   const isInStock = selectedVariant?.inStock ?? false;
   const totalAvailable = selectedVariant?.availableQuantity ?? 0;
+  
+  // Non-trackable inventory products - check variant-level flag
+  const isInventoryTrackable = selectedVariant?.inventoryTrackable !== false;
+  const isUnlimitedStock = !isInventoryTrackable;
 
   // Cart quantity - derived from cart state for proper reactivity
   const cartQuantity = selectedVariantId && isInitialized && cart
@@ -67,7 +71,10 @@ export function AddToCartSection({
     : 0;
 
   // Calculate remaining available (total - already in cart)
-  const remainingAvailable = Math.max(0, totalAvailable - cartQuantity);
+  // For unlimited stock, set a very high remaining value
+  const remainingAvailable = isUnlimitedStock 
+    ? 999999 
+    : Math.max(0, totalAvailable - cartQuantity);
 
   // Check if item is in cart
   const isInCart = cartQuantity > 0;
@@ -75,14 +82,19 @@ export function AddToCartSection({
   // Check if can add more to cart
   const canAddMore = isInStock && remainingAvailable > 0 && selectedVariant !== undefined && !isLoading;
 
-  // Check if max is reached
-  const isMaxReached = cartQuantity >= totalAvailable;
+  // Check if max is reached (not applicable for unlimited stock)
+  const isMaxReached = !isUnlimitedStock && cartQuantity >= totalAvailable;
 
   // Helper to get variant cart quantity (for variant selector)
   const getVariantCartQuantity = useCallback((variantId: string) => {
     if (!isInitialized || !cart) return 0;
     return cart.items.find(item => item.variant.id === variantId)?.quantity ?? 0;
   }, [isInitialized, cart]);
+  
+  // Helper to check if variant has unlimited stock
+  const isVariantUnlimitedStock = useCallback((variant: PublicProductVariantDto) => {
+    return variant.inventoryTrackable === false;
+  }, []);
 
   // Handlers
   const handleVariantSelect = useCallback((variantId: string) => {
@@ -100,12 +112,12 @@ export function AddToCartSection({
       if (newQuantity <= 0) {
         // Remove from cart
         removeItem(selectedVariant.id);
-      } else if (newQuantity <= totalAvailable) {
-        // Update quantity in cart
+      } else if (isUnlimitedStock || newQuantity <= totalAvailable) {
+        // Update quantity in cart (unlimited stock allows any positive quantity)
         updateQuantity(selectedVariant.id, newQuantity);
       }
     },
-    [selectedVariant, isInitialized, cartQuantity, totalAvailable, removeItem, updateQuantity]
+    [selectedVariant, isInitialized, cartQuantity, totalAvailable, isUnlimitedStock, removeItem, updateQuantity]
   );
 
   // Handle initial add to cart (when not in cart yet)
@@ -141,7 +153,8 @@ export function AddToCartSection({
           <div className="grid grid-cols-2 gap-2">
             {variants.map((variant) => {
               const variantCartQty = getVariantCartQuantity(variant.id);
-              const variantMaxReached = variantCartQty >= variant.availableQuantity;
+              const variantUnlimited = isVariantUnlimitedStock(variant);
+              const variantMaxReached = !variantUnlimited && variantCartQty >= variant.availableQuantity;
 
               return (
                 <button
@@ -203,14 +216,18 @@ export function AddToCartSection({
                   <span>
                     {cartQuantity} {tCart('inCart')}
                   </span>
-                  <span>
-                    {remainingAvailable} {t('available')}
-                  </span>
+                  {!isUnlimitedStock && (
+                    <span>
+                      {remainingAvailable} {t('available')}
+                    </span>
+                  )}
                 </>
               ) : (
-                <span>
-                  {totalAvailable} {t('available')}
-                </span>
+                !isUnlimitedStock && (
+                  <span>
+                    {totalAvailable} {t('available')}
+                  </span>
+                )
               )}
             </div>
           )}
