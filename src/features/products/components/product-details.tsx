@@ -94,7 +94,7 @@ export async function ProductDetails({
               {isInStock &&
                 defaultVariant &&
                 defaultVariant.availableQuantity < 5 && (
-                  <span className="text-sm font-medium text-orange-600 dark:text-orange-500">
+                  <span className="text-sm font-medium text-destructive">
                     ({defaultVariant.availableQuantity} {t("leftInStock")})
                   </span>
                 )}

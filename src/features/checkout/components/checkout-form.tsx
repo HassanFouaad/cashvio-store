@@ -499,7 +499,7 @@ export function CheckoutForm({
             </div>
 
             {!groupedDeliveryZones ? (
-              <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-500">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <AlertCircle className="h-4 w-4" />
                 <span>{t('noDeliveryZones')}</span>
               </div>
