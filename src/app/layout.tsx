@@ -149,8 +149,9 @@ export default async function RootLayout({
     store = result.store;
   }
 
-  // Set store ID for server-side API requests
-  setApiStoreId(store?.id ?? null);
+  if (store) {
+    setApiStoreId(store?.id ?? null);
+  }
 
   // Inline script to set store ID in window and cookie IMMEDIATELY
   // This runs BEFORE React hydrates, ensuring store ID is available
@@ -160,6 +161,8 @@ export default async function RootLayout({
       document.cookie = 'sf_store_id=' + encodeURIComponent('${store.id}') + '; path=/; max-age=31536000; samesite=lax';
     })();
   ` : null;
+
+
 
   return (
     <html lang={locale} dir={direction} suppressHydrationWarning>
@@ -177,7 +180,7 @@ export default async function RootLayout({
           <DynamicFavicon faviconUrl={store.storeFront?.seo?.favIcon} />
         )}
         <NextIntlClientProvider messages={messages} locale={locale}>
-          <StoreProvider storeId={store?.id ?? null}>
+          <StoreProvider store={store ?? null} subdomain={storeSubdomain ?? null}>
             <LocaleInitializer />
             <ThemeProvider
               attribute="class"

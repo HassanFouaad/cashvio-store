@@ -1,7 +1,4 @@
-import { Button } from '@/components/ui/button';
-import { Home } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
 
 export default async function NotFound() {
   const t = await getTranslations('errors.pageNotFound');
@@ -18,13 +15,6 @@ export default async function NotFound() {
             {t('description')}
           </p>
         </div>
-
-        <Link href="/">
-          <Button className="gap-2">
-            <Home className="h-4 w-4" />
-            {tCommon('goHome')}
-          </Button>
-        </Link>
       </div>
     </div>
   );
