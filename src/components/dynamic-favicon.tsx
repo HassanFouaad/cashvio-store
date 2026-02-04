@@ -33,7 +33,6 @@ export function DynamicFavicon({ faviconUrl }: DynamicFaviconProps) {
     shortcutLink.href = faviconUrl;
     document.head.appendChild(shortcutLink);
 
-    console.log('Dynamic favicon set:', faviconUrl);
   }, [faviconUrl]);
 
   return null;

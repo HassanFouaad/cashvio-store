@@ -1,4 +1,5 @@
 import { DynamicFavicon } from "@/components/dynamic-favicon";
+import { LocaleInitializer } from "@/components/locale-initializer";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { VisitorTracker } from "@/components/visitor-tracker";
 import { appConfig, validateEnvironment } from "@/config/env.config";
@@ -7,20 +8,22 @@ import { getStoreWithErrorHandling } from "@/features/store/api/get-store";
 import { StoreFooter } from "@/features/store/components/store-footer";
 import { StoreHeader } from "@/features/store/components/store-header";
 import { StoreFrontStatus } from "@/features/store/types/store.types";
-import { getStoreCode } from "@/features/store/utils/store-resolver";
+import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
+import { setApiLocale, setApiStoreId } from "@/lib/api/types";
 import { QueryProvider } from "@/providers/query-provider";
+import { StoreProvider } from "@/providers/store-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { VisitorProvider } from "@/providers/visitor-provider";
 import {
-  Locale,
-  Theme,
   getDirectionForLocale,
   getFontFamilyForLocale,
   isValidLocale,
+  Locale,
+  Theme,
 } from "@/types/enums";
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "next-intl/server";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { Cairo, Inter } from "next/font/google";
 import { cookies, headers } from "next/headers";
 import "./globals.css";
@@ -53,10 +56,10 @@ const cairo = Cairo({
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
-  const storeCode = getStoreCode(hostname);
+  const storeSubdomain = getStoreSubdomain(hostname);
 
-  // If no store code, return default metadata
-  if (!storeCode) {
+  // If no store subdomain, return default metadata
+  if (!storeSubdomain) {
     return {
       title: appConfig.name,
       description: "Multi-tenant e-commerce storefront",
@@ -64,17 +67,17 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   // Get store metadata
-  const { store } = await getStoreWithErrorHandling(storeCode);
+  const { store } = await getStoreWithErrorHandling(storeSubdomain);
 
   if (
     !store ||
     !store.storeFront ||
     store.storeFront.status !== StoreFrontStatus.ACTIVE
   ) {
+    const tErrors = await getTranslations("errors.storeNotFound");
     return {
-      title: "Store Not Found",
-      description:
-        "The requested store could not be found or is not available.",
+      title: tErrors("title"),
+      description: tErrors("description"),
     };
   }
 
@@ -124,13 +127,16 @@ export default async function RootLayout({
   const locale = isValidLocale(localeString) ? localeString : Locale.ENGLISH;
   const messages = await getMessages();
 
+  // Set locale for server-side API calls
+  setApiLocale(locale);
+
   const direction = getDirectionForLocale(locale);
   const fontFamily = getFontFamilyForLocale(locale);
 
   // Check for store subdomain
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
-  const storeCode = getStoreCode(hostname);
+  const storeSubdomain = getStoreSubdomain(hostname);
 
   // Get visitor ID from cookie (set by middleware)
   const cookieStore = await cookies();
@@ -138,13 +144,31 @@ export default async function RootLayout({
 
   // Get store data if subdomain exists
   let store = null;
-  if (storeCode) {
-    const result = await getStoreWithErrorHandling(storeCode);
+  if (storeSubdomain) {
+    const result = await getStoreWithErrorHandling(storeSubdomain);
     store = result.store;
   }
 
+  // Set store ID for server-side API requests
+  setApiStoreId(store?.id ?? null);
+
+  // Inline script to set store ID in window and cookie IMMEDIATELY
+  // This runs BEFORE React hydrates, ensuring store ID is available
+  const storeIdScript = store?.id ? `
+    (function(){
+      window.__STORE_ID__ = '${store.id}';
+      document.cookie = 'sf_store_id=' + encodeURIComponent('${store.id}') + '; path=/; max-age=31536000; samesite=lax';
+    })();
+  ` : null;
+
   return (
     <html lang={locale} dir={direction} suppressHydrationWarning>
+      <head>
+        {/* Set store ID cookie BEFORE React hydrates */}
+        {storeIdScript && (
+          <script dangerouslySetInnerHTML={{ __html: storeIdScript }} />
+        )}
+      </head>
       <body
         className={`${inter.variable} ${cairo.variable} ${fontFamily} antialiased`}
         suppressHydrationWarning
@@ -153,37 +177,40 @@ export default async function RootLayout({
           <DynamicFavicon faviconUrl={store.storeFront?.seo?.favIcon} />
         )}
         <NextIntlClientProvider messages={messages} locale={locale}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme={Theme.LIGHT}
-            enableSystem
-            disableTransitionOnChange
-          >
-            <VisitorProvider initialVisitorId={visitorId}>
-              <QueryProvider>
-                {store ? (
-                  <div className="flex min-h-screen flex-col">
-                    {/* Initialize cart store with store info - renders nothing */}
-                    <CartInitializer storeId={store.id} currency={store.currency} />
-                    <VisitorTracker storeId={store.id} />
-                    <StoreHeader store={store} />
-                    <main className="flex-1">{children}</main>
-                    {/* Footer - hidden on mobile, shown on desktop */}
-                    <div className="hidden md:block">
-                      <StoreFooter store={store} />
+          <StoreProvider storeId={store?.id ?? null}>
+            <LocaleInitializer />
+            <ThemeProvider
+              attribute="class"
+              defaultTheme={Theme.LIGHT}
+              enableSystem
+              disableTransitionOnChange
+            >
+              <VisitorProvider initialVisitorId={visitorId}>
+                <QueryProvider>
+                  {store ? (
+                    <div className="flex min-h-screen flex-col">
+                      {/* Initialize cart store with store info - renders nothing */}
+                      <CartInitializer />
+                      <VisitorTracker storeId={store.id} />
+                      <StoreHeader store={store} />
+                      <main className="flex-1">{children}</main>
+                      {/* Footer - hidden on mobile, shown on desktop */}
+                      <div className="hidden md:block">
+                        <StoreFooter store={store} />
+                      </div>
+                      {/* Mobile Bottom Navigation - only on mobile */}
+                      <MobileBottomNav 
+                        socialMedia={store.storeFront?.socialMedia}
+                        storeName={store.name}
+                      />
                     </div>
-                    {/* Mobile Bottom Navigation - only on mobile */}
-                    <MobileBottomNav 
-                      socialMedia={store.storeFront?.socialMedia}
-                      storeName={store.name}
-                    />
-                  </div>
-                ) : (
-                  children
-                )}
-              </QueryProvider>
-            </VisitorProvider>
-          </ThemeProvider>
+                  ) : (
+                    children
+                  )}
+                </QueryProvider>
+              </VisitorProvider>
+            </ThemeProvider>
+          </StoreProvider>
         </NextIntlClientProvider>
       </body>
     </html>

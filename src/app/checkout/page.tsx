@@ -1,7 +1,8 @@
-import { getFulfillmentMethods } from "@/features/checkout/api/checkout-api";
+import { getDeliveryZones, getFulfillmentMethods } from "@/features/checkout/api/checkout-api";
 import { CheckoutForm } from "@/features/checkout/components/checkout-form";
-import { getStoreByCode } from "@/features/store/api/get-store";
-import { getStoreCode } from "@/features/store/utils/store-resolver";
+import { FulfillmentMethod, PublicDeliveryZonesResponseDto } from "@/features/checkout/types/checkout.types";
+import { getStoreBySubdomain } from "@/features/store/api/get-store";
+import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
@@ -10,33 +11,34 @@ import { redirect } from "next/navigation";
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
-  const code = getStoreCode(hostname);
+  const storeSubdomain = getStoreSubdomain(hostname);
+  const t = await getTranslations("metadata.checkout");
 
-  if (!code) {
+  if (!storeSubdomain) {
     return {
-      title: "Checkout",
-      description: "Complete your purchase",
+      title: t("title"),
+      description: t("description"),
     };
   }
 
-  const store = await getStoreByCode(code);
+  const store = await getStoreBySubdomain(storeSubdomain);
 
   return {
-    title: `Checkout - ${store.name}`,
-    description: `Complete your purchase at ${store.name}`,
+    title: t("titleWithStore", { storeName: store.name }),
+    description: t("descriptionWithStore", { storeName: store.name }),
   };
 }
 
 export default async function CheckoutPage() {
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
-  const code = getStoreCode(hostname);
+  const storeSubdomain = getStoreSubdomain(hostname);
 
-  if (!code) {
+  if (!storeSubdomain) {
     throw new Error("Invalid store subdomain");
   }
 
-  const store = await getStoreByCode(code);
+  const store = await getStoreBySubdomain(storeSubdomain);
   const t = await getTranslations("checkout");
   const locale = await getLocale();
 
@@ -52,6 +54,21 @@ export default async function CheckoutPage() {
   // If no fulfillment methods available, redirect to cart
   if (!fulfillmentMethods || fulfillmentMethods.length === 0) {
     redirect("/cart");
+  }
+
+  // Fetch delivery zones if delivery method is available
+  let deliveryZones: PublicDeliveryZonesResponseDto | null = null;
+  const hasDeliveryMethod = fulfillmentMethods.some(
+    (m) => m.fulfillmentMethod === FulfillmentMethod.DELIVERY
+  );
+
+  if (hasDeliveryMethod) {
+    try {
+      deliveryZones = await getDeliveryZones(store.id);
+    } catch {
+      // Delivery zones fetch failed, but we can still proceed
+      deliveryZones = null;
+    }
   }
 
   return (
@@ -78,6 +95,7 @@ export default async function CheckoutPage() {
             currency={store.currency}
             locale={locale}
             fulfillmentMethods={fulfillmentMethods}
+            deliveryZones={deliveryZones}
           />
         </div>
       </section>

@@ -3,7 +3,8 @@ import {
   formatProductPrice,
   getPrimaryImage,
   isProductInStock,
-} from "@/features/products/utils/product-helpers";
+  ProductCardTranslations,
+} from "@/features/products/utils";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -11,10 +12,7 @@ interface ProductCardProps {
   product: PublicProductDto;
   currency: string;
   locale: string;
-  translations: {
-    noImageAvailable: string;
-    outOfStock: string;
-  };
+  translations: ProductCardTranslations;
 }
 
 /**

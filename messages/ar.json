@@ -44,6 +44,16 @@
     "browseProducts": "تصفح المنتجات",
     "description": "اكتشف مجموعتنا الرائعة من المنتجات",
     "shoppingCart": "عربة التسوق",
+    "emptyStore": {
+      "title": "مرحباً بك في {storeName}",
+      "description": "نحن نجهز كل شيء! متجرنا قيد الإعداد بمنتجات رائعة خصيصاً لك. عد قريباً!",
+      "feature1Title": "قريباً",
+      "feature1Description": "المنتجات قيد الإضافة",
+      "feature2Title": "ترقب",
+      "feature2Description": "وصول منتجات جديدة يومياً",
+      "refreshButton": "تحديث الصفحة",
+      "footerNote": "هذا المتجر قيد الإعداد حالياً ."
+    },
     "categories": {
       "title": "تسوق حسب المجموعة",
       "viewAll": "عرض الكل",
@@ -112,7 +122,7 @@
   "errors": {
     "notFound": {
       "title": "المتجر غير موجود",
-      "description": "لم يتم العثور على المتجر \"{code}\". يرجى التحقق من الرابط والمحاولة مرة أخرى."
+      "description": "لم يتم العثور على المتجر \"{subdomain}\". يرجى التحقق من الرابط والمحاولة مرة أخرى."
     },
     "inactive": {
       "title": "المتجر غير متاح",
@@ -137,6 +147,47 @@
       "title": "الصفحة غير موجودة",
       "code": "404",
       "description": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها."
+    },
+    "storeNotFound": {
+      "title": "المتجر غير موجود",
+      "description": "لم يتم العثور على المتجر المطلوب أو أنه غير متاح."
+    }
+  },
+  "metadata": {
+    "cart": {
+      "title": "السلة",
+      "description": "سلة التسوق الخاصة بك",
+      "titleWithStore": "السلة - {storeName}",
+      "descriptionWithStore": "سلة التسوق الخاصة بك في {storeName}"
+    },
+    "checkout": {
+      "title": "إتمام الطلب",
+      "description": "أكمل عملية الشراء",
+      "titleWithStore": "إتمام الطلب - {storeName}",
+      "descriptionWithStore": "أكمل عملية الشراء في {storeName}"
+    },
+    "categories": {
+      "title": "المجموعات",
+      "description": "تصفح المجموعات",
+      "titleWithStore": "المجموعات - {storeName}",
+      "descriptionWithStore": "تصفح جميع المجموعات في {storeName}"
+    },
+    "categoryDetail": {
+      "title": "مجموعة",
+      "description": "تصفح منتجات المجموعة",
+      "titleWithStore": "{categoryName} - {storeName}",
+      "descriptionWithStore": "تصفح المنتجات في {categoryName} في {storeName}"
+    },
+    "products": {
+      "title": "المنتجات",
+      "description": "تصفح المنتجات",
+      "titleWithStore": "المنتجات - {storeName}",
+      "descriptionWithStore": "تصفح جميع المنتجات في {storeName}"
+    },
+    "productDetail": {
+      "title": "المنتج غير موجود",
+      "titleWithStore": "{productName} - {storeName}",
+      "descriptionWithStore": "اشتر {productName} من {storeName}"
     }
   },
   "footer": {
@@ -180,7 +231,21 @@
     "proceedToCheckout": "متابعة الدفع",
     "someItemsOutOfStock": "بعض المنتجات في سلتك غير متوفرة",
     "addedToCart": "تمت الإضافة للسلة",
-    "itemAddedToCart": "تمت إضافة {name} إلى سلتك"
+    "itemAddedToCart": "تمت إضافة {name} إلى سلتك",
+    "itemCount": "{count} منتجات",
+    "adding": "جاري الإضافة...",
+    "syncing": "جاري المزامنة...",
+    "quantityExceeded": "متوفر {available} فقط. تم تعديل الكمية.",
+    "quantityExceededTitle": "تغير المخزون",
+    "quantityExceededDescription": "تم تعديل كمية بعض المنتجات بسبب تغير المخزون.",
+    "reduceQuantity": "تقليل الكمية",
+    "cartUpdated": "تم تحديث السلة",
+    "cartChangedTitle": "تغيرت السلة",
+    "cartChangedDescription": "تم تحديث أو إزالة بعض المنتجات بسبب تغير التوفر.",
+    "reviewChanges": "مراجعة التغييرات",
+    "validatingCart": "جاري التحقق من السلة...",
+    "maxInCart": "الحد الأقصى في السلة",
+    "viewCart": "عرض السلة"
   },
   "checkout": {
     "pageTitle": "إتمام الطلب",
@@ -195,15 +260,31 @@
     "name": "الاسم",
     "namePlaceholder": "أدخل اسمك",
     "phone": "رقم الهاتف",
-    "phonePlaceholder": "أدخل رقم هاتفك",
+    "phonePlaceholder": "أدخل رقم الهاتف",
+    "phoneInvalid": "يرجى إدخال رقم هاتف صحيح",
+    "deliveryAddress": "عنوان التوصيل",
+    "selectCountry": "اختر الدولة",
+    "selectCity": "اختر المدينة",
+    "country": "الدولة",
+    "city": "المدينة",
+    "noDeliveryZones": "التوصيل غير متاح لموقعك حالياً",
+    "additionalDetails": "تعليمات التوصيل (اختياري)",
+    "additionalDetailsPlaceholder": "مثال: رقم الشقة، اسم المبنى، معالم...",
     "notes": "ملاحظات الطلب (اختياري)",
     "notesPlaceholder": "هل لديك أي تعليمات خاصة للطلب؟",
     "discount": "خصم",
     "serviceFees": "رسوم الخدمة",
     "deliveryFees": "رسوم التوصيل",
     "placeOrder": "تأكيد الطلب",
+    "placingOrder": "جاري تأكيد الطلب...",
     "backToCart": "العودة للسلة",
     "calculating": "جاري الحساب...",
-    "previewError": "فشل في حساب إجمالي الطلب. يرجى المحاولة مرة أخرى."
+    "previewError": "فشل في حساب إجمالي الطلب. يرجى المحاولة مرة أخرى.",
+    "orderError": "فشل في تقديم الطلب. يرجى المحاولة مرة أخرى.",
+    "orderSuccessTitle": "تم تقديم الطلب بنجاح!",
+    "orderSuccessMessage": "شكراً لطلبك. سنبدأ في تحضيره فوراً.",
+    "orderNumber": "رقم الطلب",
+    "redirectingToHome": "جاري التوجيه للصفحة الرئيسية...",
+    "continueShopping": "متابعة التسوق"
   }
 }

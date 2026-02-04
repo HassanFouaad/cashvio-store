@@ -3,16 +3,16 @@ import { getProductsWithErrorHandling } from "@/features/products/api/get-produc
 import { ProductsFilterBar } from "@/features/products/components/products-filter-bar";
 import { ProductsGrid } from "@/features/products/components/products-grid";
 import { ProductSortBy } from "@/features/products/types/product.types";
-import { getStoreByCode } from "@/features/store/api/get-store";
-import { getStoreCode } from "@/features/store/utils/store-resolver";
+import { getStoreBySubdomain } from "@/features/store/api/get-store";
+import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
 import { validatePaginationAndRedirect } from "@/lib/utils/pagination-redirect";
 import { parsePage } from "@/lib/utils/query-params";
 import { ChevronLeft } from "lucide-react";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
 interface CategoryDetailPageProps {
@@ -30,17 +30,18 @@ export async function generateMetadata({
 }: CategoryDetailPageProps): Promise<Metadata> {
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
-  const code = getStoreCode(hostname);
+  const storeSubdomain = getStoreSubdomain(hostname);
   const resolvedParams = await params;
+  const t = await getTranslations("metadata.categoryDetail");
 
-  if (!code) {
+  if (!storeSubdomain) {
     return {
-      title: "Collection",
-      description: "Browse collection products",
+      title: t("title"),
+      description: t("description"),
     };
   }
 
-  const store = await getStoreByCode(code);
+  const store = await getStoreBySubdomain(storeSubdomain);
   const { category } = await getCategoryByIdWithErrorHandling(
     resolvedParams.id,
     store.tenantId
@@ -48,11 +49,11 @@ export async function generateMetadata({
 
   return {
     title: category
-      ? `${category.name} - ${store.name}`
-      : `Collection - ${store.name}`,
+      ? t("titleWithStore", { categoryName: category.name, storeName: store.name })
+      : t("title"),
     description: category
-      ? `Browse products in ${category.name} at ${store.name}`
-      : `Browse collection at ${store.name}`,
+      ? t("descriptionWithStore", { categoryName: category.name, storeName: store.name })
+      : t("description"),
   };
 }
 
@@ -62,15 +63,15 @@ export default async function CategoryDetailPage({
 }: CategoryDetailPageProps) {
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
-  const code = getStoreCode(hostname);
+  const storeSubdomain = getStoreSubdomain(hostname);
 
-  if (!code) {
+  if (!storeSubdomain) {
     throw new Error("Invalid store subdomain");
   }
 
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
-  const store = await getStoreByCode(code);
+  const store = await getStoreBySubdomain(storeSubdomain);
   const t = await getTranslations();
 
   // Fetch category details
@@ -156,8 +157,6 @@ export default async function CategoryDetailPage({
             currentSort={sortBy}
             inStockOnly={inStock}
             totalItems={productsData?.pagination?.totalItems}
-            showSearch={true}
-            searchPlaceholder={t("store.products.searchPlaceholder")}
           />
 
           {/* Products Grid or Error */}

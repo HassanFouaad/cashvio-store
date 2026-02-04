@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStoreCode } from "./features/store/utils/store-resolver";
+import { getStoreSubdomain } from "./features/store/utils/store-resolver";
 import { CookieName, isValidLocale, Locale } from "./types/enums";
 
 /**
@@ -8,6 +8,7 @@ import { CookieName, isValidLocale, Locale } from "./types/enums";
  * Store-front uses store-specific cookies for:
  * - Locale (NEXT_LOCALE): Specific to each store
  * - Visitor ID (sf_visitor_id): Specific to each store
+ * - Store ID (sf_store_id): For API requests
  *
  * Note: These are intentionally NOT cross-domain cookies because:
  * - Different stores may have different locales
@@ -21,6 +22,7 @@ const COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year
 const VISITOR_COOKIE_MAX_AGE = 365 * 24 * 60 * 60 * 2; // 2 years
 const DEFAULT_LOCALE = Locale.ARABIC;
 const VISITOR_ID_COOKIE = "sf_visitor_id";
+export const STORE_ID_COOKIE = "sf_store_id";
 
 /**
  * Generate a UUID v4 for visitor ID
@@ -35,10 +37,10 @@ function generateVisitorId(): string {
 
 export function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") || "";
-  const storeCode = getStoreCode(hostname);
+  const storeSubdomain = getStoreSubdomain(hostname);
 
-  // If no store code found in subdomain, redirect to main domain or show error
-  if (!storeCode) {
+  // If no store subdomain found in subdomain, redirect to main domain or show error
+  if (!storeSubdomain) {
     // This is the main domain without a store subdomain
     // Allow access to root pages only
     if (

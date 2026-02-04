@@ -56,13 +56,26 @@ export interface StoreFrontDto {
   updatedAt: Date;
 }
 
+/**
+ * Country DTO - matches backend CountryDto
+ */
+export interface CountryDto {
+  id: number;
+  nameEn: string;
+  nameAr: string | null;
+  nameFr: string | null;
+  code: string;
+  name?: string
+}
+
 export interface PublicStoreDto {
   id: string;
   tenantId: string;
-  code: string;
+  subdomain: string;
   name: string;
   currency: string;
-  country?: string | null;
+  countryId?: number | null;
+  country?: CountryDto | null;
   storeFront?: StoreFrontDto | null;
 }
 
@@ -79,5 +92,5 @@ export enum StoreErrorType {
 export interface StoreError {
   type: StoreErrorType;
   message: string;
-  code?: string;
+  subdomain?: string;
 }

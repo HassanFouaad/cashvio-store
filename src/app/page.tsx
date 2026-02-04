@@ -3,21 +3,22 @@ import { CategoriesSection } from "@/features/categories/components/categories-s
 import { getProductsWithErrorHandling } from "@/features/products/api/get-products";
 import { ProductsSection } from "@/features/products/components/products-section";
 import { getStoreWithErrorHandling } from "@/features/store/api/get-store";
+import { StoreEmptyState } from "@/features/store/components/store-empty-state";
 import { StoreErrorComponent } from "@/features/store/components/store-error";
 import { StoreHero } from "@/features/store/components/store-hero";
 import { StoreErrorType } from "@/features/store/types/store.types";
-import { getStoreCode } from "@/features/store/utils/store-resolver";
+import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
 import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 
 export default async function HomePage() {
-  // Get store code from subdomain
+  // Get store subdomain from subdomain
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
-  const storeCode = getStoreCode(hostname);
+  const storeSubdomain = getStoreSubdomain(hostname);
 
-  // No store code = no subdomain = show error
-  if (!storeCode) {
+  // No store subdomain = no subdomain = show error
+  if (!storeSubdomain) {
     return (
       <StoreErrorComponent
         error={{
@@ -29,7 +30,7 @@ export default async function HomePage() {
   }
 
   // Render store homepage with error handling
-  const { store, error } = await getStoreWithErrorHandling(storeCode);
+  const { store, error } = await getStoreWithErrorHandling(storeSubdomain);
 
   // Handle store errors
   if (error || !store) {
@@ -45,7 +46,6 @@ export default async function HomePage() {
   const t = await getTranslations();
 
   const heroImages = store.storeFront?.heroImages || [];
-
   // Fetch first 7 categories
   const { categories: categoriesData } = await getCategoriesWithErrorHandling({
     tenantId: store.tenantId,
@@ -63,6 +63,24 @@ export default async function HomePage() {
 
   const categories = categoriesData?.items || [];
   const products = productsData?.items || [];
+
+  // Check if store is empty (no products and no categories)
+  const isStoreEmpty = categories.length === 0 && products.length === 0;
+
+  // If store is empty, show empty state
+  if (isStoreEmpty) {
+    return (
+      <div className="w-full max-w-full overflow-x-hidden">
+        {/* Hero Section (if has images) */}
+        {heroImages.length > 0 && (
+          <StoreHero heroImages={heroImages} storeName={store.name} />
+        )}
+
+        {/* Empty State */}
+        <StoreEmptyState storeName={store.name} />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">

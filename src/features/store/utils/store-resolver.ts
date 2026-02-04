@@ -7,10 +7,9 @@
  * Example: storeA.yourdomain.com -> storeA
  * Example: storeA.localhost -> storeA (development)
  */
-export function getStoreCodeFromSubdomain(hostname: string): string | null {
+export function getStoreSubdomainFromSubdomain(hostname: string): string | null {
   const parts = hostname.split(".");
 
-  console.log("parts", parts);
 
   // Handle localhost development (e.g., storeA.localhost)
   if (parts.length === 2 && parts?.[1]?.toLowerCase().includes("localhost")) {
@@ -37,13 +36,13 @@ export function getStoreCodeFromSubdomain(hostname: string): string | null {
  * Get store code from hostname
  * This is the main function to use for subdomain-based routing
  */
-export function getStoreCode(hostname: string): string | null {
-  return getStoreCodeFromSubdomain(hostname);
+export function getStoreSubdomain(hostname: string): string | null {
+  return getStoreSubdomainFromSubdomain(hostname);
 }
 
 /**
  * Check if the current hostname represents a store subdomain
  */
 export function isStoreSubdomain(hostname: string): boolean {
-  return getStoreCode(hostname) !== null;
+  return getStoreSubdomain(hostname) !== null;
 }

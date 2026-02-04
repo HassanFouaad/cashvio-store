@@ -1,7 +1,7 @@
 import { CartList } from "@/features/cart/components/cart-list";
 import { CartSummary } from "@/features/cart/components/cart-summary";
-import { getStoreByCode } from "@/features/store/api/get-store";
-import { getStoreCode } from "@/features/store/utils/store-resolver";
+import { getStoreBySubdomain } from "@/features/store/api/get-store";
+import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
@@ -9,33 +9,34 @@ import { headers } from "next/headers";
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
-  const code = getStoreCode(hostname);
+  const storeSubdomain = getStoreSubdomain(hostname);
+  const t = await getTranslations("metadata.cart");
 
-  if (!code) {
+  if (!storeSubdomain) {
     return {
-      title: "Cart",
-      description: "Your shopping cart",
+      title: t("title"),
+      description: t("description"),
     };
   }
 
-  const store = await getStoreByCode(code);
+  const store = await getStoreBySubdomain(storeSubdomain);
 
   return {
-    title: `Cart - ${store.name}`,
-    description: `Your shopping cart at ${store.name}`,
+    title: t("titleWithStore", { storeName: store.name }),
+    description: t("descriptionWithStore", { storeName: store.name }),
   };
 }
 
 export default async function CartPage() {
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
-  const code = getStoreCode(hostname);
+  const storeSubdomain = getStoreSubdomain(hostname);
 
-  if (!code) {
+  if (!storeSubdomain) {
     throw new Error("Invalid store subdomain");
   }
 
-  const store = await getStoreByCode(code);
+  const store = await getStoreBySubdomain(storeSubdomain);
   const t = await getTranslations("cart");
   const locale = await getLocale();
 

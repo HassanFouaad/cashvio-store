@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
 
 export default function Error({
   error,
@@ -11,6 +12,9 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations('errors.unknown');
+  const tCommon = useTranslations('common');
+
   useEffect(() => {
     // Log the error to an error reporting service
     console.error('Application error:', error);
@@ -24,15 +28,15 @@ export default function Error({
         </div>
         
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Something Went Wrong</h1>
+          <h1 className="text-3xl font-bold">{t('title')}</h1>
           <p className="text-muted-foreground">
-            An unexpected error occurred. Please try again.
+            {t('description')}
           </p>
         </div>
 
         <Button onClick={reset} className="gap-2">
           <RefreshCw className="h-4 w-4" />
-          Try Again
+          {tCommon('tryAgain')}
         </Button>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { PaginationControls } from "@/components/common/pagination-controls";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/features/products/components/product-card";
 import { PublicProductDto } from "@/features/products/types/product.types";
+import { ProductCardTranslations } from "@/features/products/utils";
 import { PaginationMeta } from "@/lib/api/types";
 import { normalizePagination } from "@/lib/utils/pagination";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -28,7 +29,7 @@ export async function ProductsGrid({
   const locale = await getLocale();
 
   // Get translations for ProductCard
-  const productTranslations = {
+  const productTranslations: ProductCardTranslations = {
     noImageAvailable: t("noImageAvailable"),
     outOfStock: t("outOfStock"),
   };

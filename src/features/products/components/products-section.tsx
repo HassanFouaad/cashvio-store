@@ -1,5 +1,6 @@
 import { ProductCard } from "@/features/products/components/product-card";
 import { PublicProductDto } from "@/features/products/types/product.types";
+import { ProductCardTranslations } from "@/features/products/utils";
 import { ArrowRight } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -17,7 +18,7 @@ export async function ProductsSection({
   const locale = await getLocale();
 
   // Get translations for ProductCard
-  const productTranslations = {
+  const productTranslations: ProductCardTranslations = {
     noImageAvailable: t("products.noImageAvailable"),
     outOfStock: t("products.outOfStock"),
   };

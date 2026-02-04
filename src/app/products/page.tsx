@@ -1,10 +1,9 @@
-import { SearchInput } from "@/components/common/search-input";
 import { getProductsWithErrorHandling } from "@/features/products/api/get-products";
 import { ProductsFilterBar } from "@/features/products/components/products-filter-bar";
 import { ProductsGrid } from "@/features/products/components/products-grid";
 import { ProductSortBy } from "@/features/products/types/product.types";
-import { getStoreByCode } from "@/features/store/api/get-store";
-import { getStoreCode } from "@/features/store/utils/store-resolver";
+import { getStoreBySubdomain } from "@/features/store/api/get-store";
+import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
 import { validatePaginationAndRedirect } from "@/lib/utils/pagination-redirect";
 import { parsePage } from "@/lib/utils/query-params";
 import { Metadata } from "next";
@@ -23,20 +22,21 @@ interface ProductsPageProps {
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
-  const code = getStoreCode(hostname);
+  const storeSubdomain = getStoreSubdomain(hostname);
+  const t = await getTranslations("metadata.products");
 
-  if (!code) {
+  if (!storeSubdomain) {
     return {
-      title: "Products",
-      description: "Browse products",
+      title: t("title"),
+      description: t("description"),
     };
   }
 
-  const store = await getStoreByCode(code);
+  const store = await getStoreBySubdomain(storeSubdomain);
 
   return {
-    title: `Products - ${store.name}`,
-    description: `Browse all products at ${store.name}`,
+    title: t("titleWithStore", { storeName: store.name }),
+    description: t("descriptionWithStore", { storeName: store.name }),
   };
 }
 
@@ -45,14 +45,14 @@ export default async function ProductsPage({
 }: ProductsPageProps) {
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
-  const code = getStoreCode(hostname);
+  const storeSubdomain = getStoreSubdomain(hostname);
 
-  if (!code) {
+  if (!storeSubdomain) {
     throw new Error("Invalid store subdomain");
   }
 
   const resolvedSearchParams = await searchParams;
-  const store = await getStoreByCode(code);
+  const store = await getStoreBySubdomain(storeSubdomain);
   const t = await getTranslations();
 
   // Parse query params
@@ -99,31 +99,23 @@ export default async function ProductsPage({
   return (
     <div className="w-full max-w-full overflow-x-hidden">
       {/* Page Header */}
-      <section className="w-full max-w-full bg-muted/30 py-8 sm:py-12 md:py-16">
+      <section className="w-full max-w-full bg-muted/30 py-6 sm:py-8 md:py-12">
         <div className="container">
-          <div className="max-w-3xl mx-auto text-center space-y-4">
+          <div className="max-w-3xl mx-auto text-center space-y-3">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">
               {t("store.products.pageTitle")}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
               {t("store.products.pageDescription")}
             </p>
-
-            {/* Search Input */}
-            <div className="flex justify-center pt-2">
-              <SearchInput
-                placeholder={t("store.products.searchPlaceholder")}
-                searchKey="search"
-              />
-            </div>
           </div>
         </div>
       </section>
 
       {/* Filters and Products */}
-      <section className="w-full max-w-full py-8 sm:py-12">
+      <section className="w-full max-w-full py-6 sm:py-8 md:py-12">
         <div className="container space-y-6">
-          {/* Filter Bar */}
+          {/* Filter Bar with Search */}
           <ProductsFilterBar
             currentSort={sortBy}
             inStockOnly={inStock}

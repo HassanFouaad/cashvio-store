@@ -34,7 +34,7 @@
   "landing": {
     "title": "Welcome to StoreFront",
     "description": "Multi-tenant e-commerce platform. Access your store using the URL format:",
-    "urlFormat": "/store/YOUR-STORE-CODE",
+    "urlFormat": "/store/YOUR-STORE-SUBDOMAIN",
     "exampleStores": "Example stores (for testing):",
     "tryDemoStore": "Try Demo Store",
     "tryTestStore": "Try Test Store"
@@ -44,6 +44,16 @@
     "browseProducts": "Browse Products",
     "description": "Discover our amazing collection of products",
     "shoppingCart": "Shopping cart",
+    "emptyStore": {
+      "title": "Welcome to {storeName}",
+      "description": "We're setting things up! Our store is being prepared with amazing products just for you. Check back soon!",
+      "feature1Title": "Coming Soon",
+      "feature1Description": "Products being added",
+      "feature2Title": "Stay Tuned",
+      "feature2Description": "New arrivals daily",
+      "refreshButton": "Refresh Page",
+      "footerNote": "This store is currently being set up"
+    },
     "categories": {
       "title": "Shop by Collection",
       "viewAll": "View All",
@@ -112,7 +122,7 @@
   "errors": {
     "notFound": {
       "title": "Store Not Found",
-      "description": "The store \"{code}\" could not be found. Please check the URL and try again."
+      "description": "The store \"{subdomain}\" could not be found. Please check the URL and try again."
     },
     "inactive": {
       "title": "Store Unavailable",
@@ -137,6 +147,47 @@
       "title": "Page Not Found",
       "code": "404",
       "description": "The page you're looking for doesn't exist or has been moved."
+    },
+    "storeNotFound": {
+      "title": "Store Not Found",
+      "description": "The requested store could not be found or is not available."
+    }
+  },
+  "metadata": {
+    "cart": {
+      "title": "Cart",
+      "description": "Your shopping cart",
+      "titleWithStore": "Cart - {storeName}",
+      "descriptionWithStore": "Your shopping cart at {storeName}"
+    },
+    "checkout": {
+      "title": "Checkout",
+      "description": "Complete your purchase",
+      "titleWithStore": "Checkout - {storeName}",
+      "descriptionWithStore": "Complete your purchase at {storeName}"
+    },
+    "categories": {
+      "title": "Collections",
+      "description": "Browse collections",
+      "titleWithStore": "Collections - {storeName}",
+      "descriptionWithStore": "Browse all collections at {storeName}"
+    },
+    "categoryDetail": {
+      "title": "Collection",
+      "description": "Browse collection products",
+      "titleWithStore": "{categoryName} - {storeName}",
+      "descriptionWithStore": "Browse products in {categoryName} at {storeName}"
+    },
+    "products": {
+      "title": "Products",
+      "description": "Browse products",
+      "titleWithStore": "Products - {storeName}",
+      "descriptionWithStore": "Browse all products at {storeName}"
+    },
+    "productDetail": {
+      "title": "Product Not Found",
+      "titleWithStore": "{productName} - {storeName}",
+      "descriptionWithStore": "Buy {productName} at {storeName}"
     }
   },
   "footer": {
@@ -180,7 +231,21 @@
     "proceedToCheckout": "Proceed to Checkout",
     "someItemsOutOfStock": "Some items in your cart are out of stock",
     "addedToCart": "Added to cart",
-    "itemAddedToCart": "{name} has been added to your cart"
+    "itemAddedToCart": "{name} has been added to your cart",
+    "itemCount": "{count} items",
+    "adding": "Adding...",
+    "syncing": "Syncing...",
+    "quantityExceeded": "Only {available} available. Quantity adjusted.",
+    "quantityExceededTitle": "Stock Changed",
+    "quantityExceededDescription": "Some items quantity has been adjusted due to stock changes.",
+    "reduceQuantity": "Reduce Quantity",
+    "cartUpdated": "Cart updated",
+    "cartChangedTitle": "Cart Changed",
+    "cartChangedDescription": "Some items have been updated or removed due to availability changes.",
+    "reviewChanges": "Review Changes",
+    "validatingCart": "Validating cart...",
+    "maxInCart": "Maximum quantity in cart",
+    "viewCart": "View Cart"
   },
   "checkout": {
     "pageTitle": "Checkout",
@@ -195,15 +260,31 @@
     "name": "Name",
     "namePlaceholder": "Enter your name",
     "phone": "Phone Number",
-    "phonePlaceholder": "Enter your phone number",
+    "phonePlaceholder": "Enter phone number",
+    "phoneInvalid": "Please enter a valid phone number",
+    "deliveryAddress": "Delivery Address",
+    "selectCountry": "Select Country",
+    "selectCity": "Select City",
+    "country": "Country",
+    "city": "City",
+    "noDeliveryZones": "Delivery is not available for your location yet",
+    "additionalDetails": "Delivery Instructions (Optional)",
+    "additionalDetailsPlaceholder": "E.g., apartment number, building name, landmarks...",
     "notes": "Order Notes (Optional)",
     "notesPlaceholder": "Any special instructions for your order?",
     "discount": "Discount",
     "serviceFees": "Service Fees",
     "deliveryFees": "Delivery Fees",
     "placeOrder": "Place Order",
+    "placingOrder": "Placing Order...",
     "backToCart": "Back to Cart",
     "calculating": "Calculating...",
-    "previewError": "Failed to calculate order totals. Please try again."
+    "previewError": "Failed to calculate order totals. Please try again.",
+    "orderError": "Failed to place order. Please try again.",
+    "orderSuccessTitle": "Order Placed Successfully!",
+    "orderSuccessMessage": "Thank you for your order. We'll start preparing it right away.",
+    "orderNumber": "Order Number",
+    "redirectingToHome": "Redirecting to home page...",
+    "continueShopping": "Continue Shopping"
   }
 }

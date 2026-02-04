@@ -30,7 +30,7 @@ export async function StoreFooter({ store }: StoreFooterProps) {
               {store.name}
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
-              {store.country && `${store.country}`}
+              {store.country?.name && `${store.country.name}`}
             </p>
             {socialMedia?.contactPhone && (
               <div className="flex items-center gap-2 text-xs sm:text-sm">

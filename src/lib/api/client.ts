@@ -4,8 +4,14 @@ import {
   ApiException,
   ApiResponse,
   FetchOptions,
+  getApiLocale,
+  getApiStoreId,
   PaginatedResponse,
 } from "./types";
+
+
+
+
 
 /**
  * Base API client with error handling and timeout support
@@ -132,6 +138,29 @@ class ApiClient {
   }
 
   /**
+   * Get headers with Accept-Language and X-Store-Id based on current context
+   */
+  private getHeaders(additionalHeaders?: HeadersInit): HeadersInit {
+    const locale = getApiLocale();
+    const storeId = getApiStoreId();
+
+    const headers: Record<string, string> = {
+      ...apiConfig.headers,
+      "Accept-Language": locale,
+    };
+
+    // Add store ID header if available
+    if (storeId) {
+      headers["X-Store-Id"] = storeId;
+    }
+
+    return {
+      ...headers,
+      ...additionalHeaders,
+    };
+  }
+
+  /**
    * GET request
    */
   async get<T>(endpoint: string, options?: FetchOptions): Promise<T> {
@@ -139,10 +168,7 @@ class ApiClient {
     const response = await this.fetchWithTimeout(url, {
       ...options,
       method: "GET",
-      headers: {
-        ...apiConfig.headers,
-        ...options?.headers,
-      },
+      headers: this.getHeaders(options?.headers),
     });
     return this.handleResponse<T>(response);
   }
@@ -159,10 +185,7 @@ class ApiClient {
     const response = await this.fetchWithTimeout(url, {
       ...options,
       method: "POST",
-      headers: {
-        ...apiConfig.headers,
-        ...options?.headers,
-      },
+      headers: this.getHeaders(options?.headers),
       body: data ? JSON.stringify(data) : undefined,
     });
     return this.handleResponse<T>(response);
@@ -181,10 +204,7 @@ class ApiClient {
     const response = await this.fetchWithTimeout(url, {
       ...options,
       method: "POST",
-      headers: {
-        ...apiConfig.headers,
-        ...options?.headers,
-      },
+      headers: this.getHeaders(options?.headers),
       body: data ? JSON.stringify(data) : undefined,
     });
 
@@ -220,10 +240,7 @@ class ApiClient {
     const response = await this.fetchWithTimeout(url, {
       ...options,
       method: "PUT",
-      headers: {
-        ...apiConfig.headers,
-        ...options?.headers,
-      },
+      headers: this.getHeaders(options?.headers),
       body: data ? JSON.stringify(data) : undefined,
     });
     return this.handleResponse<T>(response);
@@ -237,10 +254,7 @@ class ApiClient {
     const response = await this.fetchWithTimeout(url, {
       ...options,
       method: "DELETE",
-      headers: {
-        ...apiConfig.headers,
-        ...options?.headers,
-      },
+      headers: this.getHeaders(options?.headers),
     });
     return this.handleResponse<T>(response);
   }
@@ -259,10 +273,7 @@ class ApiClient {
     const response = await this.fetchWithTimeout(url, {
       ...options,
       method: "GET",
-      headers: {
-        ...apiConfig.headers,
-        ...options?.headers,
-      },
+      headers: this.getHeaders(options?.headers),
     });
     return this.handlePaginatedResponse<T>(response);
   }

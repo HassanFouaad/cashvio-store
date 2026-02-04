@@ -1,89 +1,36 @@
 /**
- * Cart-related types for storefront
- * Following application patterns for type definitions
+ * Cart types for storefront
  */
 
-import { PublicProductDto, PublicProductVariantDto } from '@/features/products/types/product.types';
+import { ApiCart, ApiCartItem } from '../api/cart.types';
+
+// Re-export API types for convenience
+export type { ApiCart, ApiCartItem };
 
 /**
- * Represents a single item in the cart
+ * Cart storage key for visitor ID
  */
-export interface CartItem {
-  /** Unique identifier for the cart item */
-  id: string;
-  /** Product ID */
-  productId: string;
-  /** Product name (cached for display when product might not be available) */
-  productName: string;
-  /** Selected variant ID */
-  variantId: string;
-  /** Variant name (cached for display) */
-  variantName: string;
-  /** Variant SKU */
-  sku: string;
-  /** Quantity of this item */
-  quantity: number;
-  /** Unit price at the time of adding to cart */
-  unitPrice: number;
-  /** Primary product image (cached) */
-  imageUrl?: string;
-  /** Maximum available quantity for validation */
-  maxQuantity: number;
-  /** Whether the item is still in stock */
-  inStock: boolean;
-  /** Timestamp when item was added */
-  addedAt: string;
+export const VISITOR_ID_KEY = 'sf_visitor_id';
+
+/**
+ * Generate visitor ID
+ */
+export function generateVisitorId(): string {
+  return crypto.randomUUID();
 }
 
 /**
- * Cart state stored in localStorage (used by Zustand persist)
+ * Get or create visitor ID
  */
-export interface CartState {
-  /** Array of cart items */
-  items: CartItem[];
-  /** Store ID this cart belongs to */
-  storeId: string;
-  /** Currency code for price display */
-  currency: string;
-  /** Last updated timestamp */
-  updatedAt: string;
-  /** Cart version for migration purposes */
-  version: number;
+export function getOrCreateVisitorId(): string {
+  if (typeof window === 'undefined') {
+    return generateVisitorId();
+  }
+
+  let visitorId = localStorage.getItem(VISITOR_ID_KEY);
+  if (!visitorId) {
+    visitorId = generateVisitorId();
+    localStorage.setItem(VISITOR_ID_KEY, visitorId);
+  }
+  return visitorId;
 }
-
-/**
- * Cart totals calculated from items
- */
-export interface CartTotals {
-  /** Total number of items in cart */
-  itemCount: number;
-  /** Total number of unique products */
-  uniqueItems: number;
-  /** Subtotal before any discounts or taxes */
-  subtotal: number;
-  /** Tax amount (if applicable) */
-  tax: number;
-  /** Total amount */
-  total: number;
-}
-
-/**
- * Parameters for adding item to cart
- */
-export interface AddToCartParams {
-  product: PublicProductDto;
-  variant: PublicProductVariantDto;
-  quantity: number;
-  currency: string;
-  storeId: string;
-}
-
-/**
- * Cart storage key prefix
- */
-export const CART_STORAGE_KEY = 'sf_cart';
-
-/**
- * Current cart version for migrations
- */
-export const CART_VERSION = 1;

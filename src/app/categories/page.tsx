@@ -1,8 +1,8 @@
 import { SearchInput } from "@/components/common/search-input";
 import { getCategoriesWithErrorHandling } from "@/features/categories/api/get-categories";
 import { CategoriesGrid } from "@/features/categories/components/categories-grid";
-import { getStoreByCode } from "@/features/store/api/get-store";
-import { getStoreCode } from "@/features/store/utils/store-resolver";
+import { getStoreBySubdomain } from "@/features/store/api/get-store";
+import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
 import { validatePaginationAndRedirect } from "@/lib/utils/pagination-redirect";
 import { parsePage } from "@/lib/utils/query-params";
 import { Metadata } from "next";
@@ -16,21 +16,22 @@ interface CategoriesPageProps {
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
-  const code = getStoreCode(hostname);
+  const storeSubdomain = getStoreSubdomain(hostname);
+  const t = await getTranslations("metadata.categories");
 
-  if (!code) {
+  if (!storeSubdomain) {
     return {
-      title: "Categories",
-      description: "Browse categories",
+      title: t("title"),
+      description: t("description"),
     };
   }
 
   // This is cached - shares cache with layout's generateMetadata
-  const store = await getStoreByCode(code);
+  const store = await getStoreBySubdomain(storeSubdomain);
 
   return {
-    title: `Categories - ${store.name}`,
-    description: `Browse all categories at ${store.name}`,
+    title: t("titleWithStore", { storeName: store.name }),
+    description: t("descriptionWithStore", { storeName: store.name }),
   };
 }
 
@@ -39,15 +40,15 @@ export default async function CategoriesPage({
 }: CategoriesPageProps) {
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
-  const code = getStoreCode(hostname);
+  const storeSubdomain = getStoreSubdomain(hostname);
 
-  if (!code) {
+  if (!storeSubdomain) {
     throw new Error("Invalid store subdomain");
   }
 
   const resolvedSearchParams = await searchParams;
   // This is cached - won't make additional API call since layout already fetched it
-  const store = await getStoreByCode(code);
+  const store = await getStoreBySubdomain(storeSubdomain);
   const t = await getTranslations();
 
   // Safely parse page number (defaults to 1 if invalid/malformed)

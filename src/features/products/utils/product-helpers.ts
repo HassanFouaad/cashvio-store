@@ -1,9 +1,18 @@
-import { formatCurrency } from "@/lib/utils/formatters";
 import {
   PublicProductDto,
   PublicProductImageDto,
   PublicProductVariantDto,
 } from "@/features/products/types/product.types";
+import { formatCurrency } from "@/lib/utils/formatters";
+
+/**
+ * Product card translations interface
+ * Used by ProductCard to display localized strings
+ */
+export interface ProductCardTranslations {
+  noImageAvailable: string;
+  outOfStock: string;
+}
 
 /**
  * Get the primary image or first available image from a product

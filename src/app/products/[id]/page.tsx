@@ -1,7 +1,7 @@
 import { getProductByIdWithErrorHandling } from "@/features/products/api/get-products";
 import { ProductDetails } from "@/features/products/components/product-details";
-import { getStoreByCode } from "@/features/store/api/get-store";
-import { getStoreCode } from "@/features/store/utils/store-resolver";
+import { getStoreBySubdomain } from "@/features/store/api/get-store";
+import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
@@ -18,43 +18,43 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
-  const code = getStoreCode(hostname);
+  const storeSubdomain = getStoreSubdomain(hostname);
+  const t = await getTranslations("metadata.productDetail");
 
-  if (!code) {
+  if (!storeSubdomain) {
     return {
-      title: "Product Not Found",
+      title: t("title"),
     };
   }
 
   const { id } = await params;
-  const store = await getStoreByCode(code);
+  const store = await getStoreBySubdomain(storeSubdomain);
   const { product } = await getProductByIdWithErrorHandling(id, store.id);
 
   if (!product) {
     return {
-      title: "Product Not Found",
+      title: t("title"),
     };
   }
 
   return {
-    title: `${product.name} - ${store.name}`,
-    description: product.description || `Buy ${product.name} at ${store.name}`,
+    title: t("titleWithStore", { productName: product.name, storeName: store.name }),
+    description: product.description || t("descriptionWithStore", { productName: product.name, storeName: store.name }),
   };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
-  const code = getStoreCode(hostname);
+  const storeSubdomain = getStoreSubdomain(hostname);
 
-  if (!code) {
+  if (!storeSubdomain) {
     throw new Error("Invalid store subdomain");
   }
 
   const { id } = await params;
-  const store = await getStoreByCode(code);
+  const store = await getStoreBySubdomain(storeSubdomain);
   const locale = await getLocale();
-  const t = await getTranslations();
 
   const { product, error } = await getProductByIdWithErrorHandling(
     id,

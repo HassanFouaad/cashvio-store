@@ -1,7 +1,7 @@
-import { cache } from 'react';
 import { apiClient } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/config';
 import { ApiException } from '@/lib/api/types';
+import { cache } from 'react';
 import { PublicStoreDto, StoreError, StoreErrorType } from '../types/store.types';
 
 /**
@@ -11,12 +11,12 @@ import { PublicStoreDto, StoreError, StoreErrorType } from '../types/store.types
  * Uses React cache() to deduplicate requests within the same request lifecycle.
  * Multiple calls to getStoreByCode with the same code will only make ONE API request.
  */
-export const getStoreByCode = cache(async (code: string): Promise<PublicStoreDto> => {
+export const getStoreBySubdomain = cache(async (subdomain: string): Promise<PublicStoreDto> => {
   'use server';
 
   try {
     const store = await apiClient.get<PublicStoreDto>(
-      endpoints.stores.getByCode(code)
+      endpoints.stores.getBySubdomain(subdomain)
     );
     return store;
   } catch (error) {
@@ -34,12 +34,12 @@ export const getStoreByCode = cache(async (code: string): Promise<PublicStoreDto
  * Also cached - uses the same cache as getStoreByCode
  */
 export const getStoreWithErrorHandling = cache(async (
-  code: string
+  subdomain: string
 ): Promise<{ store: PublicStoreDto | null; error: StoreError | null }> => {
   'use server';
 
   try {
-    const store = await getStoreByCode(code);
+    const store = await getStoreBySubdomain(subdomain);
     return { store, error: null };
   } catch (error) {
     if (error instanceof ApiException) {
@@ -49,7 +49,7 @@ export const getStoreWithErrorHandling = cache(async (
           error: {
             type: StoreErrorType.NOT_FOUND,
             message: 'Store not found',
-            code,
+            subdomain,
           },
         };
       }
@@ -58,7 +58,7 @@ export const getStoreWithErrorHandling = cache(async (
         error: {
           type: StoreErrorType.NETWORK_ERROR,
           message: error.message,
-          code,
+          subdomain,
         },
       };
     }
@@ -67,7 +67,7 @@ export const getStoreWithErrorHandling = cache(async (
       error: {
         type: StoreErrorType.UNKNOWN,
         message: 'An unexpected error occurred',
-        code,
+        subdomain,
       },
     };
   }

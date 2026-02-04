@@ -19,7 +19,7 @@ export function StoreErrorComponent({ error }: StoreErrorProps) {
       case StoreErrorType.NOT_FOUND:
         return {
           title: t("notFound.title"),
-          description: t("notFound.description", { code: error.code || "" }),
+          description: t("notFound.description", { subdomain: error.subdomain || "" }),
           icon: <AlertCircle className="h-16 w-16 text-destructive" />,
         };
       case StoreErrorType.INACTIVE:

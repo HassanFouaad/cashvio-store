@@ -1,11 +1,11 @@
 'use client';
 
-import { Button } from "@/components/ui/button";
-import { useCartStore, useCartTotals } from "@/features/cart/store";
-import { Trash2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { CartEmpty } from "./cart-empty";
-import { CartItem } from "./cart-item";
+import { Button } from '@/components/ui/button';
+import { Loader2, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCartStore, useIsCartSyncing } from '../store';
+import { CartEmpty } from './cart-empty';
+import { CartItem } from './cart-item';
 
 interface CartListProps {
   currency: string;
@@ -15,17 +15,14 @@ interface CartListProps {
 /**
  * Cart items list component
  * Displays all items in cart or empty state
- * Client component - requires interactivity
  */
 export function CartList({ currency, locale }: CartListProps) {
-  const t = useTranslations("cart");
-  const items = useCartStore((state) => state.items);
-  const isHydrated = useCartStore((state) => state.isHydrated);
-  const clearCart = useCartStore((state) => state.clearCart);
-  const totals = useCartTotals();
+  const t = useTranslations('cart');
+  const { cart, clearCart, isInitialized, isLoading } = useCartStore();
+  const isSyncing = useIsCartSyncing();
 
-  // Show loading skeleton while hydrating from localStorage
-  if (!isHydrated) {
+  // Show loading skeleton while initializing
+  if (!isInitialized || isLoading) {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
@@ -42,7 +39,7 @@ export function CartList({ currency, locale }: CartListProps) {
     );
   }
 
-  if (items.length === 0) {
+  if (!cart || cart.items.length === 0) {
     return <CartEmpty />;
   }
 
@@ -50,10 +47,13 @@ export function CartList({ currency, locale }: CartListProps) {
     <div className="space-y-4">
       {/* Header with clear button */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">
-          {t("yourCart")} ({totals.itemCount})
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          {t('yourCart')} ({cart.itemCount})
+          {isSyncing && (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          )}
         </h2>
-        
+
         <Button
           variant="ghost"
           size="sm"
@@ -61,15 +61,15 @@ export function CartList({ currency, locale }: CartListProps) {
           onClick={clearCart}
         >
           <Trash2 className="h-4 w-4 me-2" />
-          {t("clearAll")}
+          {t('clearAll')}
         </Button>
       </div>
 
       {/* Cart Items */}
       <div className="divide-y">
-        {items.map((item) => (
+        {cart.items.map((item) => (
           <CartItem
-            key={item.id}
+            key={item.variant.id}
             item={item}
             currency={currency}
             locale={locale}
