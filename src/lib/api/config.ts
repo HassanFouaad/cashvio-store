@@ -18,6 +18,10 @@ export const endpoints = {
     getBySubdomain: (subdomain: string) => `/public/stores/${subdomain}`,
     getFulfillmentMethods: (storeId: string) => `/public/stores/${storeId}/fulfillment-methods`,
     getDeliveryZones: (storeId: string) => `/public/stores/${storeId}/delivery-zones`,
+    staticPages: {
+      list: '/public/stores/static-pages',
+      getBySlug: (slug: string) => `/public/stores/static-pages/${slug}`,
+    },
   },
   categories: {
     list: '/public/categories',

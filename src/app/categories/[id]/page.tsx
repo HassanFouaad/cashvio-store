@@ -1,3 +1,4 @@
+import { SafeHtmlRenderer } from "@/components/ui/safe-html-renderer";
 import { getCategoryByIdWithErrorHandling } from "@/features/categories/api/get-categories";
 import { getProductsWithErrorHandling } from "@/features/products/api/get-products";
 import { ProductsFilterBar } from "@/features/products/components/products-filter-bar";
@@ -44,15 +45,21 @@ export async function generateMetadata({
   const store = await getStoreBySubdomain(storeSubdomain);
   const { category } = await getCategoryByIdWithErrorHandling(
     resolvedParams.id,
-    store.tenantId
+    store.tenantId,
   );
 
   return {
     title: category
-      ? t("titleWithStore", { categoryName: category.name, storeName: store.name })
+      ? t("titleWithStore", {
+          categoryName: category.name,
+          storeName: store.name,
+        })
       : t("title"),
     description: category
-      ? t("descriptionWithStore", { categoryName: category.name, storeName: store.name })
+      ? t("descriptionWithStore", {
+          categoryName: category.name,
+          storeName: store.name,
+        })
       : t("description"),
   };
 }
@@ -104,11 +111,16 @@ export default async function CategoryDetailPage({
   const baseUrl = `/categories/${resolvedParams.id}`;
 
   // Validate pagination and redirect if out of range
-  validatePaginationAndRedirect(productsData?.pagination, requestedPage, baseUrl, {
-    search,
-    sortBy,
-    inStock: inStock ? "true" : undefined,
-  });
+  validatePaginationAndRedirect(
+    productsData?.pagination,
+    requestedPage,
+    baseUrl,
+    {
+      search,
+      sortBy,
+      inStock: inStock ? "true" : undefined,
+    },
+  );
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
@@ -148,6 +160,18 @@ export default async function CategoryDetailPage({
           </div>
         </div>
       </section>
+
+      {/* Category Description Section - Separate for better UI/UX */}
+      {category.description && (
+        <section className="w-full max-w-full py-4 sm:py-6 border-b">
+          <div className="container">
+            <SafeHtmlRenderer
+              html={category.description}
+              className="prose prose-sm sm:prose max-w-none"
+            />
+          </div>
+        </section>
+      )}
 
       {/* Products Section */}
       <section className="w-full max-w-full py-6 sm:py-8">

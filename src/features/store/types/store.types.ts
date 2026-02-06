@@ -94,3 +94,25 @@ export interface StoreError {
   message: string;
   subdomain?: string;
 }
+
+/**
+ * Static page DTO for public display
+ * Localized content is returned based on Accept-Language header
+ */
+export interface PublicStaticPageDto {
+  id: string;
+  slug: string;
+  title: string;
+  content: string;
+  displayOrder: number;
+}
+
+/**
+ * Static page with metadata for list views
+ */
+export interface StaticPageListItem {
+  id: string;
+  slug: string;
+  title: string;
+  displayOrder: number;
+}

@@ -7,6 +7,7 @@ import { PaginatedResponse, PaginationQuery } from '@/lib/api/types';
 export interface PublicCategoryDto {
   id: string;
   name: string;
+  description?: string | null;
   imageUrl?: string | null;
 }
 

@@ -65,9 +65,13 @@
       "backToFirstPage": "Back to First Page",
       "backToCollections": "Back to Collections",
       "browseProductsIn": "Browse products in {category}",
+      "description": "About this collection",
       "previous": "Previous",
       "next": "Next",
       "of": "of"
+    },
+    "staticPages": {
+      "backToStore": "Back to store"
     },
     "products": {
       "title": "Featured Products",
@@ -86,6 +90,9 @@
       "price": "Price",
       "description": "Description",
       "specifications": "Specifications",
+      "fastShipping": "Fast Shipping",
+      "securePayment": "Secure Payment",
+      "easyReturns": "Easy Returns",
       "quantity": "Quantity",
       "backToStore": "Back to store",
       "noImageAvailable": "No Image Available",
@@ -192,6 +199,7 @@
   },
   "footer": {
     "quickLinks": "Quick Links",
+    "policies": "Policies",
     "connectWithUs": "Connect With Us",
     "copyright": "© {year} {storeName}. All rights reserved."
   },

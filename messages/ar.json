@@ -65,9 +65,13 @@
       "backToFirstPage": "العودة إلى الصفحة الأولى",
       "backToCollections": "العودة إلى المجموعات",
       "browseProductsIn": "تصفح المنتجات في {category}",
+      "description": "عن هذه المجموعة",
       "previous": "السابق",
       "next": "التالي",
       "of": "من"
+    },
+    "staticPages": {
+      "backToStore": "العودة إلى المتجر"
     },
     "products": {
       "title": "المنتجات المميزة",
@@ -86,6 +90,9 @@
       "price": "السعر",
       "description": "الوصف",
       "specifications": "المواصفات",
+      "fastShipping": "شحن سريع",
+      "securePayment": "دفع آمن",
+      "easyReturns": "إرجاع سهل",
       "quantity": "الكمية",
       "backToStore": "العودة إلى المتجر",
       "noImageAvailable": "لا توجد صورة متاحة",
@@ -192,6 +199,7 @@
   },
   "footer": {
     "quickLinks": "روابط سريعة",
+    "policies": "السياسات",
     "connectWithUs": "تواصل معنا",
     "copyright": "© {year} {storeName}. جميع الحقوق محفوظة."
   },

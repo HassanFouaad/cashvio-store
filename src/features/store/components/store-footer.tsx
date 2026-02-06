@@ -6,8 +6,9 @@ import {
   Phone,
   Youtube,
 } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { getStaticPages } from "../api/get-static-pages";
 import { PublicStoreDto } from "../types/store.types";
 
 interface StoreFooterProps {
@@ -16,14 +17,18 @@ interface StoreFooterProps {
 
 export async function StoreFooter({ store }: StoreFooterProps) {
   const t = await getTranslations();
+  const locale = await getLocale();
   const socialMedia = store.storeFront?.socialMedia;
   // Use a stable year value to avoid hydration mismatches
   const currentYear = new Date().getUTCFullYear();
 
+  // Fetch static pages for the store
+  const staticPages = await getStaticPages(store.id, locale);
+
   return (
     <footer className="w-full max-w-full border-t bg-muted/50 overflow-hidden py-6 sm:py-10">
       <div className="container">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 w-full">
           {/* Store Info */}
           <div className="w-full">
             <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3 break-words">
@@ -72,6 +77,27 @@ export async function StoreFooter({ store }: StoreFooterProps) {
               </li>
             </ul>
           </div>
+
+          {/* Policy Pages / Static Pages */}
+          {staticPages.length > 0 && (
+            <div className="w-full">
+              <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3">
+                {t("footer.policies")}
+              </h3>
+              <ul className="space-y-1.5 sm:space-y-2">
+                {staticPages.map((page) => (
+                  <li key={page.id}>
+                    <Link
+                      href={`/pages/${page.slug}`}
+                      className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {page.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Social Media */}
           {socialMedia && (
