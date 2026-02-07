@@ -1,11 +1,9 @@
 import { SafeHtmlRenderer } from "@/components/ui/safe-html-renderer";
 import { getStaticPageBySlug } from "@/features/store/api/get-static-pages";
-import { getStoreBySubdomain } from "@/features/store/api/get-store";
-import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
+import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { ChevronLeft } from "lucide-react";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -21,20 +19,19 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const headersList = await headers();
-  const hostname = headersList.get("host") || "";
-  const storeSubdomain = getStoreSubdomain(hostname);
   const { slug } = await params;
   const locale = await getLocale();
 
-  if (!storeSubdomain) {
+  // Resolve store and set API context (critical for X-Store-Id header)
+  const { store } = await resolveRequestStore();
+
+  if (!store) {
     return {
       title: slug,
     };
   }
 
   try {
-    const store = await getStoreBySubdomain(storeSubdomain);
     const page = await getStaticPageBySlug(store.id, slug, locale);
 
     if (!page) {
@@ -59,17 +56,15 @@ export async function generateMetadata({
  * Renders policy pages, terms, etc. with rich text content
  */
 export default async function StaticPage({ params }: StaticPageProps) {
-  const headersList = await headers();
-  const hostname = headersList.get("host") || "";
-  const storeSubdomain = getStoreSubdomain(hostname);
+  // Resolve store and set API context (critical for X-Store-Id header)
+  const { store, subdomain } = await resolveRequestStore();
   const t = await getTranslations("store.staticPages");
 
-  if (!storeSubdomain) {
+  if (!subdomain || !store) {
     throw new Error("Invalid store subdomain");
   }
 
   const { slug } = await params;
-  const store = await getStoreBySubdomain(storeSubdomain);
   const locale = await getLocale();
 
   const page = await getStaticPageBySlug(store.id, slug, locale);

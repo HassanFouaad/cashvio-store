@@ -4,15 +4,13 @@ import { getProductsWithErrorHandling } from "@/features/products/api/get-produc
 import { ProductsFilterBar } from "@/features/products/components/products-filter-bar";
 import { ProductsGrid } from "@/features/products/components/products-grid";
 import { ProductSortBy } from "@/features/products/types/product.types";
-import { getStoreBySubdomain } from "@/features/store/api/get-store";
-import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
+import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { TrackViewItemList } from "@/lib/analytics/track-event";
 import { validatePaginationAndRedirect } from "@/lib/utils/pagination-redirect";
 import { parsePage } from "@/lib/utils/query-params";
 import { ChevronLeft } from "lucide-react";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -31,20 +29,19 @@ interface CategoryDetailPageProps {
 export async function generateMetadata({
   params,
 }: CategoryDetailPageProps): Promise<Metadata> {
-  const headersList = await headers();
-  const hostname = headersList.get("host") || "";
-  const storeSubdomain = getStoreSubdomain(hostname);
   const resolvedParams = await params;
   const t = await getTranslations("metadata.categoryDetail");
 
-  if (!storeSubdomain) {
+  // Resolve store and set API context (critical for X-Store-Id header)
+  const { store } = await resolveRequestStore();
+
+  if (!store) {
     return {
       title: t("title"),
       description: t("description"),
     };
   }
 
-  const store = await getStoreBySubdomain(storeSubdomain);
   const { category } = await getCategoryByIdWithErrorHandling(
     resolvedParams.id,
     store.tenantId,
@@ -70,17 +67,15 @@ export default async function CategoryDetailPage({
   params,
   searchParams,
 }: CategoryDetailPageProps) {
-  const headersList = await headers();
-  const hostname = headersList.get("host") || "";
-  const storeSubdomain = getStoreSubdomain(hostname);
+  // Resolve store and set API context (critical for X-Store-Id header)
+  const { store, subdomain } = await resolveRequestStore();
 
-  if (!storeSubdomain) {
+  if (!subdomain || !store) {
     throw new Error("Invalid store subdomain");
   }
 
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
-  const store = await getStoreBySubdomain(storeSubdomain);
   const t = await getTranslations();
 
   // Fetch category details

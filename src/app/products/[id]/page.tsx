@@ -1,7 +1,6 @@
 import { getProductByIdWithErrorHandling } from "@/features/products/api/get-products";
 import { ProductDetails } from "@/features/products/components/product-details";
-import { getStoreBySubdomain } from "@/features/store/api/get-store";
-import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
+import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { TrackViewItem } from "@/lib/analytics/track-event";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -17,19 +16,18 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const headersList = await headers();
-  const hostname = headersList.get("host") || "";
-  const storeSubdomain = getStoreSubdomain(hostname);
   const t = await getTranslations("metadata.productDetail");
 
-  if (!storeSubdomain) {
+  // Resolve store and set API context (critical for X-Store-Id header)
+  const { store } = await resolveRequestStore();
+
+  if (!store) {
     return {
       title: t("title"),
     };
   }
 
   const { id } = await params;
-  const store = await getStoreBySubdomain(storeSubdomain);
   const { product } = await getProductByIdWithErrorHandling(id, store.id);
 
   if (!product) {
@@ -41,6 +39,9 @@ export async function generateMetadata({
   const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
   const defaultVariant = product.variants?.find((v) => v.inStock) ?? product.variants?.[0];
   const price = defaultVariant?.sellingPrice ?? 0;
+
+  const headersList = await headers();
+  const hostname = headersList.get("host") || "";
 
   return {
     title: t("titleWithStore", {
@@ -76,17 +77,17 @@ export async function generateMetadata({
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const headersList = await headers();
-  const hostname = headersList.get("host") || "";
-  const storeSubdomain = getStoreSubdomain(hostname);
+  // Resolve store and set API context (critical for X-Store-Id header)
+  const { store, subdomain } = await resolveRequestStore();
 
-  if (!storeSubdomain) {
+  if (!subdomain || !store) {
     throw new Error("Invalid store subdomain");
   }
 
   const { id } = await params;
-  const store = await getStoreBySubdomain(storeSubdomain);
   const locale = await getLocale();
+  const headersList = await headers();
+  const hostname = headersList.get("host") || "";
 
   const { product, error } = await getProductByIdWithErrorHandling(
     id,

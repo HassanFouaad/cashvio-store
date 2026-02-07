@@ -1,3 +1,5 @@
+'use server';
+
 import { apiClient } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/config';
 import { ApiException } from '@/lib/api/types';
@@ -5,7 +7,7 @@ import { cache } from 'react';
 import { PublicStaticPageDto, StaticPageListItem } from '../types/store.types';
 
 /**
- * Fetch all active static pages for a store (Server Action)
+ * Fetch all active static pages for a store
  * Uses X-Store-Id header and Accept-Language for localization
  * 
  * Uses React cache() to deduplicate requests within the same request lifecycle.
@@ -14,8 +16,6 @@ export const getStaticPages = cache(async (
   storeId: string,
   locale: string = 'en'
 ): Promise<StaticPageListItem[]> => {
-  'use server';
-
   try {
     const pages = await apiClient.get<StaticPageListItem[]>(
       endpoints.stores.staticPages.list,
@@ -52,8 +52,6 @@ export const getStaticPageBySlug = cache(async (
   slug: string,
   locale: string = 'en'
 ): Promise<PublicStaticPageDto | null> => {
-  'use server';
-
   try {
     const page = await apiClient.get<PublicStaticPageDto>(
       endpoints.stores.staticPages.getBySlug(slug),
@@ -88,8 +86,6 @@ export const getStaticPageWithErrorHandling = cache(async (
   slug: string,
   locale: string = 'en'
 ): Promise<{ page: PublicStaticPageDto | null; error: string | null }> => {
-  'use server';
-
   try {
     const page = await getStaticPageBySlug(storeId, slug, locale);
     if (!page) {
