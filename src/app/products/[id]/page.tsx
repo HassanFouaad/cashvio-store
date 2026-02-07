@@ -37,8 +37,6 @@ export async function generateMetadata({
   }
 
   const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
-  const defaultVariant = product.variants?.find((v) => v.inStock) ?? product.variants?.[0];
-  const price = defaultVariant?.sellingPrice ?? 0;
 
   const headersList = await headers();
   const hostname = headersList.get("host") || "";

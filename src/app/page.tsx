@@ -61,6 +61,8 @@ export default async function HomePage() {
   const isStoreEmpty = categories.length === 0 && products.length === 0;
 
   // Build JSON-LD Organization schema for SEO
+  const headersList = await headers();
+  const hostname = headersList.get("host") || "";
   const storeLogo = store.storeFront?.logoUrl || store.storeFront?.seo?.favIcon;
   const jsonLd = {
     "@context": "https://schema.org",

@@ -3,13 +3,12 @@ import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { VisitorTracker } from "@/components/visitor-tracker";
 import { appConfig, validateEnvironment } from "@/config/env.config";
 import { CartInitializer } from "@/features/cart/components";
-import { getStoreWithErrorHandling } from "@/features/store/api/get-store";
 import { StoreFooter } from "@/features/store/components/store-footer";
 import { StoreHeader } from "@/features/store/components/store-header";
 import { StoreFrontStatus } from "@/features/store/types/store.types";
-import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
 import { AnalyticsProvider } from "@/lib/analytics";
-import { setApiLocale, setApiStoreId } from "@/lib/api/types";
+import { resolveRequestStore } from "@/lib/api/resolve-request-store";
+import { setApiLocale } from "@/lib/api/types";
 import { QueryProvider } from "@/providers/query-provider";
 import { StoreProvider } from "@/providers/store-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -54,12 +53,11 @@ const cairo = Cairo({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const headersList = await headers();
-  const hostname = headersList.get("host") || "";
-  const storeSubdomain = getStoreSubdomain(hostname);
+  // Resolve store and set API context (critical for X-Store-Id header)
+  const { store, subdomain } = await resolveRequestStore();
 
   // If no store subdomain, return default metadata
-  if (!storeSubdomain) {
+  if (!subdomain) {
     return {
       title: appConfig.name,
       description: "Multi-tenant e-commerce storefront",
@@ -68,9 +66,6 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     };
   }
-
-  // Get store metadata
-  const { store } = await getStoreWithErrorHandling(storeSubdomain);
 
   if (
     !store ||
@@ -86,13 +81,6 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     };
   }
-
-  // CRITICAL: Set store ID in request-scoped context EARLY.
-  // This ensures child page generateMetadata() functions (e.g., product detail page)
-  // have access to the store ID for their API calls via X-Store-Id header.
-  // Uses React.cache() under the hood, so this is request-scoped and safe
-  // for concurrent requests in production.
-  setApiStoreId(store.id);
 
   const seo = store.storeFront.seo;
   const storeName = store.name;
@@ -142,7 +130,9 @@ export async function generateMetadata(): Promise<Metadata> {
       description: storeDescription,
       ...(ogImage ? { images: [ogImage] } : {}),
     },
-    metadataBase: new URL(`https://${hostname}`),
+    metadataBase: subdomain
+      ? new URL(`https://${(await headers()).get("host") || subdomain}`)
+      : new URL(appConfig.baseUrl),
   };
 
   return metadata;
@@ -171,25 +161,12 @@ export default async function RootLayout({
   const direction = getDirectionForLocale(locale);
   const fontFamily = getFontFamilyForLocale(locale);
 
-  // Check for store subdomain
-  const headersList = await headers();
-  const hostname = headersList.get("host") || "";
-  const storeSubdomain = getStoreSubdomain(hostname);
+  // Resolve store and set API context (cached — shares result with generateMetadata)
+  const { store, subdomain: storeSubdomain } = await resolveRequestStore();
 
   // Get visitor ID from cookie (set by middleware)
   const cookieStore = await cookies();
   const visitorId = cookieStore.get("sf_visitor_id")?.value;
-
-  // Get store data if subdomain exists
-  let store = null;
-  if (storeSubdomain) {
-    const result = await getStoreWithErrorHandling(storeSubdomain);
-    store = result.store;
-  }
-
-  if (store) {
-    setApiStoreId(store?.id ?? null);
-  }
 
   // Inline script to set store ID in window and cookie IMMEDIATELY
   // This runs BEFORE React hydrates, ensuring store ID is available
