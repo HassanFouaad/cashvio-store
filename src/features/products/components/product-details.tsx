@@ -1,7 +1,7 @@
 import { SafeHtmlRenderer } from "@/components/ui/safe-html-renderer";
 import { PublicProductDto } from "@/features/products/types/product.types";
 import { sortProductImages } from "@/features/products/utils/product-helpers";
-import { ChevronRight, Package, RefreshCw, Shield } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { AddToCartSection } from "./add-to-cart-section";
@@ -69,16 +69,11 @@ export async function ProductDetails({
         {/* Right Column - Product Info (5 cols on desktop) */}
         <div className="lg:col-span-5">
           <div className="space-y-5">
-            {/* Product Title & SKU */}
+            {/* Product Title}
             <div className="space-y-2">
               <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground leading-tight">
                 {product.name}
               </h1>
-              {product.variants?.[0]?.sku && (
-                <p className="text-xs text-muted-foreground">
-                  {t("sku")}: {product.variants[0].sku}
-                </p>
-              )}
             </div>
 
             {/* Divider */}
@@ -94,30 +89,6 @@ export async function ProductDetails({
                 storeId={storeId}
               />
             )}
-
-            {/* Trust Badges - Reassurance section */}
-            <div className="pt-4 border-t border-border">
-              <div className="grid grid-cols-3 gap-3">
-                <div className="flex flex-col items-center text-center gap-1.5 p-2.5 rounded-lg">
-                  <Package className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground font-medium leading-tight">
-                    {t("fastShipping")}
-                  </span>
-                </div>
-                <div className="flex flex-col items-center text-center gap-1.5 p-2.5 rounded-lg">
-                  <Shield className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground font-medium leading-tight">
-                    {t("securePayment")}
-                  </span>
-                </div>
-                <div className="flex flex-col items-center text-center gap-1.5 p-2.5 rounded-lg">
-                  <RefreshCw className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground font-medium leading-tight">
-                    {t("easyReturns")}
-                  </span>
-                </div>
-              </div>
-            </div>
 
             {/* Tags */}
             {product.tags && product.tags.length > 0 && (
