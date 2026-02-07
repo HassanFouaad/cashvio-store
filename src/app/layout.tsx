@@ -1,4 +1,3 @@
-import { DynamicFavicon } from "@/components/dynamic-favicon";
 import { LocaleInitializer } from "@/components/locale-initializer";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { VisitorTracker } from "@/components/visitor-tracker";
@@ -64,6 +63,9 @@ export async function generateMetadata(): Promise<Metadata> {
     return {
       title: appConfig.name,
       description: "Multi-tenant e-commerce storefront",
+      icons: {
+        icon: "/favicon.svg",
+      },
     };
   }
 
@@ -79,34 +81,62 @@ export async function generateMetadata(): Promise<Metadata> {
     return {
       title: tErrors("title"),
       description: tErrors("description"),
+      icons: {
+        icon: "/favicon.svg",
+      },
     };
   }
 
   const seo = store.storeFront.seo;
+  const storeName = store.name;
+  const storeDescription = seo?.description || `Welcome to ${storeName}`;
+
+  // Favicon fallback chain: tenant favicon > store logo > default
+  const faviconUrl = seo?.favIcon || store.storeFront.logoUrl || "/favicon.svg";
+
+  // OG image: use hero image if available, otherwise favicon/logo
+  const ogImage =
+    store.storeFront.heroImages?.[0]?.imageUrl ||
+    seo?.favIcon ||
+    store.storeFront.logoUrl ||
+    undefined;
 
   const metadata: Metadata = {
-    title: seo?.title || store.name,
-    description: seo?.description || `Welcome to ${store.name}`,
+    title: {
+      default: seo?.title || storeName,
+      template: `%s | ${storeName}`,
+    },
+    description: storeDescription,
+    icons: {
+      icon: [
+        { url: faviconUrl, type: "image/png" },
+        { url: faviconUrl, sizes: "32x32", type: "image/png" },
+        { url: faviconUrl, sizes: "16x16", type: "image/png" },
+      ],
+      shortcut: [{ url: faviconUrl }],
+      apple: [{ url: faviconUrl, sizes: "180x180" }],
+    },
+    openGraph: {
+      type: "website",
+      siteName: storeName,
+      title: seo?.title || storeName,
+      description: storeDescription,
+      ...(ogImage
+        ? {
+            images: [
+              { url: ogImage, width: 1200, height: 630, alt: storeName },
+            ],
+          }
+        : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: seo?.title || storeName,
+      description: storeDescription,
+      ...(ogImage ? { images: [ogImage] } : {}),
+    },
+    metadataBase: new URL(`https://${hostname}`),
   };
-
-  // Add favicon
-  if (seo?.favIcon) {
-    metadata.icons = {
-      icon: [{ url: seo.favIcon, type: "image/png" }],
-      shortcut: [{ url: seo.favIcon, type: "image/png" }],
-      apple: [{ url: seo.favIcon, sizes: "180x180", type: "image/png" }],
-    };
-
-    metadata.openGraph = {
-      title: seo?.title || store.name,
-      description: seo?.description || `Welcome to ${store.name}`,
-      images: seo.favIcon,
-    };
-  } else {
-    metadata.icons = {
-      icon: "/favicon.ico",
-    };
-  }
 
   return metadata;
 }
@@ -177,9 +207,6 @@ export default async function RootLayout({
         className={`${inter.variable} ${cairo.variable} ${fontFamily} antialiased`}
         suppressHydrationWarning
       >
-        {store && (
-          <DynamicFavicon faviconUrl={store.storeFront?.seo?.favIcon} />
-        )}
         <NextIntlClientProvider messages={messages} locale={locale}>
           <StoreProvider
             store={store ?? null}

@@ -5,7 +5,7 @@ import { CheckCircle, Home } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 const REDIRECT_SECONDS = 30;
 const TOKEN_KEY = "order-success-token";
@@ -13,19 +13,10 @@ const TOKEN_KEY = "order-success-token";
 const TOKEN_MAX_AGE_MS = 5 * 60 * 1000;
 
 /**
- * Thank-you / order-success page.
- *
- * Protected by a short-lived sessionStorage token that the checkout form sets
- * immediately before redirecting here. If the token is missing, expired, or
- * already consumed the user is sent back to the home page.
- *
- * Features:
- * - Animated success icon
- * - Order number display
- * - 30-second auto-redirect countdown to home page
- * - Fully localized (en / ar)
+ * Inner content component that uses useSearchParams.
+ * Must be wrapped in Suspense to avoid hydration issues.
  */
-export default function OrderSuccessPage() {
+function OrderSuccessContent() {
   const t = useTranslations("orderSuccess");
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -148,5 +139,18 @@ export default function OrderSuccessPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Order success page wrapped in Suspense boundary.
+ * This is required because useSearchParams() needs a Suspense boundary
+ * to avoid de-opting the entire page to client-side rendering.
+ */
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={null}>
+      <OrderSuccessContent />
+    </Suspense>
   );
 }

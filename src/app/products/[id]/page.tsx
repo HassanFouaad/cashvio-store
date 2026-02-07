@@ -38,17 +38,40 @@ export async function generateMetadata({
     };
   }
 
+  const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
+  const defaultVariant = product.variants?.find((v) => v.inStock) ?? product.variants?.[0];
+  const price = defaultVariant?.sellingPrice ?? 0;
+
   return {
     title: t("titleWithStore", {
       productName: product.name,
       storeName: store.name,
     }),
     description:
-      product.description ||
+      product.description?.replace(/<[^>]*>/g, "").slice(0, 160) ||
       t("descriptionWithStore", {
         productName: product.name,
         storeName: store.name,
       }),
+    openGraph: {
+      title: `${product.name} | ${store.name}`,
+      description:
+        product.description?.replace(/<[^>]*>/g, "").slice(0, 160) ||
+        t("descriptionWithStore", {
+          productName: product.name,
+          storeName: store.name,
+        }),
+      type: "website",
+      ...(primaryImage ? { images: [{ url: primaryImage.imageUrl, alt: product.name }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.name} | ${store.name}`,
+      ...(primaryImage ? { images: [primaryImage.imageUrl] } : {}),
+    },
+    alternates: {
+      canonical: `https://${hostname}/products/${id}`,
+    },
   };
 }
 
@@ -79,9 +102,41 @@ export default async function ProductPage({ params }: ProductPageProps) {
     product.variants?.find((v) => v.inStock) ?? product.variants?.[0];
   const productPrice = defaultVariant?.sellingPrice ?? 0;
 
+  // Build JSON-LD structured data for SEO (Schema.org Product)
+  const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
+  const inStock = product.variants?.some((v) => v.inStock) ?? false;
+  const prices = product.variants?.map((v) => v.sellingPrice) ?? [0];
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description?.replace(/<[^>]*>/g, "").slice(0, 500) || undefined,
+    ...(primaryImage ? { image: primaryImage.imageUrl } : {}),
+    ...(defaultVariant?.sku ? { sku: defaultVariant.sku } : {}),
+    offers: {
+      "@type": product.variants && product.variants.length > 1 ? "AggregateOffer" : "Offer",
+      priceCurrency: store.currency,
+      ...(product.variants && product.variants.length > 1
+        ? { lowPrice: minPrice, highPrice: maxPrice }
+        : { price: productPrice }),
+      availability: inStock
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+      url: `https://${hostname}/products/${id}`,
+    },
+  };
+
   return (
-    <div className="w-full max-w-full overflow-x-hidden py-6 sm:py-8">
+    <div className="w-full max-w-full overflow-x-hidden py-4 sm:py-6 lg:py-8">
       <div className="container">
+        {/* JSON-LD structured data for SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <TrackViewItem
           currency={store.currency}
           value={productPrice}

@@ -68,10 +68,40 @@ export default async function HomePage() {
   // Check if store is empty (no products and no categories)
   const isStoreEmpty = categories.length === 0 && products.length === 0;
 
+  // Build JSON-LD Organization schema for SEO
+  const storeLogo = store.storeFront?.logoUrl || store.storeFront?.seo?.favIcon;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    name: store.name,
+    description:
+      store.storeFront?.seo?.description || `Welcome to ${store.name}`,
+    url: `https://${hostname}`,
+    ...(storeLogo ? { logo: storeLogo, image: storeLogo } : {}),
+    ...(store.storeFront?.socialMedia?.contactPhone
+      ? { telephone: store.storeFront.socialMedia.contactPhone }
+      : {}),
+    ...(store.storeFront?.socialMedia
+      ? {
+          sameAs: [
+            store.storeFront.socialMedia.facebook,
+            store.storeFront.socialMedia.instagram,
+            store.storeFront.socialMedia.tiktok,
+            store.storeFront.socialMedia.youtube,
+            store.storeFront.socialMedia.website,
+          ].filter(Boolean),
+        }
+      : {}),
+  };
+
   // If store is empty, show empty state
   if (isStoreEmpty) {
     return (
       <div className="w-full max-w-full overflow-x-hidden">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         {/* Hero Section (if has images) */}
         {heroImages.length > 0 && (
           <StoreHero heroImages={heroImages} storeName={store.name} />
@@ -93,6 +123,12 @@ export default async function HomePage() {
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
+      {/* JSON-LD structured data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {products.length > 0 && (
         <TrackViewItemList
           listId="homepage-products"

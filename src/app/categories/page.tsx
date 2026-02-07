@@ -8,6 +8,7 @@ import { parsePage } from "@/lib/utils/query-params";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
+import { Suspense } from "react";
 
 interface CategoriesPageProps {
   searchParams: Promise<{ page?: string; search?: string }>;
@@ -68,7 +69,7 @@ export default async function CategoriesPage({
     categoriesData?.pagination,
     requestedPage,
     `/categories`,
-    { search }
+    { search },
   );
 
   if (error || !categoriesData) {
@@ -101,13 +102,15 @@ export default async function CategoriesPage({
               {t("store.categories.pageDescription")}
             </p>
 
-            {/* Search Input */}
-            <div className="flex justify-center pt-2">
-              <SearchInput
-                placeholder={t("store.categories.searchPlaceholder")}
-                searchKey="search"
-              />
-            </div>
+            {/* Search Input - wrapped in Suspense for useSearchParams */}
+            <Suspense fallback={null}>
+              <div className="flex justify-center pt-2">
+                <SearchInput
+                  placeholder={t("store.categories.searchPlaceholder")}
+                  searchKey="search"
+                />
+              </div>
+            </Suspense>
           </div>
         </div>
       </section>

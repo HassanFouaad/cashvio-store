@@ -2,7 +2,7 @@
 
 import { PublicStoreDto } from "@/features/store/types/store.types";
 import { setApiStoreId } from "@/lib/api/types";
-import { createContext, ReactNode, useContext, useMemo } from "react";
+import { createContext, ReactNode, useContext, useEffect, useMemo, useRef } from "react";
 
 interface StoreContextValue {
   storeId: string | null;
@@ -23,12 +23,12 @@ const STORE_ID_COOKIE_NAME = "sf_store_id";
  * Store Provider
  *
  * Ensures the store ID is available for ALL API calls:
- * 1. Sets window.__STORE_ID__ (primary source for client-side API calls)
+ * 1. Sets window.__STORE_ID__ via useEffect (avoids hydration mismatch)
  * 2. Sets cookie for persistence across page loads
- * 3. Sets module variable as backup
+ * 3. Sets module variable synchronously for server-side use
  *
- * This runs SYNCHRONOUSLY during render (via useMemo with empty deps trick)
- * to ensure the store ID is set BEFORE any child component makes API calls.
+ * The inline script in layout.tsx handles the INITIAL window.__STORE_ID__
+ * before React hydrates. This provider keeps it in sync on navigation.
  */
 export function StoreProvider({
   store,
@@ -36,33 +36,29 @@ export function StoreProvider({
   children,
 }: StoreProviderProps) {
   const storeId = store?.id ?? null;
-  // CRITICAL: Set store ID synchronously during EVERY render
-  // Not just on mount - this ensures it's always available after navigation
-  if (storeId && typeof window !== "undefined") {
-    // Set window variable - PRIMARY source for client-side API calls
-    window.__STORE_ID__ = storeId;
+  const hasSetRef = useRef(false);
 
-    // Set cookie for persistence
-    const maxAge = 365 * 24 * 60 * 60;
-    document.cookie = `${STORE_ID_COOKIE_NAME}=${encodeURIComponent(storeId)}; path=/; max-age=${maxAge}; samesite=lax`;
-  }
-
-  // Also set module variable (for server-side and as backup)
+  // Set module variable synchronously (safe - no DOM access)
   useMemo(() => {
     setApiStoreId(storeId);
   }, [storeId]);
 
+  // Set window and cookie in useEffect to avoid hydration mismatches
+  useEffect(() => {
+    if (!storeId) return;
+
+    // Set window variable - PRIMARY source for client-side API calls
+    window.__STORE_ID__ = storeId;
+
+    // Only set cookie once per mount or when storeId changes
+    if (!hasSetRef.current) {
+      hasSetRef.current = true;
+      const maxAge = 365 * 24 * 60 * 60;
+      document.cookie = `${STORE_ID_COOKIE_NAME}=${encodeURIComponent(storeId)}; path=/; max-age=${maxAge}; samesite=lax`;
+    }
+  }, [storeId]);
+
   const value = useMemo(() => ({ storeId }), [storeId]);
-
-  /* 
-  if(!storeId){
-    return <StoreErrorComponent error={{ type: StoreErrorType.NOT_FOUND, subdomain: subdomain ?? undefined, message:"" }} />;
-  }
-
-  if(store?.storeFront?.status === StoreFrontStatus.INACTIVE){
-    return <StoreErrorComponent error={{ type: StoreErrorType.INACTIVE, subdomain: subdomain ?? undefined, message:"" }} />;
-  }
-   */
 
   return (
     <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

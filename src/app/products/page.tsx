@@ -10,6 +10,7 @@ import { parsePage } from "@/lib/utils/query-params";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
+import { Suspense } from "react";
 
 interface ProductsPageProps {
   searchParams: Promise<{
@@ -129,12 +130,14 @@ export default async function ProductsPage({
       {/* Filters and Products */}
       <section className="w-full max-w-full py-6 sm:py-8 md:py-12">
         <div className="container space-y-6">
-          {/* Filter Bar with Search */}
-          <ProductsFilterBar
-            currentSort={sortBy}
-            inStockOnly={inStock}
-            totalItems={productsData.pagination.totalItems}
-          />
+          {/* Filter Bar with Search - wrapped in Suspense for useSearchParams */}
+          <Suspense fallback={null}>
+            <ProductsFilterBar
+              currentSort={sortBy}
+              inStockOnly={inStock}
+              totalItems={productsData.pagination.totalItems}
+            />
+          </Suspense>
 
           {/* Products Grid */}
           <ProductsGrid
