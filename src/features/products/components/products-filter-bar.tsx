@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { ProductSortBy } from "@/features/products/types/product.types";
+import { analytics } from "@/lib/analytics";
 import { Check, Package, Search, SlidersHorizontal, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -35,7 +36,7 @@ export function ProductsFilterBar({
 
   // Get current search value from URL
   const urlSearch = searchParams.get("search") || "";
-  
+
   // Local state for input value
   const [searchValue, setSearchValue] = useState(urlSearch);
   const [showFilters, setShowFilters] = useState(false);
@@ -43,8 +44,14 @@ export function ProductsFilterBar({
   const sortOptions = [
     { value: ProductSortBy.CREATED_AT, label: t("sortBy.newest") },
     { value: ProductSortBy.NAME, label: t("sortBy.name") },
-    { value: ProductSortBy.PRICE_LOW_TO_HIGH, label: t("sortBy.priceLowToHigh") },
-    { value: ProductSortBy.PRICE_HIGH_TO_LOW, label: t("sortBy.priceHighToLow") },
+    {
+      value: ProductSortBy.PRICE_LOW_TO_HIGH,
+      label: t("sortBy.priceLowToHigh"),
+    },
+    {
+      value: ProductSortBy.PRICE_HIGH_TO_LOW,
+      label: t("sortBy.priceHighToLow"),
+    },
   ];
 
   const createQueryString = useCallback(
@@ -64,13 +71,24 @@ export function ProductsFilterBar({
 
       return params.toString();
     },
-    [searchParams]
+    [searchParams],
   );
 
   const handleSearchSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const trimmedSearch = searchValue.trim();
+
+    // Track search event
+    if (trimmedSearch) {
+      try {
+        analytics.trackSearch({ search_term: trimmedSearch });
+      } catch {
+        // Analytics errors must never affect the store
+      }
+    }
+
     const queryString = createQueryString({
-      search: searchValue.trim() || null,
+      search: trimmedSearch || null,
     });
     const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
     router.push(newUrl);
@@ -100,7 +118,8 @@ export function ProductsFilterBar({
   };
 
   // Count active filters
-  const activeFiltersCount = (inStockOnly ? 1 : 0) + (currentSort !== ProductSortBy.CREATED_AT ? 1 : 0);
+  const activeFiltersCount =
+    (inStockOnly ? 1 : 0) + (currentSort !== ProductSortBy.CREATED_AT ? 1 : 0);
 
   return (
     <div className="space-y-3">
@@ -136,7 +155,9 @@ export function ProductsFilterBar({
               aria-label="Search"
             >
               <Search className="h-4 w-4" />
-              <span className="ms-1.5 hidden sm:inline">{t("searchPlaceholder").split("...")[0]}</span>
+              <span className="ms-1.5 hidden sm:inline">
+                {t("searchPlaceholder").split("...")[0]}
+              </span>
             </Button>
           </div>
         </div>
@@ -151,7 +172,7 @@ export function ProductsFilterBar({
               {t("resultsCount", { count: totalItems })}
             </span>
           )}
-          
+
           {/* Mobile Filter Toggle */}
           <Button
             variant="outline"
@@ -178,9 +199,10 @@ export function ProductsFilterBar({
             onClick={handleInStockToggle}
             className={`
               gap-1.5 h-9 px-3 rounded-full transition-all
-              ${inStockOnly 
-                ? "bg-primary text-primary-foreground shadow-sm" 
-                : "hover:bg-muted"
+              ${
+                inStockOnly
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "hover:bg-muted"
               }
             `}
           >
@@ -223,7 +245,9 @@ export function ProductsFilterBar({
 
           {/* In Stock Toggle */}
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">{t("filters.inStockOnly")}</span>
+            <span className="text-sm font-medium">
+              {t("filters.inStockOnly")}
+            </span>
             <Button
               variant={inStockOnly ? "default" : "outline"}
               size="sm"

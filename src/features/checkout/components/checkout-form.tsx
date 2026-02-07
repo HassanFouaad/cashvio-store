@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { PhoneInput } from '@/components/ui/phone-input';
-import { Select } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import { computeCartValidation, useCartStore } from '@/features/cart/store';
-import { getOrCreateVisitorId } from '@/features/cart/types/cart.types';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
+import { Select } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { computeCartValidation, useCartStore } from "@/features/cart/store";
+import { getOrCreateVisitorId } from "@/features/cart/types/cart.types";
 import {
   createOrder,
   groupDeliveryZonesByCountry,
   previewOrder,
-} from '@/features/checkout/api/checkout-api';
+} from "@/features/checkout/api/checkout-api";
 import {
   CreateOrderRequest,
   FulfillmentMethod,
@@ -22,8 +22,9 @@ import {
   OrderPreviewResponse,
   PublicDeliveryZonesResponseDto,
   PublicFulfillmentMethodDto,
-} from '@/features/checkout/types/checkout.types';
-import { formatCurrency } from '@/lib/utils/formatters';
+} from "@/features/checkout/types/checkout.types";
+import { analytics } from "@/lib/analytics";
+import { formatCurrency } from "@/lib/utils/formatters";
 import {
   AlertCircle,
   AlertTriangle,
@@ -33,11 +34,11 @@ import {
   Package,
   Store,
   UtensilsCrossed,
-} from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+} from "lucide-react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface CheckoutFormProps {
   storeId: string;
@@ -67,22 +68,25 @@ export function CheckoutForm({
   fulfillmentMethods,
   deliveryZones: rawDeliveryZones,
 }: CheckoutFormProps) {
-  const t = useTranslations('checkout');
-  const tCart = useTranslations('cart');
+  const t = useTranslations("checkout");
+  const tCart = useTranslations("cart");
   const router = useRouter();
 
   // Cart state and validation
-  const { cart, isInitialized, fetchCart, isSyncing, clearCart } = useCartStore();
+  const { cart, isInitialized, fetchCart, isSyncing, clearCart } =
+    useCartStore();
   const items = cart?.items ?? [];
-  
+
   // Order submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [orderSuccess, setOrderSuccess] = useState<{ orderNumber: string } | null>(null);
-  
+  const [orderSuccess, setOrderSuccess] = useState<{
+    orderNumber: string;
+  } | null>(null);
+
   // Compute validation with memoization
   const validation = useMemo(() => computeCartValidation(cart), [cart]);
-  
+
   // Track if we've done initial cart validation
   const hasValidatedRef = useRef(false);
 
@@ -98,7 +102,7 @@ export function CheckoutForm({
   // Default to Delivery if available, otherwise first available method
   const defaultMethod = useMemo(() => {
     const deliveryMethod = sortedFulfillmentMethods.find(
-      (m) => m.fulfillmentMethod === FulfillmentMethod.DELIVERY
+      (m) => m.fulfillmentMethod === FulfillmentMethod.DELIVERY,
     );
     return (
       deliveryMethod?.fulfillmentMethod ||
@@ -114,18 +118,19 @@ export function CheckoutForm({
   }, [rawDeliveryZones, locale]);
 
   // Form state
-  const [selectedMethod, setSelectedMethod] = useState<FulfillmentMethod | null>(
-    defaultMethod
-  );
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
+  const [selectedMethod, setSelectedMethod] =
+    useState<FulfillmentMethod | null>(defaultMethod);
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
   const [isPhoneValid, setIsPhoneValid] = useState(false);
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState("");
 
   // Delivery address state
-  const [selectedCountryId, setSelectedCountryId] = useState<number | null>(null);
+  const [selectedCountryId, setSelectedCountryId] = useState<number | null>(
+    null,
+  );
   const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
-  const [additionalDetails, setAdditionalDetails] = useState('');
+  const [additionalDetails, setAdditionalDetails] = useState("");
 
   // Preview state
   const [preview, setPreview] = useState<OrderPreviewResponse | null>(null);
@@ -145,15 +150,21 @@ export function CheckoutForm({
   useEffect(() => {
     if (isInitialized && hasValidatedRef.current && !isSyncing) {
       if (items.length === 0) {
-        router.push('/cart');
+        router.push("/cart");
         return;
       }
       // If cart has stock issues after refresh, redirect to cart to resolve
       if (validation.hasStockIssues) {
-        router.push('/cart');
+        router.push("/cart");
       }
     }
-  }, [isInitialized, items.length, validation.hasStockIssues, isSyncing, router]);
+  }, [
+    isInitialized,
+    items.length,
+    validation.hasStockIssues,
+    isSyncing,
+    router,
+  ]);
 
   // Auto-select country/city when delivery zones are available
   useEffect(() => {
@@ -180,10 +191,13 @@ export function CheckoutForm({
   }, [selectedMethod, groupedDeliveryZones]);
 
   // Get current country's cities
-  const currentCountry: GroupedDeliveryZoneCountryDto | undefined = useMemo(() => {
-    if (!groupedDeliveryZones || !selectedCountryId) return undefined;
-    return groupedDeliveryZones.countries.find((c) => c.id === selectedCountryId);
-  }, [groupedDeliveryZones, selectedCountryId]);
+  const currentCountry: GroupedDeliveryZoneCountryDto | undefined =
+    useMemo(() => {
+      if (!groupedDeliveryZones || !selectedCountryId) return undefined;
+      return groupedDeliveryZones.countries.find(
+        (c) => c.id === selectedCountryId,
+      );
+    }, [groupedDeliveryZones, selectedCountryId]);
 
   // Auto-select city when country changes and has only one city
   useEffect(() => {
@@ -202,7 +216,9 @@ export function CheckoutForm({
   }, []);
 
   // Build delivery address object for preview request
-  const buildDeliveryAddress = useCallback((): OrderPreviewDeliveryAddress | undefined => {
+  const buildDeliveryAddress = useCallback(():
+    | OrderPreviewDeliveryAddress
+    | undefined => {
     // Only include delivery address for DELIVERY fulfillment method
     if (selectedMethod !== FulfillmentMethod.DELIVERY) {
       return undefined;
@@ -216,19 +232,27 @@ export function CheckoutForm({
     return {
       countryId: selectedCountryId,
       cityId: selectedCityId,
-      contactPhone: customerPhone || '',
-      region: '',
-      street: '',
-      building: '',
-      apartment: '',
-      floor: '',
-      zip: '',
-      additionalDetails: additionalDetails || '',
+      contactPhone: customerPhone || "",
+      region: "",
+      street: "",
+      building: "",
+      apartment: "",
+      floor: "",
+      zip: "",
+      additionalDetails: additionalDetails || "",
     };
-  }, [selectedMethod, selectedCountryId, selectedCityId, customerPhone, additionalDetails]);
+  }, [
+    selectedMethod,
+    selectedCountryId,
+    selectedCityId,
+    customerPhone,
+    additionalDetails,
+  ]);
 
   // Build delivery address for preview (only countryId/cityId matter for fee calculation)
-  const previewDeliveryAddress = useMemo((): OrderPreviewDeliveryAddress | undefined => {
+  const previewDeliveryAddress = useMemo(():
+    | OrderPreviewDeliveryAddress
+    | undefined => {
     // Only include delivery address for DELIVERY fulfillment method
     if (selectedMethod !== FulfillmentMethod.DELIVERY) {
       return undefined;
@@ -242,14 +266,14 @@ export function CheckoutForm({
     return {
       countryId: selectedCountryId,
       cityId: selectedCityId,
-      contactPhone: '',
-      region: '',
-      street: '',
-      building: '',
-      apartment: '',
-      floor: '',
-      zip: '',
-      additionalDetails: '',
+      contactPhone: "",
+      region: "",
+      street: "",
+      building: "",
+      apartment: "",
+      floor: "",
+      zip: "",
+      additionalDetails: "",
     };
   }, [selectedMethod, selectedCountryId, selectedCityId]);
 
@@ -277,8 +301,8 @@ export function CheckoutForm({
 
       setPreview(previewResponse);
     } catch (error) {
-      console.error('Failed to preview order:', error);
-      setPreviewError(t('previewError'));
+      console.error("Failed to preview order:", error);
+      setPreviewError(t("previewError"));
     } finally {
       setIsLoadingPreview(false);
     }
@@ -339,11 +363,18 @@ export function CheckoutForm({
       isCustomerInfoComplete &&
       !isSubmitting
     );
-  }, [preview, isLoadingPreview, isDeliveryAddressComplete, isCustomerInfoComplete, isSubmitting]);
+  }, [
+    preview,
+    isLoadingPreview,
+    isDeliveryAddressComplete,
+    isCustomerInfoComplete,
+    isSubmitting,
+  ]);
 
   // Handle order submission
   const handlePlaceOrder = useCallback(async () => {
-    if (!preview || !selectedMethod || isSubmitting || !isCustomerInfoComplete) return;
+    if (!preview || !selectedMethod || isSubmitting || !isCustomerInfoComplete)
+      return;
 
     setIsSubmitting(true);
     setSubmitError(null);
@@ -368,6 +399,25 @@ export function CheckoutForm({
 
       const result = await createOrder(orderRequest);
 
+      // Track purchase analytics event
+      try {
+        analytics.trackPurchase({
+          transaction_id: result.orderNumber,
+          currency,
+          value: preview?.totalAmount ?? 0,
+          shipping: preview?.deliveryFees ?? 0,
+          items: items.map((item) => ({
+            item_id: item.variant.id,
+            item_name: item.productName || "",
+            price: item.variant.sellingPrice,
+            quantity: item.quantity,
+            item_variant: item.variant.name,
+          })),
+        });
+      } catch {
+        /* analytics should never break checkout */
+      }
+
       // Clear cart on frontend
       await clearCart();
 
@@ -376,11 +426,11 @@ export function CheckoutForm({
 
       // Redirect to success page or home after delay
       setTimeout(() => {
-        router.push('/');
+        router.push("/");
       }, 3000);
     } catch (error) {
-      console.error('Failed to place order:', error);
-      setSubmitError(t('orderError'));
+      console.error("Failed to place order:", error);
+      setSubmitError(t("orderError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -409,7 +459,7 @@ export function CheckoutForm({
     return (
       <div className="flex flex-col items-center justify-center py-12 space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-muted-foreground">{tCart('validatingCart')}</p>
+        <p className="text-muted-foreground">{tCart("validatingCart")}</p>
       </div>
     );
   }
@@ -424,10 +474,12 @@ export function CheckoutForm({
     return (
       <div className="flex flex-col items-center justify-center py-12 space-y-4">
         <AlertTriangle className="h-12 w-12 text-destructive" />
-        <h2 className="text-lg font-semibold">{tCart('cartChangedTitle')}</h2>
-        <p className="text-muted-foreground text-center">{tCart('cartChangedDescription')}</p>
+        <h2 className="text-lg font-semibold">{tCart("cartChangedTitle")}</h2>
+        <p className="text-muted-foreground text-center">
+          {tCart("cartChangedDescription")}
+        </p>
         <Link href="/cart">
-          <Button>{tCart('reviewChanges')}</Button>
+          <Button>{tCart("reviewChanges")}</Button>
         </Link>
       </div>
     );
@@ -441,18 +493,24 @@ export function CheckoutForm({
           <CheckCircle className="h-10 w-10 sm:h-12 sm:w-12 text-green-600 dark:text-green-500" />
         </div>
         <div className="space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-bold">{t('orderSuccessTitle')}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">
+            {t("orderSuccessTitle")}
+          </h1>
           <p className="text-muted-foreground text-base sm:text-lg">
-            {t('orderSuccessMessage')}
+            {t("orderSuccessMessage")}
           </p>
         </div>
         <div className="p-4 sm:p-6 bg-muted/50 rounded-xl">
-          <p className="text-sm text-muted-foreground">{t('orderNumber')}</p>
-          <p className="text-xl sm:text-2xl font-bold font-mono">{orderSuccess.orderNumber}</p>
+          <p className="text-sm text-muted-foreground">{t("orderNumber")}</p>
+          <p className="text-xl sm:text-2xl font-bold font-mono">
+            {orderSuccess.orderNumber}
+          </p>
         </div>
-        <p className="text-sm text-muted-foreground">{t('redirectingToHome')}</p>
+        <p className="text-sm text-muted-foreground">
+          {t("redirectingToHome")}
+        </p>
         <Link href="/">
-          <Button variant="outline">{t('continueShopping')}</Button>
+          <Button variant="outline">{t("continueShopping")}</Button>
         </Link>
       </div>
     );
@@ -464,7 +522,7 @@ export function CheckoutForm({
       <div className="lg:col-span-2 space-y-6">
         {/* Fulfillment Method Selection */}
         <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
-          <h2 className="text-lg font-semibold">{t('fulfillmentMethod')}</h2>
+          <h2 className="text-lg font-semibold">{t("fulfillmentMethod")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {sortedFulfillmentMethods.map((fm) => {
               const Icon = FULFILLMENT_ICONS[fm.fulfillmentMethod];
@@ -476,8 +534,8 @@ export function CheckoutForm({
                   onClick={() => handleMethodSelect(fm.fulfillmentMethod)}
                   className={`relative flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all ${
                     isSelected
-                      ? 'border-primary bg-primary/5'
-                      : 'border-muted hover:border-muted-foreground/30'
+                      ? "border-primary bg-primary/5"
+                      : "border-muted hover:border-muted-foreground/30"
                   }`}
                 >
                   <Icon className="h-6 w-6 mb-2" />
@@ -495,13 +553,13 @@ export function CheckoutForm({
           <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
             <div className="flex items-center gap-2">
               <MapPin className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold">{t('deliveryAddress')}</h2>
+              <h2 className="text-lg font-semibold">{t("deliveryAddress")}</h2>
             </div>
 
             {!groupedDeliveryZones ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <AlertCircle className="h-4 w-4" />
-                <span>{t('noDeliveryZones')}</span>
+                <span>{t("noDeliveryZones")}</span>
               </div>
             ) : groupedDeliveryZones.countries.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -511,7 +569,7 @@ export function CheckoutForm({
                     htmlFor="country"
                     className="block text-sm font-medium mb-1.5"
                   >
-                    {t('country')}
+                    {t("country")}
                   </label>
                   {groupedDeliveryZones.countries.length === 1 ? (
                     // Single country - show as disabled input
@@ -521,13 +579,15 @@ export function CheckoutForm({
                   ) : (
                     // Multiple countries - show select
                     <Select
-                      value={selectedCountryId?.toString() || ''}
+                      value={selectedCountryId?.toString() || ""}
                       onChange={handleCountryChange}
-                      placeholder={t('selectCountry')}
-                      options={groupedDeliveryZones.countries.map((country) => ({
-                        value: country.id.toString(),
-                        label: country.name,
-                      }))}
+                      placeholder={t("selectCountry")}
+                      options={groupedDeliveryZones.countries.map(
+                        (country) => ({
+                          value: country.id.toString(),
+                          label: country.name,
+                        }),
+                      )}
                       className="w-full"
                     />
                   )}
@@ -539,7 +599,7 @@ export function CheckoutForm({
                     htmlFor="city"
                     className="block text-sm font-medium mb-1.5"
                   >
-                    {t('city')}
+                    {t("city")}
                   </label>
                   {currentCountry ? (
                     currentCountry.cities.length === 1 ? (
@@ -550,14 +610,14 @@ export function CheckoutForm({
                     ) : (
                       // Multiple cities - show select
                       <Select
-                        value={selectedCityId?.toString() || ''}
+                        value={selectedCityId?.toString() || ""}
                         onChange={handleCityChange}
-                        placeholder={t('selectCity')}
+                        placeholder={t("selectCity")}
                         options={currentCountry.cities.map(
                           (city: GroupedDeliveryZoneCityDto) => ({
                             value: city.id.toString(),
                             label: city.name,
-                          })
+                          }),
                         )}
                         className="w-full"
                       />
@@ -567,7 +627,7 @@ export function CheckoutForm({
                     <Select
                       value=""
                       onChange={() => {}}
-                      placeholder={t('selectCity')}
+                      placeholder={t("selectCity")}
                       options={[]}
                       disabled
                       className="w-full"
@@ -581,13 +641,13 @@ export function CheckoutForm({
                     htmlFor="additionalDetails"
                     className="block text-sm font-medium mb-1.5"
                   >
-                    {t('additionalDetails')}
+                    {t("additionalDetails")}
                   </label>
                   <textarea
                     id="additionalDetails"
                     value={additionalDetails}
                     onChange={(e) => setAdditionalDetails(e.target.value)}
-                    placeholder={t('additionalDetailsPlaceholder')}
+                    placeholder={t("additionalDetailsPlaceholder")}
                     rows={2}
                     className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   />
@@ -599,21 +659,21 @@ export function CheckoutForm({
 
         {/* Customer Information */}
         <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
-          <h2 className="text-lg font-semibold">{t('customerInfo')}</h2>
+          <h2 className="text-lg font-semibold">{t("customerInfo")}</h2>
           <div className="space-y-4">
             <div>
               <label
                 htmlFor="name"
                 className="block text-sm font-medium mb-1.5"
               >
-                {t('name')} <span className="text-destructive">*</span>
+                {t("name")} <span className="text-destructive">*</span>
               </label>
               <Input
                 id="name"
                 type="text"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                placeholder={t('namePlaceholder')}
+                placeholder={t("namePlaceholder")}
                 required
               />
             </div>
@@ -622,19 +682,19 @@ export function CheckoutForm({
                 htmlFor="phone"
                 className="block text-sm font-medium mb-1.5"
               >
-                {t('phone')} <span className="text-destructive">*</span>
+                {t("phone")} <span className="text-destructive">*</span>
               </label>
               <PhoneInput
                 id="phone"
                 value={customerPhone}
                 onChange={handlePhoneChange}
-                placeholder={t('phonePlaceholder')}
+                placeholder={t("phonePlaceholder")}
                 defaultCountry="eg"
-                aria-label={t('phone')}
+                aria-label={t("phone")}
               />
               {customerPhone && !isPhoneValid && (
                 <p className="mt-1.5 text-sm text-destructive">
-                  {t('phoneInvalid')}
+                  {t("phoneInvalid")}
                 </p>
               )}
             </div>
@@ -643,13 +703,13 @@ export function CheckoutForm({
                 htmlFor="notes"
                 className="block text-sm font-medium mb-1.5"
               >
-                {t('notes')}
+                {t("notes")}
               </label>
               <textarea
                 id="notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder={t('notesPlaceholder')}
+                placeholder={t("notesPlaceholder")}
                 rows={3}
                 className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
@@ -662,7 +722,7 @@ export function CheckoutForm({
       <div className="lg:col-span-1">
         <div className="lg:sticky lg:top-24">
           <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
-            <h2 className="text-lg font-semibold">{tCart('orderSummary')}</h2>
+            <h2 className="text-lg font-semibold">{tCart("orderSummary")}</h2>
 
             {isLoadingPreview ? (
               <div className="space-y-3">
@@ -681,8 +741,8 @@ export function CheckoutForm({
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">
-                      {tCart('subtotal')} ({items.length}{' '}
-                      {items.length === 1 ? tCart('item') : tCart('items')})
+                      {tCart("subtotal")} ({items.length}{" "}
+                      {items.length === 1 ? tCart("item") : tCart("items")})
                     </span>
                     <span className="font-medium">
                       {formatCurrency(preview.subtotal, currency, locale)}
@@ -692,9 +752,16 @@ export function CheckoutForm({
                   {/* Discount */}
                   {preview.totalDiscount > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">{t('discount')}</span>
+                      <span className="text-muted-foreground">
+                        {t("discount")}
+                      </span>
                       <span className="font-medium text-green-600 dark:text-green-500">
-                        -{formatCurrency(preview.totalDiscount, currency, locale)}
+                        -
+                        {formatCurrency(
+                          preview.totalDiscount,
+                          currency,
+                          locale,
+                        )}
                       </span>
                     </div>
                   )}
@@ -703,7 +770,7 @@ export function CheckoutForm({
                   {preview.serviceFees > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">
-                        {t('serviceFees')}
+                        {t("serviceFees")}
                       </span>
                       <span className="font-medium">
                         {formatCurrency(preview.serviceFees, currency, locale)}
@@ -715,7 +782,7 @@ export function CheckoutForm({
                   {preview.deliveryFees > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">
-                        {t('deliveryFees')}
+                        {t("deliveryFees")}
                       </span>
                       <span className="font-medium">
                         {formatCurrency(preview.deliveryFees, currency, locale)}
@@ -726,7 +793,9 @@ export function CheckoutForm({
                   {/* Tax */}
                   {preview.totalTax > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">{tCart('tax')}</span>
+                      <span className="text-muted-foreground">
+                        {tCart("tax")}
+                      </span>
                       <span className="font-medium">
                         {formatCurrency(preview.totalTax, currency, locale)}
                       </span>
@@ -737,7 +806,9 @@ export function CheckoutForm({
                 {/* Divider */}
                 <div className="border-t pt-4">
                   <div className="flex justify-between">
-                    <span className="text-base font-semibold">{tCart('total')}</span>
+                    <span className="text-base font-semibold">
+                      {tCart("total")}
+                    </span>
                     <span className="text-lg font-bold">
                       {formatCurrency(preview.totalAmount, currency, locale)}
                     </span>
@@ -764,15 +835,15 @@ export function CheckoutForm({
               {isSubmitting ? (
                 <>
                   <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                  {t('placingOrder')}
+                  {t("placingOrder")}
                 </>
               ) : isLoadingPreview ? (
                 <>
                   <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                  {t('calculating')}
+                  {t("calculating")}
                 </>
               ) : (
-                t('placeOrder')
+                t("placeOrder")
               )}
             </Button>
 
@@ -781,7 +852,7 @@ export function CheckoutForm({
               href="/cart"
               className="block text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              {t('backToCart')}
+              {t("backToCart")}
             </Link>
           </div>
         </div>

@@ -8,6 +8,7 @@ import { StoreErrorComponent } from "@/features/store/components/store-error";
 import { StoreHero } from "@/features/store/components/store-hero";
 import { StoreErrorType } from "@/features/store/types/store.types";
 import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
+import { TrackViewItemList } from "@/lib/analytics/track-event";
 import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 
@@ -82,8 +83,24 @@ export default async function HomePage() {
     );
   }
 
+  // Prepare analytics items for homepage view_item_list
+  const analyticsItems = products.map((p) => ({
+    item_id: p.id,
+    item_name: p.name,
+    price: p.variants?.[0]?.sellingPrice ?? 0,
+    quantity: 1,
+  }));
+
   return (
     <div className="w-full max-w-full overflow-x-hidden">
+      {products.length > 0 && (
+        <TrackViewItemList
+          listId="homepage-products"
+          listName="Homepage Products"
+          items={analyticsItems}
+        />
+      )}
+
       {/* Hero Section */}
       <StoreHero heroImages={heroImages} storeName={store.name} />
 

@@ -42,6 +42,16 @@ export interface StoreFrontSocialMediaDto {
   updatedAt: Date;
 }
 
+export interface StoreFrontWebEventsDto {
+  id: string;
+  storeFrontId: string;
+  tenantId: string;
+  gtmId: string | null;
+  facebookPixelId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface StoreFrontDto {
   id: string;
   storeId: string;
@@ -52,6 +62,7 @@ export interface StoreFrontDto {
   socialMedia?: StoreFrontSocialMediaDto | null;
   seo?: StoreFrontSeoDto | null;
   heroImages?: StoreFrontHeroImageDto[];
+  webEvents?: StoreFrontWebEventsDto | null;
   createdAt: Date;
   updatedAt: Date;
 }

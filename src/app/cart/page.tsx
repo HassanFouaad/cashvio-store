@@ -2,6 +2,7 @@ import { CartList } from "@/features/cart/components/cart-list";
 import { CartSummary } from "@/features/cart/components/cart-summary";
 import { getStoreBySubdomain } from "@/features/store/api/get-store";
 import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
+import { TrackViewCartEvent } from "@/lib/analytics/track-cart-events";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
@@ -55,6 +56,9 @@ export default async function CartPage() {
           </div>
         </div>
       </section>
+
+      {/* Analytics: Track view_cart */}
+      <TrackViewCartEvent currency={store.currency} />
 
       {/* Cart Content */}
       <section className="w-full max-w-full py-6 sm:py-8 md:py-12">

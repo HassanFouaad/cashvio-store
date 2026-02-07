@@ -8,13 +8,14 @@
  * - Error handling with rollback
  */
 
+import { analytics } from '@/lib/analytics';
 import { create } from 'zustand';
 import {
-  addToCart as apiAddToCart,
-  clearCart as apiClearCart,
-  getCart as apiGetCart,
-  removeFromCart as apiRemoveFromCart,
-  updateCartItemQuantity as apiUpdateQuantity,
+    addToCart as apiAddToCart,
+    clearCart as apiClearCart,
+    getCart as apiGetCart,
+    removeFromCart as apiRemoveFromCart,
+    updateCartItemQuantity as apiUpdateQuantity,
 } from '../api/cart.service';
 import { ApiCart, ApiCartItem } from '../api/cart.types';
 import { getOrCreateVisitorId } from '../types/cart.types';
@@ -129,6 +130,22 @@ export const useCartStore = create<CartStore>((set, get) => ({
     const currentQuantity = get().getItemQuantity(variantId);
     const newQuantity = currentQuantity + quantity;
 
+    // Track add_to_cart analytics event
+    try {
+      const price = item?.variant?.sellingPrice ?? 0;
+      analytics.trackAddToCart({
+        currency: '',
+        value: price * quantity,
+        items: [{
+          item_id: variantId,
+          item_name: item?.productName || '',
+          price,
+          quantity,
+          item_variant: item?.variant?.name,
+        }],
+      });
+    } catch { /* analytics should never break cart */ }
+
     const newPendingChanges = new Map(pendingChanges);
     newPendingChanges.set(variantId, newQuantity);
     const newCart = applyOptimisticUpdate(cart, variantId, newQuantity, item);
@@ -210,6 +227,24 @@ export const useCartStore = create<CartStore>((set, get) => ({
 
   removeItem: (variantId: string) => {
     const { cart, pendingChanges } = get();
+
+    // Track remove_from_cart analytics event
+    try {
+      const existingItem = cart?.items.find(i => i.variant.id === variantId);
+      if (existingItem) {
+        analytics.trackRemoveFromCart({
+          currency: '',
+          value: existingItem.lineTotal,
+          items: [{
+            item_id: variantId,
+            item_name: existingItem.productName || '',
+            price: existingItem.variant.sellingPrice,
+            quantity: existingItem.quantity,
+            item_variant: existingItem.variant.name,
+          }],
+        });
+      }
+    } catch { /* analytics should never break cart */ }
 
     const newPendingChanges = new Map(pendingChanges);
     newPendingChanges.set(variantId, 0);

@@ -4,6 +4,7 @@ import { ProductsGrid } from "@/features/products/components/products-grid";
 import { ProductSortBy } from "@/features/products/types/product.types";
 import { getStoreBySubdomain } from "@/features/store/api/get-store";
 import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
+import { TrackViewItemList } from "@/lib/analytics/track-event";
 import { validatePaginationAndRedirect } from "@/lib/utils/pagination-redirect";
 import { parsePage } from "@/lib/utils/query-params";
 import { Metadata } from "next";
@@ -76,7 +77,7 @@ export default async function ProductsPage({
     productsData?.pagination,
     requestedPage,
     `/products`,
-    { search, sortBy, inStock: inStock ? "true" : undefined }
+    { search, sortBy, inStock: inStock ? "true" : undefined },
   );
 
   if (error || !productsData) {
@@ -96,8 +97,21 @@ export default async function ProductsPage({
     );
   }
 
+  // Prepare analytics items for view_item_list event
+  const analyticsItems = productsData.items.map((p) => ({
+    item_id: p.id,
+    item_name: p.name,
+    price: p.variants?.[0]?.sellingPrice ?? 0,
+    quantity: 1,
+  }));
+
   return (
     <div className="w-full max-w-full overflow-x-hidden">
+      <TrackViewItemList
+        listId="products"
+        listName="All Products"
+        items={analyticsItems}
+      />
       {/* Page Header */}
       <section className="w-full max-w-full bg-muted/30 py-6 sm:py-8 md:py-12">
         <div className="container">

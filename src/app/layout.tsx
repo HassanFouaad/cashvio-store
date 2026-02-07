@@ -9,6 +9,7 @@ import { StoreFooter } from "@/features/store/components/store-footer";
 import { StoreHeader } from "@/features/store/components/store-header";
 import { StoreFrontStatus } from "@/features/store/types/store.types";
 import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
+import { AnalyticsProvider } from "@/lib/analytics";
 import { setApiLocale, setApiStoreId } from "@/lib/api/types";
 import { QueryProvider } from "@/providers/query-provider";
 import { StoreProvider } from "@/providers/store-provider";
@@ -155,14 +156,14 @@ export default async function RootLayout({
 
   // Inline script to set store ID in window and cookie IMMEDIATELY
   // This runs BEFORE React hydrates, ensuring store ID is available
-  const storeIdScript = store?.id ? `
+  const storeIdScript = store?.id
+    ? `
     (function(){
       window.__STORE_ID__ = '${store.id}';
       document.cookie = 'sf_store_id=' + encodeURIComponent('${store.id}') + '; path=/; max-age=31536000; samesite=lax';
     })();
-  ` : null;
-
-
+  `
+    : null;
 
   return (
     <html lang={locale} dir={direction} suppressHydrationWarning>
@@ -180,7 +181,10 @@ export default async function RootLayout({
           <DynamicFavicon faviconUrl={store.storeFront?.seo?.favIcon} />
         )}
         <NextIntlClientProvider messages={messages} locale={locale}>
-          <StoreProvider store={store ?? null} subdomain={storeSubdomain ?? null}>
+          <StoreProvider
+            store={store ?? null}
+            subdomain={storeSubdomain ?? null}
+          >
             <LocaleInitializer />
             <ThemeProvider
               attribute="class"
@@ -195,6 +199,13 @@ export default async function RootLayout({
                       {/* Initialize cart store with store info - renders nothing */}
                       <CartInitializer />
                       <VisitorTracker storeId={store.id} />
+                      {/* Analytics: GTM + Facebook Pixel (per-tenant configuration) */}
+                      <AnalyticsProvider
+                        gtmId={store.storeFront?.webEvents?.gtmId}
+                        facebookPixelId={
+                          store.storeFront?.webEvents?.facebookPixelId
+                        }
+                      />
                       <StoreHeader store={store} />
                       <main className="flex-1">{children}</main>
                       {/* Footer - hidden on mobile, shown on desktop */}
@@ -202,7 +213,7 @@ export default async function RootLayout({
                         <StoreFooter store={store} />
                       </div>
                       {/* Mobile Bottom Navigation - only on mobile */}
-                      <MobileBottomNav 
+                      <MobileBottomNav
                         socialMedia={store.storeFront?.socialMedia}
                         storeName={store.name}
                       />

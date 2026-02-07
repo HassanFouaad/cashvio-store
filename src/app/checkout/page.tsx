@@ -1,8 +1,15 @@
-import { getDeliveryZones, getFulfillmentMethods } from "@/features/checkout/api/checkout-api";
+import {
+  getDeliveryZones,
+  getFulfillmentMethods,
+} from "@/features/checkout/api/checkout-api";
 import { CheckoutForm } from "@/features/checkout/components/checkout-form";
-import { FulfillmentMethod, PublicDeliveryZonesResponseDto } from "@/features/checkout/types/checkout.types";
+import {
+  FulfillmentMethod,
+  PublicDeliveryZonesResponseDto,
+} from "@/features/checkout/types/checkout.types";
 import { getStoreBySubdomain } from "@/features/store/api/get-store";
 import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
+import { TrackBeginCheckoutEvent } from "@/lib/analytics/track-cart-events";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
@@ -59,7 +66,7 @@ export default async function CheckoutPage() {
   // Fetch delivery zones if delivery method is available
   let deliveryZones: PublicDeliveryZonesResponseDto | null = null;
   const hasDeliveryMethod = fulfillmentMethods.some(
-    (m) => m.fulfillmentMethod === FulfillmentMethod.DELIVERY
+    (m) => m.fulfillmentMethod === FulfillmentMethod.DELIVERY,
   );
 
   if (hasDeliveryMethod) {
@@ -86,6 +93,9 @@ export default async function CheckoutPage() {
           </div>
         </div>
       </section>
+
+      {/* Analytics: Track begin_checkout */}
+      <TrackBeginCheckoutEvent currency={store.currency} />
 
       {/* Checkout Content */}
       <section className="w-full max-w-full py-6 sm:py-8 md:py-12">
