@@ -2,7 +2,7 @@
 
 import { GoogleTagManager } from "@next/third-parties/google";
 import Script from "next/script";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 
 import { FacebookPixelAdapter } from "./adapters/facebook-pixel-adapter";
 import { GtmAdapter } from "./adapters/gtm-adapter";
@@ -20,9 +20,10 @@ interface AnalyticsProviderProps {
  * - Renders Facebook Pixel script via next/script
  * - Registers adapters with the central analytics tracker
  *
- * Place this component in the root layout. It reads web events config
- * from the store data and conditionally initializes only the providers
- * that the tenant has configured.
+ * Adapter registration runs synchronously during the first render (via useRef
+ * guard) so that events fired in sibling useEffect hooks are never lost.
+ * Previously, registration was in a useEffect which caused a race condition
+ * where events could fire before adapters were ready.
  *
  * All initialization is wrapped in try-catch to ensure analytics
  * never crash the store front.
@@ -33,12 +34,11 @@ export function AnalyticsProvider({
 }: AnalyticsProviderProps) {
   const initialized = useRef(false);
 
-  useEffect(() => {
-    if (initialized.current) return;
+  // Register adapters synchronously on first render (not in useEffect)
+  // This ensures adapters are ready before any child useEffect fires events.
+  if (!initialized.current) {
     initialized.current = true;
-
     try {
-      // Reset previous adapters (in case of re-render with different store)
       analytics.reset();
 
       if (gtmId) {
@@ -51,7 +51,7 @@ export function AnalyticsProvider({
     } catch {
       // Analytics initialization must never crash the store
     }
-  }, [gtmId, facebookPixelId]);
+  }
 
   const hasGtm = !!gtmId;
   const hasPixel = !!facebookPixelId;

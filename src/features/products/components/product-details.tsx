@@ -1,7 +1,6 @@
 import { SafeHtmlRenderer } from "@/components/ui/safe-html-renderer";
 import { PublicProductDto } from "@/features/products/types/product.types";
 import { sortProductImages } from "@/features/products/utils/product-helpers";
-import { formatCurrency } from "@/lib/utils/formatters";
 import { ChevronLeft } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -30,10 +29,6 @@ export async function ProductDetails({
 
   // Server-side data preparation
   const sortedImages = sortProductImages(product.images);
-  const defaultVariant = product.variants?.[0];
-
-  // Get stock status from default variant for initial SSR
-  const isInStock = defaultVariant?.inStock ?? false;
 
   return (
     <div className="w-full">
@@ -64,58 +59,11 @@ export async function ProductDetails({
         {/* Right Column - Product Info (5 cols on desktop) */}
         <div className="lg:col-span-5">
           <div className="space-y-6">
-            {/* Product Title & Price */}
-            <div className="space-y-3">
-              {/* Product Name */}
+            {/* Product Title */}
+            <div className="space-y-1">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight">
                 {product.name}
               </h1>
-
-              {/* Price */}
-              {defaultVariant && (
-                <div className="flex items-baseline gap-3">
-                  <span className="text-2xl sm:text-3xl font-semibold">
-                    {formatCurrency(
-                      defaultVariant.sellingPrice,
-                      currency,
-                      locale,
-                    )}
-                  </span>
-                  {product.taxIncluded && product.taxRate && (
-                    <span className="text-sm text-muted-foreground">
-                      {t("taxIncluded")}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {/* Stock Status */}
-              <div className="flex items-center gap-2">
-                {isInStock ? (
-                  <>
-                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-600 dark:text-green-500">
-                      <span className="h-2 w-2 rounded-full bg-green-500" />
-                      {t("inStock")}
-                    </span>
-                    {product.inventoryTrackable &&
-                      defaultVariant &&
-                      defaultVariant.availableQuantity > 0 &&
-                      defaultVariant.availableQuantity < 5 && (
-                        <span className="text-sm text-amber-600 dark:text-amber-500">
-                          —{" "}
-                          {t("leftInStock", {
-                            count: defaultVariant.availableQuantity,
-                          })}
-                        </span>
-                      )}
-                  </>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-red-600 dark:text-red-500">
-                    <span className="h-2 w-2 rounded-full bg-red-500" />
-                    {t("outOfStock")}
-                  </span>
-                )}
-              </div>
             </div>
 
             {/* Divider */}

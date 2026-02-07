@@ -86,7 +86,7 @@
       "selectVariant": "Select Variant",
       "inStock": "In Stock",
       "outOfStock": "Out of Stock",
-      "leftInStock": "left in stock",
+      "leftInStock": "{count} left in stock",
       "price": "Price",
       "description": "Description",
       "specifications": "Specifications",
@@ -98,6 +98,7 @@
       "noImageAvailable": "No Image Available",
       "taxIncluded": "Tax included",
       "available": "available",
+      "sku": "SKU",
       "sortBy": {
         "label": "Sort by",
         "newest": "Newest",
@@ -294,5 +295,12 @@
     "orderNumber": "Order Number",
     "redirectingToHome": "Redirecting to home page...",
     "continueShopping": "Continue Shopping"
+  },
+  "orderSuccess": {
+    "title": "Thank You for Your Order!",
+    "message": "Your order has been placed successfully. We'll start preparing it right away.",
+    "orderNumber": "Order Number",
+    "redirecting": "Redirecting to home page in {seconds} seconds...",
+    "backToHome": "Back to Home"
   }
 }

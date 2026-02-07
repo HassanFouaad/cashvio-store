@@ -1,16 +1,22 @@
 import type {
-    AddToCartData,
-    AnalyticsAdapter,
-    AnalyticsEventName,
-    BeginCheckoutData,
-    PageViewData,
-    PurchaseData,
-    RemoveFromCartData,
-    SearchData,
-    ViewCartData,
-    ViewItemData,
-    ViewItemListData,
+  AddToCartData,
+  AnalyticsAdapter,
+  AnalyticsEventName,
+  BeginCheckoutData,
+  PageViewData,
+  PurchaseData,
+  RemoveFromCartData,
+  SearchData,
+  ViewCartData,
+  ViewItemData,
+  ViewItemListData,
 } from "./types";
+
+interface BufferedEvent {
+  type: "event" | "pageview";
+  eventName?: AnalyticsEventName;
+  data: Record<string, unknown>;
+}
 
 /**
  * Central analytics tracker that dispatches events to all registered adapters.
@@ -18,6 +24,10 @@ import type {
  * Uses the adapter pattern for scalability:
  * - Adding a new provider (TikTok, Snapchat, etc.) only requires a new adapter.
  * - Event tracking code throughout the app remains unchanged.
+ *
+ * Includes an event buffer: if events are tracked before adapters are registered
+ * (race condition during SSR hydration), they are queued and flushed once
+ * the first adapter registers.
  *
  * All dispatch methods are wrapped in try-catch to guarantee analytics
  * errors never crash or affect the store front.
@@ -29,9 +39,12 @@ import type {
 class AnalyticsTracker {
   private adapters: AnalyticsAdapter[] = [];
   private initialized = false;
+  private eventBuffer: BufferedEvent[] = [];
+  private static readonly MAX_BUFFER_SIZE = 50;
 
   /**
-   * Register a new analytics adapter
+   * Register a new analytics adapter.
+   * After registration, any buffered events are flushed to the new adapter.
    */
   registerAdapter(adapter: AnalyticsAdapter): void {
     // Prevent duplicate registrations
@@ -40,6 +53,9 @@ class AnalyticsTracker {
     }
     this.adapters.push(adapter);
     this.initialized = true;
+
+    // Flush buffered events to all adapters
+    this.flushBuffer();
   }
 
   /**
@@ -55,14 +71,33 @@ class AnalyticsTracker {
   reset(): void {
     this.adapters = [];
     this.initialized = false;
+    this.eventBuffer = [];
+  }
+
+  /**
+   * Flush buffered events to all registered adapters, then clear the buffer.
+   */
+  private flushBuffer(): void {
+    if (this.eventBuffer.length === 0) return;
+
+    const events = [...this.eventBuffer];
+    this.eventBuffer = [];
+
+    for (const buffered of events) {
+      if (buffered.type === "pageview") {
+        this.dispatchPageView(buffered.data as PageViewData | undefined);
+      } else if (buffered.eventName) {
+        this.dispatchEvent(buffered.eventName, buffered.data);
+      }
+    }
   }
 
   // ==================== Core Methods ====================
 
   /**
-   * Track a page view across all adapters
+   * Dispatch a page view to all adapters (no buffering).
    */
-  trackPageView(data?: PageViewData): void {
+  private dispatchPageView(data?: PageViewData): void {
     for (const adapter of this.adapters) {
       try {
         adapter.trackPageView(data);
@@ -73,9 +108,9 @@ class AnalyticsTracker {
   }
 
   /**
-   * Track a generic event across all adapters
+   * Dispatch a generic event to all adapters (no buffering).
    */
-  trackEvent(
+  private dispatchEvent(
     eventName: AnalyticsEventName,
     data: Record<string, unknown>,
   ): void {
@@ -88,11 +123,42 @@ class AnalyticsTracker {
     }
   }
 
-  // ==================== E-commerce Convenience Methods ====================
+  /**
+   * Track a page view across all adapters.
+   * Buffers if no adapters are registered yet.
+   */
+  trackPageView(data?: PageViewData): void {
+    if (this.adapters.length === 0) {
+      if (this.eventBuffer.length < AnalyticsTracker.MAX_BUFFER_SIZE) {
+        this.eventBuffer.push({
+          type: "pageview",
+          data: (data ?? {}) as Record<string, unknown>,
+        });
+      }
+      return;
+    }
+    this.dispatchPageView(data);
+  }
 
   /**
-   * Track when a user views a product detail page
+   * Track a generic event across all adapters.
+   * Buffers if no adapters are registered yet.
    */
+  trackEvent(
+    eventName: AnalyticsEventName,
+    data: Record<string, unknown>,
+  ): void {
+    if (this.adapters.length === 0) {
+      if (this.eventBuffer.length < AnalyticsTracker.MAX_BUFFER_SIZE) {
+        this.eventBuffer.push({ type: "event", eventName, data });
+      }
+      return;
+    }
+    this.dispatchEvent(eventName, data);
+  }
+
+  // ==================== E-commerce Convenience Methods ====================
+
   trackViewItem(data: ViewItemData): void {
     this.trackEvent(
       "view_item",
@@ -100,9 +166,6 @@ class AnalyticsTracker {
     );
   }
 
-  /**
-   * Track when a user views a list of products
-   */
   trackViewItemList(data: ViewItemListData): void {
     this.trackEvent(
       "view_item_list",
@@ -110,9 +173,6 @@ class AnalyticsTracker {
     );
   }
 
-  /**
-   * Track when a user adds an item to cart
-   */
   trackAddToCart(data: AddToCartData): void {
     this.trackEvent(
       "add_to_cart",
@@ -120,9 +180,6 @@ class AnalyticsTracker {
     );
   }
 
-  /**
-   * Track when a user removes an item from cart
-   */
   trackRemoveFromCart(data: RemoveFromCartData): void {
     this.trackEvent(
       "remove_from_cart",
@@ -130,9 +187,6 @@ class AnalyticsTracker {
     );
   }
 
-  /**
-   * Track when a user views their cart
-   */
   trackViewCart(data: ViewCartData): void {
     this.trackEvent(
       "view_cart",
@@ -140,9 +194,6 @@ class AnalyticsTracker {
     );
   }
 
-  /**
-   * Track when a user begins the checkout process
-   */
   trackBeginCheckout(data: BeginCheckoutData): void {
     this.trackEvent(
       "begin_checkout",
@@ -150,9 +201,6 @@ class AnalyticsTracker {
     );
   }
 
-  /**
-   * Track a completed purchase
-   */
   trackPurchase(data: PurchaseData): void {
     this.trackEvent(
       "purchase",
@@ -160,9 +208,6 @@ class AnalyticsTracker {
     );
   }
 
-  /**
-   * Track a search action
-   */
   trackSearch(data: SearchData): void {
     this.trackEvent(
       "search",

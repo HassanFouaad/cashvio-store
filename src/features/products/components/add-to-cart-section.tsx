@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { useCartStore } from '@/features/cart/store';
+import { Button } from "@/components/ui/button";
+import { useCartStore } from "@/features/cart/store";
 import {
   PublicProductDto,
   PublicProductVariantDto,
-} from '@/features/products/types/product.types';
-import { formatCurrency } from '@/lib/utils/formatters';
+} from "@/features/products/types/product.types";
+import { formatCurrency } from "@/lib/utils/formatters";
 import {
   AlertCircle,
   Check,
@@ -15,10 +15,10 @@ import {
   Plus,
   ShoppingCart,
   Trash2,
-} from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import Link from 'next/link';
-import { useCallback, useState } from 'react';
+} from "lucide-react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { useCallback, useState } from "react";
 
 interface AddToCartSectionProps {
   product: PublicProductDto;
@@ -39,12 +39,15 @@ export function AddToCartSection({
   currency,
   locale,
 }: AddToCartSectionProps) {
-  const t = useTranslations('store.products');
-  const tCart = useTranslations('cart');
+  const t = useTranslations("store.products");
+  const tCart = useTranslations("cart");
 
-  // Local state
+  // Local state — default to first in-stock variant, fallback to first variant
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
-    variants[0]?.id || null
+    () => {
+      const inStockVariant = variants.find((v) => v.inStock);
+      return inStockVariant?.id ?? variants[0]?.id ?? null;
+    },
   );
   const [justAdded, setJustAdded] = useState(false);
 
@@ -60,41 +63,55 @@ export function AddToCartSection({
   const selectedVariant = variants.find((v) => v.id === selectedVariantId);
   const isInStock = selectedVariant?.inStock ?? false;
   const totalAvailable = selectedVariant?.availableQuantity ?? 0;
-  
+
   // Non-trackable inventory products - check variant-level flag
   const isInventoryTrackable = selectedVariant?.inventoryTrackable !== false;
   const isUnlimitedStock = !isInventoryTrackable;
 
   // Cart quantity - derived from cart state for proper reactivity
-  const cartQuantity = selectedVariantId && isInitialized && cart
-    ? (cart.items.find(item => item.variant.id === selectedVariantId)?.quantity ?? 0)
-    : 0;
+  const cartQuantity =
+    selectedVariantId && isInitialized && cart
+      ? (cart.items.find((item) => item.variant.id === selectedVariantId)
+          ?.quantity ?? 0)
+      : 0;
 
   // Calculate remaining available (total - already in cart)
   // For unlimited stock, set a very high remaining value
-  const remainingAvailable = isUnlimitedStock 
-    ? 999999 
+  const remainingAvailable = isUnlimitedStock
+    ? 999999
     : Math.max(0, totalAvailable - cartQuantity);
 
   // Check if item is in cart
   const isInCart = cartQuantity > 0;
 
   // Check if can add more to cart
-  const canAddMore = isInStock && remainingAvailable > 0 && selectedVariant !== undefined && !isLoading;
+  const canAddMore =
+    isInStock &&
+    remainingAvailable > 0 &&
+    selectedVariant !== undefined &&
+    !isLoading;
 
   // Check if max is reached (not applicable for unlimited stock)
   const isMaxReached = !isUnlimitedStock && cartQuantity >= totalAvailable;
 
   // Helper to get variant cart quantity (for variant selector)
-  const getVariantCartQuantity = useCallback((variantId: string) => {
-    if (!isInitialized || !cart) return 0;
-    return cart.items.find(item => item.variant.id === variantId)?.quantity ?? 0;
-  }, [isInitialized, cart]);
-  
+  const getVariantCartQuantity = useCallback(
+    (variantId: string) => {
+      if (!isInitialized || !cart) return 0;
+      return (
+        cart.items.find((item) => item.variant.id === variantId)?.quantity ?? 0
+      );
+    },
+    [isInitialized, cart],
+  );
+
   // Helper to check if variant has unlimited stock
-  const isVariantUnlimitedStock = useCallback((variant: PublicProductVariantDto) => {
-    return variant.inventoryTrackable === false;
-  }, []);
+  const isVariantUnlimitedStock = useCallback(
+    (variant: PublicProductVariantDto) => {
+      return variant.inventoryTrackable === false;
+    },
+    [],
+  );
 
   // Handlers
   const handleVariantSelect = useCallback((variantId: string) => {
@@ -117,7 +134,15 @@ export function AddToCartSection({
         updateQuantity(selectedVariant.id, newQuantity);
       }
     },
-    [selectedVariant, isInitialized, cartQuantity, totalAvailable, isUnlimitedStock, removeItem, updateQuantity]
+    [
+      selectedVariant,
+      isInitialized,
+      cartQuantity,
+      totalAvailable,
+      isUnlimitedStock,
+      removeItem,
+      updateQuantity,
+    ],
   );
 
   // Handle initial add to cart (when not in cart yet)
@@ -146,44 +171,95 @@ export function AddToCartSection({
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Dynamic Price & Stock — updates when the user switches variants */}
+      {selectedVariant && (
+        <div className="space-y-3">
+          {/* Price */}
+          <div className="flex items-baseline gap-3">
+            <span className="text-2xl sm:text-3xl font-semibold">
+              {formatCurrency(selectedVariant.sellingPrice, currency, locale)}
+            </span>
+            {product.taxIncluded && product.taxRate && (
+              <span className="text-sm text-muted-foreground">
+                {t("taxIncluded")}
+              </span>
+            )}
+          </div>
+
+          {/* Stock Status */}
+          <div className="flex items-center gap-2">
+            {isInStock ? (
+              <>
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-600 dark:text-green-500">
+                  <span className="h-2 w-2 rounded-full bg-green-500" />
+                  {t("inStock")}
+                </span>
+                {!isUnlimitedStock &&
+                  totalAvailable > 0 &&
+                  totalAvailable < 5 && (
+                    <span className="text-sm text-amber-600 dark:text-amber-500">
+                      — {t("leftInStock", { count: totalAvailable })}
+                    </span>
+                  )}
+              </>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-red-600 dark:text-red-500">
+                <span className="h-2 w-2 rounded-full bg-red-500" />
+                {t("outOfStock")}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Variant Selector - Mobile-first grid */}
       {variants.length > 1 && (
         <div className="space-y-2 sm:space-y-3">
-          <h2 className="text-sm font-semibold">{t('selectVariant')}</h2>
+          <h2 className="text-sm font-semibold">{t("selectVariant")}</h2>
           <div className="grid grid-cols-2 gap-2">
             {variants.map((variant) => {
               const variantCartQty = getVariantCartQuantity(variant.id);
               const variantUnlimited = isVariantUnlimitedStock(variant);
-              const variantMaxReached = !variantUnlimited && variantCartQty >= variant.availableQuantity;
+              const variantMaxReached =
+                !variantUnlimited &&
+                variantCartQty >= variant.availableQuantity;
+
+              const isOos = !variant.inStock;
 
               return (
                 <button
                   key={variant.id}
                   onClick={() => handleVariantSelect(variant.id)}
-                  disabled={!variant.inStock || variantMaxReached}
+                  disabled={isOos || variantMaxReached}
                   className={`relative px-3 py-2.5 sm:px-4 sm:py-3 text-sm rounded-lg border-2 transition-all touch-manipulation ${
                     variant.id === selectedVariantId
-                      ? 'border-primary bg-primary/5'
-                      : 'border-muted hover:border-muted-foreground/30'
+                      ? "border-primary bg-primary/5"
+                      : "border-muted hover:border-muted-foreground/30"
                   } ${
-                    !variant.inStock || variantMaxReached
-                      ? 'opacity-50 cursor-not-allowed'
-                      : 'cursor-pointer active:scale-[0.98]'
+                    isOos || variantMaxReached
+                      ? "opacity-60 cursor-not-allowed"
+                      : "cursor-pointer active:scale-[0.98]"
                   }`}
                 >
-                  <div className="font-medium truncate">{variant.name}</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div
+                    className={`font-medium truncate ${isOos ? "text-muted-foreground" : ""}`}
+                  >
+                    {variant.name}
+                  </div>
+                  <div
+                    className={`text-xs ${isOos ? "line-through text-muted-foreground/70" : "text-muted-foreground"}`}
+                  >
                     {formatCurrency(variant.sellingPrice, currency, locale)}
                   </div>
-                  {!variant.inStock && (
-                    <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-destructive bg-background/90 rounded-lg">
-                      {t('outOfStock')}
-                    </div>
+                  {isOos && (
+                    <span className="mt-0.5 inline-block text-[10px] font-semibold uppercase tracking-wide text-destructive">
+                      {t("outOfStock")}
+                    </span>
                   )}
-                  {variant.inStock && variantMaxReached && (
-                    <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-muted-foreground bg-background/90 rounded-lg">
-                      {tCart('maxInCart')}
-                    </div>
+                  {!isOos && variantMaxReached && (
+                    <span className="mt-0.5 inline-block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {tCart("maxInCart")}
+                    </span>
                   )}
                   {variantCartQty > 0 && !variantMaxReached && (
                     <div className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
@@ -201,7 +277,7 @@ export function AddToCartSection({
       {isInitialized && isInStock && isMaxReached && (
         <div className="flex items-center gap-2 p-2.5 sm:p-3 rounded-lg border border-muted-foreground/30 text-muted-foreground text-sm">
           <AlertCircle className="h-4 w-4 shrink-0" />
-          <span>{tCart('maxQuantityReached')}</span>
+          <span>{tCart("maxQuantityReached")}</span>
         </div>
       )}
 
@@ -214,18 +290,18 @@ export function AddToCartSection({
               {cartQuantity > 0 ? (
                 <>
                   <span>
-                    {cartQuantity} {tCart('inCart')}
+                    {cartQuantity} {tCart("inCart")}
                   </span>
                   {!isUnlimitedStock && (
                     <span>
-                      {remainingAvailable} {t('available')}
+                      {remainingAvailable} {t("available")}
                     </span>
                   )}
                 </>
               ) : (
                 !isUnlimitedStock && (
                   <span>
-                    {totalAvailable} {t('available')}
+                    {totalAvailable} {t("available")}
                   </span>
                 )
               )}
@@ -282,7 +358,7 @@ export function AddToCartSection({
                 className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-primary text-primary-foreground font-medium transition-colors hover:bg-primary/90 active:bg-primary/80 touch-manipulation"
               >
                 <ShoppingCart className="h-5 w-5" />
-                {tCart('viewCart')}
+                {tCart("viewCart")}
               </Link>
             </div>
           ) : (
@@ -296,17 +372,17 @@ export function AddToCartSection({
               {isLoading ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  {tCart('adding')}
+                  {tCart("adding")}
                 </>
               ) : justAdded ? (
                 <>
                   <Check className="h-5 w-5" />
-                  {tCart('addedToCart')}
+                  {tCart("addedToCart")}
                 </>
               ) : (
                 <>
                   <ShoppingCart className="h-5 w-5" />
-                  {t('addToCart')}
+                  {t("addToCart")}
                 </>
               )}
             </Button>
@@ -317,10 +393,9 @@ export function AddToCartSection({
       {/* Out of stock - Clear message */}
       {!isInStock && (
         <Button size="lg" className="w-full h-12 sm:h-11" disabled>
-          {t('outOfStock')}
+          {t("outOfStock")}
         </Button>
       )}
     </div>
   );
 }
-

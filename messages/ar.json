@@ -86,7 +86,7 @@
       "selectVariant": "اختر النوع",
       "inStock": "متوفر",
       "outOfStock": "غير متوفر",
-      "leftInStock": "متبقي في المخزون",
+      "leftInStock": "{count} متبقي في المخزون",
       "price": "السعر",
       "description": "الوصف",
       "specifications": "المواصفات",
@@ -98,6 +98,7 @@
       "noImageAvailable": "لا توجد صورة متاحة",
       "taxIncluded": "شامل الضريبة",
       "available": "متاح",
+      "sku": "رمز المنتج",
       "sortBy": {
         "label": "ترتيب حسب",
         "newest": "الأحدث",
@@ -294,5 +295,12 @@
     "orderNumber": "رقم الطلب",
     "redirectingToHome": "جاري التوجيه للصفحة الرئيسية...",
     "continueShopping": "متابعة التسوق"
+  },
+  "orderSuccess": {
+    "title": "شكراً لطلبك!",
+    "message": "تم تقديم طلبك بنجاح. سنبدأ في تحضيره فوراً.",
+    "orderNumber": "رقم الطلب",
+    "redirecting": "سيتم التوجيه للصفحة الرئيسية خلال {seconds} ثانية...",
+    "backToHome": "العودة للرئيسية"
   }
 }

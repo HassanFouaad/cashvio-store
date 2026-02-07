@@ -74,8 +74,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  // Prepare analytics data for view_item event
-  const defaultVariant = product.variants?.[0];
+  // Prepare analytics data — prefer first in-stock variant
+  const defaultVariant =
+    product.variants?.find((v) => v.inStock) ?? product.variants?.[0];
   const productPrice = defaultVariant?.sellingPrice ?? 0;
 
   return (

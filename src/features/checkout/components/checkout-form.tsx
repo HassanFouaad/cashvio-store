@@ -28,11 +28,13 @@ import { formatCurrency } from "@/lib/utils/formatters";
 import {
   AlertCircle,
   AlertTriangle,
-  CheckCircle,
+  ChevronDown,
   Loader2,
   MapPin,
   Package,
+  ShoppingBag,
   Store,
+  User,
   UtensilsCrossed,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -80,9 +82,8 @@ export function CheckoutForm({
   // Order submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [orderSuccess, setOrderSuccess] = useState<{
-    orderNumber: string;
-  } | null>(null);
+  // Mobile order summary toggle (collapsed by default on mobile)
+  const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
 
   // Compute validation with memoization
   const validation = useMemo(() => computeCartValidation(cart), [cart]);
@@ -421,13 +422,17 @@ export function CheckoutForm({
       // Clear cart on frontend
       await clearCart();
 
-      // Show success state
-      setOrderSuccess({ orderNumber: result.orderNumber });
+      // Set a session token to allow access to the order success page
+      try {
+        sessionStorage.setItem("order-success-token", Date.now().toString());
+      } catch {
+        // sessionStorage may be unavailable in some browsers
+      }
 
-      // Redirect to success page or home after delay
-      setTimeout(() => {
-        router.push("/");
-      }, 3000);
+      // Redirect to the Thank You page
+      router.push(
+        `/order-success?orderNumber=${encodeURIComponent(result.orderNumber)}`,
+      );
     } catch (error) {
       console.error("Failed to place order:", error);
       setSubmitError(t("orderError"));
@@ -438,6 +443,7 @@ export function CheckoutForm({
     preview,
     selectedMethod,
     isSubmitting,
+    isCustomerInfoComplete,
     storeId,
     items,
     customerName,
@@ -445,6 +451,7 @@ export function CheckoutForm({
     notes,
     buildDeliveryAddress,
     clearCart,
+    currency,
     router,
     t,
   ]);
@@ -480,37 +487,6 @@ export function CheckoutForm({
         </p>
         <Link href="/cart">
           <Button>{tCart("reviewChanges")}</Button>
-        </Link>
-      </div>
-    );
-  }
-
-  // Order success state
-  if (orderSuccess) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 sm:py-20 space-y-6 text-center">
-        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-100 dark:bg-green-950/30 flex items-center justify-center">
-          <CheckCircle className="h-10 w-10 sm:h-12 sm:w-12 text-green-600 dark:text-green-500" />
-        </div>
-        <div className="space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-bold">
-            {t("orderSuccessTitle")}
-          </h1>
-          <p className="text-muted-foreground text-base sm:text-lg">
-            {t("orderSuccessMessage")}
-          </p>
-        </div>
-        <div className="p-4 sm:p-6 bg-muted/50 rounded-xl">
-          <p className="text-sm text-muted-foreground">{t("orderNumber")}</p>
-          <p className="text-xl sm:text-2xl font-bold font-mono">
-            {orderSuccess.orderNumber}
-          </p>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {t("redirectingToHome")}
-        </p>
-        <Link href="/">
-          <Button variant="outline">{t("continueShopping")}</Button>
         </Link>
       </div>
     );
@@ -659,7 +635,10 @@ export function CheckoutForm({
 
         {/* Customer Information */}
         <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
-          <h2 className="text-lg font-semibold">{t("customerInfo")}</h2>
+          <div className="flex items-center gap-2">
+            <User className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold">{t("customerInfo")}</h2>
+          </div>
           <div className="space-y-4">
             <div>
               <label
@@ -722,100 +701,137 @@ export function CheckoutForm({
       <div className="lg:col-span-1">
         <div className="lg:sticky lg:top-24">
           <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
-            <h2 className="text-lg font-semibold">{tCart("orderSummary")}</h2>
-
-            {isLoadingPreview ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex justify-between">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-16" />
-                  </div>
-                ))}
+            {/* Collapsible header on mobile */}
+            <button
+              type="button"
+              className="flex items-center justify-between w-full lg:cursor-default"
+              onClick={() => setMobileSummaryOpen((v) => !v)}
+            >
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-semibold">
+                  {tCart("orderSummary")}
+                </h2>
               </div>
-            ) : previewError ? (
-              <div className="text-sm text-destructive">{previewError}</div>
-            ) : preview ? (
-              <>
-                {/* Items count */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {tCart("subtotal")} ({items.length}{" "}
-                      {items.length === 1 ? tCart("item") : tCart("items")})
-                    </span>
-                    <span className="font-medium">
-                      {formatCurrency(preview.subtotal, currency, locale)}
-                    </span>
+              <div className="flex items-center gap-2">
+                {preview && (
+                  <span className="text-sm font-bold lg:hidden">
+                    {formatCurrency(preview.totalAmount, currency, locale)}
+                  </span>
+                )}
+                <ChevronDown
+                  className={`h-5 w-5 text-muted-foreground transition-transform lg:hidden ${
+                    mobileSummaryOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </div>
+            </button>
+
+            {/* Summary content — always visible on desktop, collapsible on mobile */}
+            <div
+              className={`space-y-4 ${mobileSummaryOpen ? "" : "hidden lg:block"}`}
+            >
+              {isLoadingPreview ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex justify-between">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-4 w-16" />
+                    </div>
+                  ))}
+                </div>
+              ) : previewError ? (
+                <div className="text-sm text-destructive">{previewError}</div>
+              ) : preview ? (
+                <>
+                  {/* Items count */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {tCart("subtotal")} ({items.length}{" "}
+                        {items.length === 1 ? tCart("item") : tCart("items")})
+                      </span>
+                      <span className="font-medium">
+                        {formatCurrency(preview.subtotal, currency, locale)}
+                      </span>
+                    </div>
+
+                    {/* Discount */}
+                    {preview.totalDiscount > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {t("discount")}
+                        </span>
+                        <span className="font-medium text-green-600 dark:text-green-500">
+                          -
+                          {formatCurrency(
+                            preview.totalDiscount,
+                            currency,
+                            locale,
+                          )}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Service Fees */}
+                    {preview.serviceFees > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {t("serviceFees")}
+                        </span>
+                        <span className="font-medium">
+                          {formatCurrency(
+                            preview.serviceFees,
+                            currency,
+                            locale,
+                          )}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Delivery Fees */}
+                    {preview.deliveryFees > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {t("deliveryFees")}
+                        </span>
+                        <span className="font-medium">
+                          {formatCurrency(
+                            preview.deliveryFees,
+                            currency,
+                            locale,
+                          )}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Tax */}
+                    {preview.totalTax > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {tCart("tax")}
+                        </span>
+                        <span className="font-medium">
+                          {formatCurrency(preview.totalTax, currency, locale)}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Discount */}
-                  {preview.totalDiscount > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {t("discount")}
+                  {/* Divider */}
+                  <div className="border-t pt-4">
+                    <div className="flex justify-between">
+                      <span className="text-base font-semibold">
+                        {tCart("total")}
                       </span>
-                      <span className="font-medium text-green-600 dark:text-green-500">
-                        -
-                        {formatCurrency(
-                          preview.totalDiscount,
-                          currency,
-                          locale,
-                        )}
+                      <span className="text-lg font-bold">
+                        {formatCurrency(preview.totalAmount, currency, locale)}
                       </span>
                     </div>
-                  )}
-
-                  {/* Service Fees */}
-                  {preview.serviceFees > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {t("serviceFees")}
-                      </span>
-                      <span className="font-medium">
-                        {formatCurrency(preview.serviceFees, currency, locale)}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Delivery Fees */}
-                  {preview.deliveryFees > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {t("deliveryFees")}
-                      </span>
-                      <span className="font-medium">
-                        {formatCurrency(preview.deliveryFees, currency, locale)}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Tax */}
-                  {preview.totalTax > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {tCart("tax")}
-                      </span>
-                      <span className="font-medium">
-                        {formatCurrency(preview.totalTax, currency, locale)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Divider */}
-                <div className="border-t pt-4">
-                  <div className="flex justify-between">
-                    <span className="text-base font-semibold">
-                      {tCart("total")}
-                    </span>
-                    <span className="text-lg font-bold">
-                      {formatCurrency(preview.totalAmount, currency, locale)}
-                    </span>
                   </div>
-                </div>
-              </>
-            ) : null}
+                </>
+              ) : null}
+            </div>
 
             {/* Error message */}
             {submitError && (

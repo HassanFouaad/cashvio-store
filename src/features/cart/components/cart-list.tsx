@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { Loader2, Trash2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useCartStore, useIsCartSyncing } from '../store';
-import { CartEmpty } from './cart-empty';
-import { CartItem } from './cart-item';
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { useCartStore, useIsCartSyncing } from "../store";
+import { CartEmpty } from "./cart-empty";
+import { CartItem } from "./cart-item";
 
 interface CartListProps {
   currency: string;
@@ -17,7 +18,7 @@ interface CartListProps {
  * Displays all items in cart or empty state
  */
 export function CartList({ currency, locale }: CartListProps) {
-  const t = useTranslations('cart');
+  const t = useTranslations("cart");
   const { cart, clearCart, isInitialized, isLoading } = useCartStore();
   const isSyncing = useIsCartSyncing();
 
@@ -45,10 +46,19 @@ export function CartList({ currency, locale }: CartListProps) {
 
   return (
     <div className="space-y-4">
+      {/* Continue Shopping link */}
+      <Link
+        href="/products"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+        {t("continueShopping")}
+      </Link>
+
       {/* Header with clear button */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold flex items-center gap-2">
-          {t('yourCart')} ({cart.itemCount})
+          {t("yourCart")} ({cart.itemCount})
           {isSyncing && (
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           )}
@@ -61,7 +71,7 @@ export function CartList({ currency, locale }: CartListProps) {
           onClick={clearCart}
         >
           <Trash2 className="h-4 w-4 me-2" />
-          {t('clearAll')}
+          {t("clearAll")}
         </Button>
       </div>
 
