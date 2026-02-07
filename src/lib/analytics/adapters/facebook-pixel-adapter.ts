@@ -1,7 +1,7 @@
 import type {
-    AnalyticsAdapter,
-    AnalyticsEventName,
-    PageViewData,
+  AnalyticsAdapter,
+  AnalyticsEventName,
+  PageViewData,
 } from "../types";
 
 declare global {
