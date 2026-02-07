@@ -7,6 +7,7 @@ import { PaginationMeta } from "@/lib/api/types";
 import { normalizePagination } from "@/lib/utils/pagination";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { Suspense } from "react";
 
 interface ProductsGridProps {
   products: PublicProductDto[];
@@ -50,10 +51,12 @@ export async function ProductsGrid({
             <Link href={baseUrl}>
               <Button variant="default">{t("backToFirstPage")}</Button>
             </Link>
-            <PaginationControls
-              pagination={normalizedPagination}
-              baseUrl={baseUrl}
-            />
+            <Suspense fallback={null}>
+              <PaginationControls
+                pagination={normalizedPagination}
+                baseUrl={baseUrl}
+              />
+            </Suspense>
           </div>
         </div>
       );
@@ -82,11 +85,13 @@ export async function ProductsGrid({
         ))}
       </div>
 
-      {/* Pagination Controls - Client Component */}
-      <PaginationControls
-        pagination={normalizedPagination}
-        baseUrl={baseUrl}
-      />
+      {/* Pagination Controls - Client Component wrapped in Suspense for useSearchParams */}
+      <Suspense fallback={null}>
+        <PaginationControls
+          pagination={normalizedPagination}
+          baseUrl={baseUrl}
+        />
+      </Suspense>
     </div>
   );
 }

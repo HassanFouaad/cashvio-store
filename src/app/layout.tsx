@@ -87,6 +87,13 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   }
 
+  // CRITICAL: Set store ID in request-scoped context EARLY.
+  // This ensures child page generateMetadata() functions (e.g., product detail page)
+  // have access to the store ID for their API calls via X-Store-Id header.
+  // Uses React.cache() under the hood, so this is request-scoped and safe
+  // for concurrent requests in production.
+  setApiStoreId(store.id);
+
   const seo = store.storeFront.seo;
   const storeName = store.name;
   const storeDescription = seo?.description || `Welcome to ${storeName}`;

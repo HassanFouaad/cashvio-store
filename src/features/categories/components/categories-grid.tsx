@@ -6,6 +6,7 @@ import { PaginationMeta } from "@/lib/api/types";
 import { normalizePagination } from "@/lib/utils/pagination";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { Suspense } from "react";
 
 interface CategoriesGridProps {
   categories: PublicCategoryDto[];
@@ -38,10 +39,12 @@ export async function CategoriesGrid({
             <Link href="/categories">
               <Button variant="default">{t("backToFirstPage")}</Button>
             </Link>
-            <PaginationControls
-              pagination={normalizedPagination}
-              baseUrl="/categories"
-            />
+            <Suspense fallback={null}>
+              <PaginationControls
+                pagination={normalizedPagination}
+                baseUrl="/categories"
+              />
+            </Suspense>
           </div>
         </div>
       );
@@ -64,11 +67,13 @@ export async function CategoriesGrid({
         ))}
       </div>
 
-      {/* Pagination Controls - Client Component */}
-      <PaginationControls
-        pagination={normalizedPagination}
-        baseUrl="/categories"
-      />
+      {/* Pagination Controls - Client Component wrapped in Suspense for useSearchParams */}
+      <Suspense fallback={null}>
+        <PaginationControls
+          pagination={normalizedPagination}
+          baseUrl="/categories"
+        />
+      </Suspense>
     </div>
   );
 }

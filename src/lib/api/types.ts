@@ -108,37 +108,66 @@ export interface FetchOptions extends RequestInit {
  */
 
 import { Locale } from "@/types/enums";
+import { cache } from "react";
 
 /**
- * Current locale for API requests
- * This is used to set Accept-Language header
+ * Server-side request-scoped locale using React cache().
+ * React.cache() creates a memoized function that returns the SAME object
+ * per server request, preventing race conditions between concurrent requests.
+ * On the client, it returns the same object (effectively a singleton, which is fine).
  */
-let currentLocale: Locale = Locale.ENGLISH;
+const getServerLocaleContext = cache(() => ({
+  locale: Locale.ENGLISH as Locale,
+}));
+
+/**
+ * Client-side locale (module variable is fine since client is single-threaded)
+ */
+let clientLocale: Locale = Locale.ENGLISH;
 
 export function setApiLocale(locale: Locale): void {
-  currentLocale = locale;
+  if (typeof window !== "undefined") {
+    clientLocale = locale;
+    return;
+  }
+  // Server-side: set in request-scoped cache
+  getServerLocaleContext().locale = locale;
 }
 
 export function getApiLocale(): Locale {
-  return currentLocale;
+  if (typeof window === "undefined") {
+    return getServerLocaleContext().locale;
+  }
+  return clientLocale;
 }
 
 /**
  * ============================================
  * STORE ID CONTEXT - CRITICAL FOR MULTI-TENANT
  * ============================================
- * 
- * Store ID is managed via multiple sources for reliability:
- * - Server: Module variable set by layout.tsx
- * - Client: window.__STORE_ID__ (set by inline script BEFORE React)
- * - Client Fallback: Cookie for persistence
- * 
- * On client, window.__STORE_ID__ is the PRIMARY source because
- * the inline script runs BEFORE React hydrates, guaranteeing availability.
+ *
+ * ARCHITECTURE:
+ *
+ * SERVER SIDE:
+ *   Uses React.cache() to create REQUEST-SCOPED store ID.
+ *   This prevents race conditions when multiple tenant requests
+ *   are processed concurrently in production. Each server request
+ *   gets its own isolated store ID context.
+ *
+ *   Set by: layout.tsx generateMetadata() AND component body
+ *   Read by: All server-side API calls via apiClient.getHeaders()
+ *
+ * CLIENT SIDE:
+ *   Uses window.__STORE_ID__ as PRIMARY source (set by inline script
+ *   in <head> BEFORE React hydrates, guaranteeing availability).
+ *   Cookie fallback for persistence across page loads.
+ *
+ *   Set by: Inline script in layout.tsx <head>, StoreProvider useEffect
+ *   Read by: All client-side API calls (cart, checkout, etc.)
  */
 
 // Cookie name for store ID - must match middleware and layout
-const STORE_ID_COOKIE_NAME = 'sf_store_id';
+const STORE_ID_COOKIE_NAME = "sf_store_id";
 
 // Declare window type augmentation
 declare global {
@@ -148,34 +177,50 @@ declare global {
 }
 
 /**
- * Module-level store ID - used on SERVER side only
- * On client, we always read from window.__STORE_ID__ first
+ * Server-side request-scoped store ID using React cache().
+ *
+ * CRITICAL: This replaces the old module-level `serverStoreId` variable
+ * which was shared across ALL concurrent requests, causing:
+ * - Wrong store ID sent to backend for concurrent requests
+ * - "Store ID is required" errors (400)
+ * - Wrong tenant data returned (404)
+ *
+ * React.cache() ensures each server request gets its own object.
  */
-let serverStoreId: string | null = null;
+const getServerStoreContext = cache(() => ({
+  storeId: null as string | null,
+}));
 
 /**
- * Set the current store ID
+ * Set the current store ID.
+ *
  * Called by:
- * - Server: layout.tsx before any API calls
- * - Client: StoreProvider (also sets window.__STORE_ID__)
+ * - Server: layout.tsx generateMetadata() (for child page metadata)
+ * - Server: layout.tsx component body (for child page components)
+ * - Client: StoreProvider (keeps window.__STORE_ID__ in sync on navigation)
  */
 export function setApiStoreId(storeId: string | null): void {
-  serverStoreId = storeId;
-  
-  // On client, also set window variable for reliability
-  if (typeof window !== 'undefined' && storeId) {
-    window.__STORE_ID__ = storeId;
+  if (typeof window !== "undefined") {
+    // Client-side: set window variable (primary source for client API calls)
+    if (storeId) {
+      window.__STORE_ID__ = storeId;
+    }
+    return;
   }
+  // Server-side: set in request-scoped cache
+  getServerStoreContext().storeId = storeId;
 }
 
 /**
- * Read store ID from cookie
+ * Read store ID from cookie (client-side only)
  */
 function getStoreIdFromCookie(): string | null {
-  if (typeof window === 'undefined') return null;
-  
+  if (typeof window === "undefined") return null;
+
   try {
-    const match = document.cookie.match(new RegExp(`(?:^|; )${STORE_ID_COOKIE_NAME}=([^;]*)`));
+    const match = document.cookie.match(
+      new RegExp(`(?:^|; )${STORE_ID_COOKIE_NAME}=([^;]*)`)
+    );
     return match ? decodeURIComponent(match[1]) : null;
   } catch {
     return null;
@@ -183,37 +228,37 @@ function getStoreIdFromCookie(): string | null {
 }
 
 /**
- * Get the current store ID
- * 
- * SERVER: Returns module variable (set by layout.tsx)
+ * Get the current store ID.
+ *
+ * SERVER: Returns from request-scoped React.cache() context.
+ *         Safe for concurrent requests - each request has its own value.
+ *
  * CLIENT: Returns from (in order of priority):
- *   1. window.__STORE_ID__ (set by inline script before React)
- *   2. Cookie fallback
- * 
+ *   1. window.__STORE_ID__ (set by inline script before React hydrates)
+ *   2. Cookie fallback (set by layout inline script)
+ *
  * This function is called on EVERY API request, so it must be fast and reliable.
  */
 export function getApiStoreId(): string | null {
-  // SERVER SIDE: Use module variable
-  if (typeof window === 'undefined') {
-    return serverStoreId;
+  // SERVER SIDE: Read from request-scoped cache
+  if (typeof window === "undefined") {
+    return getServerStoreContext().storeId;
   }
-  
-  // CLIENT SIDE: Always check window first (most reliable)
-  // The inline script in layout.tsx sets this BEFORE React hydrates
+
+  // CLIENT SIDE: Check window first (most reliable - set before React hydrates)
   if (window.__STORE_ID__) {
     return window.__STORE_ID__;
   }
-  
-  // Fallback to cookie (set by middleware and layout)
+
+  // Fallback to cookie (set by inline script in layout)
   const cookieValue = getStoreIdFromCookie();
   if (cookieValue) {
-    // Cache in window for next call
+    // Cache in window for subsequent calls
     window.__STORE_ID__ = cookieValue;
     return cookieValue;
   }
-  
-  // Last resort: module variable (might be set by StoreProvider)
-  return serverStoreId;
+
+  return null;
 }
 
 /**

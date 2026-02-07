@@ -16,6 +16,7 @@ import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 interface CategoryDetailPageProps {
   params: Promise<{ id: string }>;
@@ -191,12 +192,14 @@ export default async function CategoryDetailPage({
       {/* Products Section */}
       <section className="w-full max-w-full py-6 sm:py-8">
         <div className="container space-y-6">
-          {/* Filter Bar with Search */}
-          <ProductsFilterBar
-            currentSort={sortBy}
-            inStockOnly={inStock}
-            totalItems={productsData?.pagination?.totalItems}
-          />
+          {/* Filter Bar with Search - wrapped in Suspense for useSearchParams */}
+          <Suspense fallback={null}>
+            <ProductsFilterBar
+              currentSort={sortBy}
+              inStockOnly={inStock}
+              totalItems={productsData?.pagination?.totalItems}
+            />
+          </Suspense>
 
           {/* Products Grid or Error */}
           {productsError || !productsData ? (
