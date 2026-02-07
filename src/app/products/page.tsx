@@ -2,14 +2,12 @@ import { getProductsWithErrorHandling } from "@/features/products/api/get-produc
 import { ProductsFilterBar } from "@/features/products/components/products-filter-bar";
 import { ProductsGrid } from "@/features/products/components/products-grid";
 import { ProductSortBy } from "@/features/products/types/product.types";
-import { getStoreBySubdomain } from "@/features/store/api/get-store";
-import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
+import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { TrackViewItemList } from "@/lib/analytics/track-event";
 import { validatePaginationAndRedirect } from "@/lib/utils/pagination-redirect";
 import { parsePage } from "@/lib/utils/query-params";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { headers } from "next/headers";
 import { Suspense } from "react";
 
 interface ProductsPageProps {
@@ -22,19 +20,17 @@ interface ProductsPageProps {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const headersList = await headers();
-  const hostname = headersList.get("host") || "";
-  const storeSubdomain = getStoreSubdomain(hostname);
   const t = await getTranslations("metadata.products");
 
-  if (!storeSubdomain) {
+  // Resolve store and set API context
+  const { store } = await resolveRequestStore();
+
+  if (!store) {
     return {
       title: t("title"),
       description: t("description"),
     };
   }
-
-  const store = await getStoreBySubdomain(storeSubdomain);
 
   return {
     title: t("titleWithStore", { storeName: store.name }),
@@ -45,16 +41,14 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ProductsPage({
   searchParams,
 }: ProductsPageProps) {
-  const headersList = await headers();
-  const hostname = headersList.get("host") || "";
-  const storeSubdomain = getStoreSubdomain(hostname);
+  // Resolve store and set API context (critical for X-Store-Id header)
+  const { store, subdomain } = await resolveRequestStore();
 
-  if (!storeSubdomain) {
+  if (!subdomain || !store) {
     throw new Error("Invalid store subdomain");
   }
 
   const resolvedSearchParams = await searchParams;
-  const store = await getStoreBySubdomain(storeSubdomain);
   const t = await getTranslations();
 
   // Parse query params

@@ -2,24 +2,21 @@ import { getCategoriesWithErrorHandling } from "@/features/categories/api/get-ca
 import { CategoriesSection } from "@/features/categories/components/categories-section";
 import { getProductsWithErrorHandling } from "@/features/products/api/get-products";
 import { ProductsSection } from "@/features/products/components/products-section";
-import { getStoreWithErrorHandling } from "@/features/store/api/get-store";
 import { StoreEmptyState } from "@/features/store/components/store-empty-state";
 import { StoreErrorComponent } from "@/features/store/components/store-error";
 import { StoreHero } from "@/features/store/components/store-hero";
 import { StoreErrorType } from "@/features/store/types/store.types";
-import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
+import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { TrackViewItemList } from "@/lib/analytics/track-event";
 import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 
 export default async function HomePage() {
-  // Get store subdomain from subdomain
-  const headersList = await headers();
-  const hostname = headersList.get("host") || "";
-  const storeSubdomain = getStoreSubdomain(hostname);
+  // Resolve store and set API context (critical for X-Store-Id header)
+  const { store, subdomain } = await resolveRequestStore();
 
   // No store subdomain = no subdomain = show error
-  if (!storeSubdomain) {
+  if (!subdomain) {
     return (
       <StoreErrorComponent
         error={{
@@ -30,16 +27,11 @@ export default async function HomePage() {
     );
   }
 
-  // Render store homepage with error handling
-  const { store, error } = await getStoreWithErrorHandling(storeSubdomain);
-
   // Handle store errors
-  if (error || !store) {
+  if (!store) {
     return (
       <StoreErrorComponent
-        error={
-          error || { type: StoreErrorType.UNKNOWN, message: "Store not found" }
-        }
+        error={{ type: StoreErrorType.UNKNOWN, message: "Store not found" }}
       />
     );
   }

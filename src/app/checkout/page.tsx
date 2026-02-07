@@ -7,28 +7,24 @@ import {
   FulfillmentMethod,
   PublicDeliveryZonesResponseDto,
 } from "@/features/checkout/types/checkout.types";
-import { getStoreBySubdomain } from "@/features/store/api/get-store";
-import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
+import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { TrackBeginCheckoutEvent } from "@/lib/analytics/track-cart-events";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const headersList = await headers();
-  const hostname = headersList.get("host") || "";
-  const storeSubdomain = getStoreSubdomain(hostname);
   const t = await getTranslations("metadata.checkout");
 
-  if (!storeSubdomain) {
+  // Resolve store and set API context
+  const { store } = await resolveRequestStore();
+
+  if (!store) {
     return {
       title: t("title"),
       description: t("description"),
     };
   }
-
-  const store = await getStoreBySubdomain(storeSubdomain);
 
   return {
     title: t("titleWithStore", { storeName: store.name }),
@@ -37,15 +33,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function CheckoutPage() {
-  const headersList = await headers();
-  const hostname = headersList.get("host") || "";
-  const storeSubdomain = getStoreSubdomain(hostname);
+  // Resolve store and set API context
+  const { store, subdomain } = await resolveRequestStore();
 
-  if (!storeSubdomain) {
+  if (!subdomain || !store) {
     throw new Error("Invalid store subdomain");
   }
 
-  const store = await getStoreBySubdomain(storeSubdomain);
   const t = await getTranslations("checkout");
   const locale = await getLocale();
 

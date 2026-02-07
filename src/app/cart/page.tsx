@@ -1,26 +1,22 @@
 import { CartList } from "@/features/cart/components/cart-list";
 import { CartSummary } from "@/features/cart/components/cart-summary";
-import { getStoreBySubdomain } from "@/features/store/api/get-store";
-import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
+import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { TrackViewCartEvent } from "@/lib/analytics/track-cart-events";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { headers } from "next/headers";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const headersList = await headers();
-  const hostname = headersList.get("host") || "";
-  const storeSubdomain = getStoreSubdomain(hostname);
   const t = await getTranslations("metadata.cart");
 
-  if (!storeSubdomain) {
+  // Resolve store and set API context
+  const { store } = await resolveRequestStore();
+
+  if (!store) {
     return {
       title: t("title"),
       description: t("description"),
     };
   }
-
-  const store = await getStoreBySubdomain(storeSubdomain);
 
   return {
     title: t("titleWithStore", { storeName: store.name }),
@@ -29,15 +25,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function CartPage() {
-  const headersList = await headers();
-  const hostname = headersList.get("host") || "";
-  const storeSubdomain = getStoreSubdomain(hostname);
+  // Resolve store and set API context
+  const { store, subdomain } = await resolveRequestStore();
 
-  if (!storeSubdomain) {
+  if (!subdomain || !store) {
     throw new Error("Invalid store subdomain");
   }
 
-  const store = await getStoreBySubdomain(storeSubdomain);
   const t = await getTranslations("cart");
   const locale = await getLocale();
 
