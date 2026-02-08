@@ -6,8 +6,8 @@ import { StoreEmptyState } from "@/features/store/components/store-empty-state";
 import { StoreErrorComponent } from "@/features/store/components/store-error";
 import { StoreHero } from "@/features/store/components/store-hero";
 import { StoreErrorType } from "@/features/store/types/store.types";
-import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { TrackViewItemList } from "@/lib/analytics/track-event";
+import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 
