@@ -2,15 +2,17 @@ import { apiClient } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/config';
 import { ApiException } from '@/lib/api/types';
 import {
-  CreateOrderPreviewRequest,
-  CreateOrderRequest,
-  GroupedDeliveryZoneCityDto,
-  GroupedDeliveryZoneCountryDto,
-  GroupedDeliveryZonesDto,
-  OrderCreatedResponse,
-  OrderPreviewResponse,
-  PublicDeliveryZonesResponseDto,
-  PublicFulfillmentMethodDto,
+    CommonCityDto,
+    CommonCountryDto,
+    CreateOrderPreviewRequest,
+    CreateOrderRequest,
+    GroupedDeliveryZoneCityDto,
+    GroupedDeliveryZoneCountryDto,
+    GroupedDeliveryZonesDto,
+    OrderCreatedResponse,
+    OrderPreviewResponse,
+    PublicDeliveryZonesResponseDto,
+    PublicFulfillmentMethodDto,
 } from '../types/checkout.types';
 
 /**
@@ -102,14 +104,52 @@ export async function getDeliveryZones(
 }
 
 /**
- * Group delivery zones by country for UI display
+ * Get all countries from the common API (fallback when no delivery zones configured)
+ * @returns Array of all countries
+ */
+export async function getCountries(): Promise<CommonCountryDto[]> {
+  try {
+    const countries = await apiClient.get<CommonCountryDto[]>(
+      endpoints.common.countries
+    );
+    return countries;
+  } catch (error) {
+    if (error instanceof ApiException) {
+      throw error;
+    }
+    throw new ApiException(500, 'Failed to fetch countries');
+  }
+}
+
+/**
+ * Get cities for a country from the common API (fallback when no delivery zones configured)
+ * @param countryId The country ID
+ * @returns Array of cities for the specified country
+ */
+export async function getCitiesByCountry(
+  countryId: number
+): Promise<CommonCityDto[]> {
+  try {
+    const cities = await apiClient.get<CommonCityDto[]>(
+      endpoints.common.citiesByCountry(countryId)
+    );
+    return cities;
+  } catch (error) {
+    if (error instanceof ApiException) {
+      throw error;
+    }
+    throw new ApiException(500, 'Failed to fetch cities');
+  }
+}
+
+/**
+ * Group delivery zones by country for UI display.
+ * Uses the backend-provided localized `name` field (no frontend locale logic needed).
  * @param zones Flat array of delivery zones from API
- * @param locale Current locale for name selection
  * @returns Grouped delivery zones by country
  */
 export function groupDeliveryZonesByCountry(
   zones: PublicDeliveryZonesResponseDto,
-  locale: string
 ): GroupedDeliveryZonesDto {
   const countriesMap = new Map<
     number,
@@ -123,11 +163,10 @@ export function groupDeliveryZonesByCountry(
     const countryId = zone.countryId;
 
     if (!countriesMap.has(countryId)) {
-      const countryName = locale === 'ar' ? zone.country.nameAr : zone.country.nameEn;
       countriesMap.set(countryId, {
         country: {
           id: countryId,
-          name: countryName,
+          name: zone.country.name,
           code: zone.country.code,
           cities: [],
         },
@@ -135,14 +174,13 @@ export function groupDeliveryZonesByCountry(
       });
     }
 
-    const cityName = locale === 'ar' ? zone.city.nameAr : zone.city.nameEn;
     const entry = countriesMap.get(countryId)!;
 
     // Check if city is already added
     if (!entry.cities.some((c) => c.id === zone.cityId)) {
       entry.cities.push({
         id: zone.cityId,
-        name: cityName,
+        name: zone.city.name,
       });
     }
   }

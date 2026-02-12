@@ -38,6 +38,10 @@ export const endpoints = {
   visitors: {
     track: '/public/visitors/track',
   },
+  common: {
+    countries: '/public/common/countries',
+    citiesByCountry: (countryId: number) => `/public/common/countries/${countryId}/cities`,
+  },
   carts: {
     get: (visitorId: string) => `/public/carts/${visitorId}`,
     modifyItem: '/public/carts/items',

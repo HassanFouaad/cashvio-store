@@ -277,6 +277,7 @@
     "country": "Country",
     "city": "City",
     "noDeliveryZones": "Delivery is not available for your location yet",
+    "loadingCities": "Loading cities...",
     "additionalDetails": "Delivery Instructions (Optional)",
     "additionalDetailsPlaceholder": "E.g., apartment number, building name, landmarks...",
     "notes": "Order Notes (Optional)",

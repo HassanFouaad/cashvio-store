@@ -1,9 +1,11 @@
 import {
+  getCountries,
   getDeliveryZones,
   getFulfillmentMethods,
 } from "@/features/checkout/api/checkout-api";
 import { CheckoutForm } from "@/features/checkout/components/checkout-form";
 import {
+  CommonCountryDto,
   FulfillmentMethod,
   PublicDeliveryZonesResponseDto,
 } from "@/features/checkout/types/checkout.types";
@@ -59,6 +61,7 @@ export default async function CheckoutPage() {
 
   // Fetch delivery zones if delivery method is available
   let deliveryZones: PublicDeliveryZonesResponseDto | null = null;
+  let fallbackCountries: CommonCountryDto[] | null = null;
   const hasDeliveryMethod = fulfillmentMethods.some(
     (m) => m.fulfillmentMethod === FulfillmentMethod.DELIVERY,
   );
@@ -69,6 +72,18 @@ export default async function CheckoutPage() {
     } catch {
       // Delivery zones fetch failed, but we can still proceed
       deliveryZones = null;
+    }
+
+    // If store has no configured delivery zones, fallback to common countries/cities
+    const hasNoZones =
+      !deliveryZones || !deliveryZones.zones || deliveryZones.zones.length === 0;
+    if (hasNoZones) {
+      try {
+        fallbackCountries = await getCountries();
+      } catch {
+        // Countries fetch failed, proceed without fallback
+        fallbackCountries = null;
+      }
     }
   }
 
@@ -100,6 +115,7 @@ export default async function CheckoutPage() {
             locale={locale}
             fulfillmentMethods={fulfillmentMethods}
             deliveryZones={deliveryZones}
+            fallbackCountries={fallbackCountries}
           />
         </div>
       </section>

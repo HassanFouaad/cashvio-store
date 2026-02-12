@@ -102,6 +102,7 @@ export interface PublicDeliveryZoneCountryInfoDto {
   id: number;
   nameEn: string;
   nameAr: string;
+  name: string;
   code: string;
 }
 
@@ -112,6 +113,7 @@ export interface PublicDeliveryZoneCityInfoDto {
   id: number;
   nameEn: string;
   nameAr: string;
+  name: string;
 }
 
 /**
@@ -214,4 +216,29 @@ export interface OrderCreatedResponse {
   currency: string;
   fulfillmentMethod: FulfillmentMethod;
   createdAt: string;
+}
+
+/**
+ * Common country from the public common API (fallback when no delivery zones)
+ */
+export interface CommonCountryDto {
+  id: number;
+  nameEn: string;
+  nameAr: string | null;
+  nameFr: string | null;
+  code: string;
+  name?: string;
+}
+
+/**
+ * Common city from the public common API (fallback when no delivery zones)
+ */
+export interface CommonCityDto {
+  id: number;
+  nameEn: string;
+  nameAr: string | null;
+  nameFr: string | null;
+  code: string;
+  countryId: number;
+  name?: string;
 }

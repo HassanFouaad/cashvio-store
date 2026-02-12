@@ -277,6 +277,7 @@
     "country": "الدولة",
     "city": "المدينة",
     "noDeliveryZones": "التوصيل غير متاح لموقعك حالياً",
+    "loadingCities": "جاري تحميل المدن...",
     "additionalDetails": "تعليمات التوصيل (اختياري)",
     "additionalDetailsPlaceholder": "مثال: رقم الشقة، اسم المبنى، معالم...",
     "notes": "ملاحظات الطلب (اختياري)",

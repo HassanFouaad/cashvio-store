@@ -9,10 +9,13 @@ import { computeCartValidation, useCartStore } from "@/features/cart/store";
 import { getOrCreateVisitorId } from "@/features/cart/types/cart.types";
 import {
   createOrder,
+  getCitiesByCountry,
   groupDeliveryZonesByCountry,
   previewOrder,
 } from "@/features/checkout/api/checkout-api";
 import {
+  CommonCityDto,
+  CommonCountryDto,
   CreateOrderRequest,
   FulfillmentMethod,
   GroupedDeliveryZoneCityDto,
@@ -48,6 +51,7 @@ interface CheckoutFormProps {
   locale: string;
   fulfillmentMethods: PublicFulfillmentMethodDto[];
   deliveryZones: PublicDeliveryZonesResponseDto | null;
+  fallbackCountries: CommonCountryDto[] | null;
 }
 
 const FULFILLMENT_ICONS = {
@@ -60,7 +64,12 @@ const FULFILLMENT_ICONS = {
 const FULFILLMENT_PRIORITY: FulfillmentMethod[] = [
   FulfillmentMethod.DELIVERY,
   FulfillmentMethod.PICKUP,
-  FulfillmentMethod.DINE_IN,
+];
+
+// Fulfillment methods allowed for storefront orders (only PICKUP and DELIVERY)
+const ALLOWED_STOREFRONT_METHODS: FulfillmentMethod[] = [
+  FulfillmentMethod.DELIVERY,
+  FulfillmentMethod.PICKUP,
 ];
 
 export function CheckoutForm({
@@ -69,6 +78,7 @@ export function CheckoutForm({
   locale,
   fulfillmentMethods,
   deliveryZones: rawDeliveryZones,
+  fallbackCountries,
 }: CheckoutFormProps) {
   const t = useTranslations("checkout");
   const tCart = useTranslations("cart");
@@ -91,13 +101,15 @@ export function CheckoutForm({
   // Track if we've done initial cart validation
   const hasValidatedRef = useRef(false);
 
-  // Sort fulfillment methods with Delivery first
+  // Filter to allowed methods (PICKUP, DELIVERY only) and sort with Delivery first
   const sortedFulfillmentMethods = useMemo(() => {
-    return [...fulfillmentMethods].sort((a, b) => {
-      const priorityA = FULFILLMENT_PRIORITY.indexOf(a.fulfillmentMethod);
-      const priorityB = FULFILLMENT_PRIORITY.indexOf(b.fulfillmentMethod);
-      return priorityA - priorityB;
-    });
+    return [...fulfillmentMethods]
+      .filter((m) => ALLOWED_STOREFRONT_METHODS.includes(m.fulfillmentMethod))
+      .sort((a, b) => {
+        const priorityA = FULFILLMENT_PRIORITY.indexOf(a.fulfillmentMethod);
+        const priorityB = FULFILLMENT_PRIORITY.indexOf(b.fulfillmentMethod);
+        return priorityA - priorityB;
+      });
   }, [fulfillmentMethods]);
 
   // Default to Delivery if available, otherwise first available method
@@ -112,11 +124,42 @@ export function CheckoutForm({
     );
   }, [sortedFulfillmentMethods]);
 
-  // Group delivery zones by country with locale-specific names
+  // Group delivery zones by country (names are already localized by backend)
   const groupedDeliveryZones: GroupedDeliveryZonesDto | null = useMemo(() => {
     if (!rawDeliveryZones) return null;
-    return groupDeliveryZonesByCountry(rawDeliveryZones, locale);
-  }, [rawDeliveryZones, locale]);
+    return groupDeliveryZonesByCountry(rawDeliveryZones);
+  }, [rawDeliveryZones]);
+
+  // Determine if store has configured delivery zones
+  const hasDeliveryZones = useMemo(() => {
+    return (
+      groupedDeliveryZones !== null && groupedDeliveryZones.countries.length > 0
+    );
+  }, [groupedDeliveryZones]);
+
+  // Fallback mode: no delivery zones configured, use common countries/cities
+  const isFallbackMode =
+    !hasDeliveryZones &&
+    fallbackCountries !== null &&
+    fallbackCountries.length > 0;
+
+  // Fallback countries (names already localized by backend)
+  const localizedFallbackCountries = useMemo(() => {
+    if (!fallbackCountries) return [];
+    return fallbackCountries
+      .map((c) => ({
+        id: c.id,
+        name: c.name || c.nameEn,
+        code: c.code,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [fallbackCountries]);
+
+  // Fallback cities state (fetched dynamically on country selection)
+  const [fallbackCities, setFallbackCities] = useState<
+    { id: number; name: string }[]
+  >([]);
+  const [isLoadingFallbackCities, setIsLoadingFallbackCities] = useState(false);
 
   // Form state
   const [selectedMethod, setSelectedMethod] =
@@ -175,6 +218,9 @@ export function CheckoutForm({
       return;
     }
 
+    // Skip auto-select in fallback mode (too many countries to auto-select)
+    if (isFallbackMode) return;
+
     if (!groupedDeliveryZones || groupedDeliveryZones.countries.length === 0) {
       return;
     }
@@ -189,26 +235,72 @@ export function CheckoutForm({
         setSelectedCityId(country.cities[0].id);
       }
     }
-  }, [selectedMethod, groupedDeliveryZones]);
+  }, [selectedMethod, groupedDeliveryZones, isFallbackMode]);
 
-  // Get current country's cities
+  // Get current country's cities (for delivery zones mode)
   const currentCountry: GroupedDeliveryZoneCountryDto | undefined =
     useMemo(() => {
-      if (!groupedDeliveryZones || !selectedCountryId) return undefined;
+      if (isFallbackMode || !groupedDeliveryZones || !selectedCountryId)
+        return undefined;
       return groupedDeliveryZones.countries.find(
         (c) => c.id === selectedCountryId,
       );
-    }, [groupedDeliveryZones, selectedCountryId]);
+    }, [isFallbackMode, groupedDeliveryZones, selectedCountryId]);
 
-  // Auto-select city when country changes and has only one city
+  // Auto-select city when country changes and has only one city (delivery zones mode)
   useEffect(() => {
+    if (isFallbackMode) return;
     if (currentCountry && currentCountry.cities.length === 1) {
       setSelectedCityId(currentCountry.cities[0].id);
     } else if (currentCountry) {
       // Reset city selection when country changes
       setSelectedCityId(null);
     }
-  }, [currentCountry]);
+  }, [currentCountry, isFallbackMode]);
+
+  // Fetch cities dynamically when country changes in fallback mode
+  useEffect(() => {
+    if (!isFallbackMode || !selectedCountryId) {
+      setFallbackCities([]);
+      return;
+    }
+
+    let cancelled = false;
+    setIsLoadingFallbackCities(true);
+    setSelectedCityId(null);
+    setFallbackCities([]);
+
+    getCitiesByCountry(selectedCountryId)
+      .then((cities: CommonCityDto[]) => {
+        if (cancelled) return;
+        const mapped = cities
+          .map((c) => ({
+            id: c.id,
+            name: c.name || c.nameEn,
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+        setFallbackCities(mapped);
+
+        // Auto-select if only one city
+        if (mapped.length === 1) {
+          setSelectedCityId(mapped[0].id);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setFallbackCities([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsLoadingFallbackCities(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isFallbackMode, selectedCountryId]);
 
   // Handle phone change
   const handlePhoneChange = useCallback((phone: string, isValid: boolean) => {
@@ -343,10 +435,20 @@ export function CheckoutForm({
   // Check if delivery address is required and complete
   const isDeliveryAddressComplete = useMemo(() => {
     if (selectedMethod !== FulfillmentMethod.DELIVERY) return true;
+    // Fallback mode: country and city must be selected
+    if (isFallbackMode) {
+      return selectedCountryId !== null && selectedCityId !== null;
+    }
     if (!groupedDeliveryZones || groupedDeliveryZones.countries.length === 0)
-      return true; // No zones = can proceed without address
+      return true; // No zones and no fallback = can proceed without address
     return selectedCountryId !== null && selectedCityId !== null;
-  }, [selectedMethod, groupedDeliveryZones, selectedCountryId, selectedCityId]);
+  }, [
+    selectedMethod,
+    isFallbackMode,
+    groupedDeliveryZones,
+    selectedCountryId,
+    selectedCityId,
+  ]);
 
   // Check if customer info is complete (name and phone are required)
   const isCustomerInfoComplete = useMemo(() => {
@@ -532,7 +634,92 @@ export function CheckoutForm({
               <h2 className="text-lg font-semibold">{t("deliveryAddress")}</h2>
             </div>
 
-            {!groupedDeliveryZones ? (
+            {isFallbackMode ? (
+              /* Fallback mode: show all countries/cities from common API */
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Country Select */}
+                <div>
+                  <label
+                    htmlFor="country"
+                    className="block text-sm font-medium mb-1.5"
+                  >
+                    {t("country")}
+                  </label>
+                  <Select
+                    value={selectedCountryId?.toString() || ""}
+                    onChange={handleCountryChange}
+                    placeholder={t("selectCountry")}
+                    options={localizedFallbackCountries.map((country) => ({
+                      value: country.id.toString(),
+                      label: country.name,
+                    }))}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* City Select */}
+                <div>
+                  <label
+                    htmlFor="city"
+                    className="block text-sm font-medium mb-1.5"
+                  >
+                    {t("city")}
+                  </label>
+                  {isLoadingFallbackCities ? (
+                    <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm">
+                      <Loader2 className="h-4 w-4 animate-spin me-2" />
+                      <span className="text-muted-foreground">
+                        {t("loadingCities")}
+                      </span>
+                    </div>
+                  ) : selectedCountryId && fallbackCities.length > 0 ? (
+                    fallbackCities.length === 1 ? (
+                      <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm">
+                        {fallbackCities[0].name}
+                      </div>
+                    ) : (
+                      <Select
+                        value={selectedCityId?.toString() || ""}
+                        onChange={handleCityChange}
+                        placeholder={t("selectCity")}
+                        options={fallbackCities.map((city) => ({
+                          value: city.id.toString(),
+                          label: city.name,
+                        }))}
+                        className="w-full"
+                      />
+                    )
+                  ) : (
+                    <Select
+                      value=""
+                      onChange={() => {}}
+                      placeholder={t("selectCity")}
+                      options={[]}
+                      disabled
+                      className="w-full"
+                    />
+                  )}
+                </div>
+
+                {/* Additional Details */}
+                <div className="sm:col-span-2">
+                  <label
+                    htmlFor="additionalDetails"
+                    className="block text-sm font-medium mb-1.5"
+                  >
+                    {t("additionalDetails")}
+                  </label>
+                  <textarea
+                    id="additionalDetails"
+                    value={additionalDetails}
+                    onChange={(e) => setAdditionalDetails(e.target.value)}
+                    placeholder={t("additionalDetailsPlaceholder")}
+                    rows={2}
+                    className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+                </div>
+              </div>
+            ) : !groupedDeliveryZones ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <AlertCircle className="h-4 w-4" />
                 <span>{t("noDeliveryZones")}</span>
