@@ -175,7 +175,7 @@ export function CartItem({ item, currency, locale }: CartItemProps) {
             <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-destructive">
-                {t("maxPerOrderExceeded", { max: maxPerOrder })}
+                {t("maxPerOrderExceeded", { max: maxPerOrder ?? 0 })}
               </p>
             </div>
             <Button
