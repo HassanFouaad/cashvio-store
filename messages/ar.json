@@ -245,6 +245,7 @@
     "adding": "جاري الإضافة...",
     "syncing": "جاري المزامنة...",
     "quantityExceeded": "متوفر {available} فقط. تم تعديل الكمية.",
+    "quantityExceededGeneric": "تغير المخزون. يرجى تقليل الكمية.",
     "quantityExceededTitle": "تغير المخزون",
     "quantityExceededDescription": "تم تعديل كمية بعض المنتجات بسبب تغير المخزون.",
     "reduceQuantity": "تقليل الكمية",

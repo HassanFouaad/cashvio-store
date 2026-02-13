@@ -245,6 +245,7 @@
     "adding": "Adding...",
     "syncing": "Syncing...",
     "quantityExceeded": "Only {available} available. Quantity adjusted.",
+    "quantityExceededGeneric": "Stock changed. Please reduce quantity.",
     "quantityExceededTitle": "Stock Changed",
     "quantityExceededDescription": "Some items quantity has been adjusted due to stock changes.",
     "reduceQuantity": "Reduce Quantity",

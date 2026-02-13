@@ -314,7 +314,7 @@ export function AddToCartSection({
                     {cartQuantity} {tCart("inCart")}
                   </span>
                   <div className="flex gap-2">
-                    {!isUnlimitedStock && (
+                    {!isUnlimitedStock && totalAvailable < 5 && (
                       <span>
                         {Math.max(0, totalAvailable - cartQuantity)}{" "}
                         {t("available")}
@@ -329,7 +329,7 @@ export function AddToCartSection({
                 </>
               ) : (
                 <div className="flex gap-2">
-                  {!isUnlimitedStock && (
+                  {!isUnlimitedStock && totalAvailable < 5 && (
                     <span>
                       {totalAvailable} {t("available")}
                     </span>

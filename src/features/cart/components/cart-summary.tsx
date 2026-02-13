@@ -83,7 +83,11 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
                       • {item.productName}:{" "}
                       {item.available === 0
                         ? t("outOfStock")
-                        : t("quantityExceeded", { available: item.available })}
+                        : item.available < 5
+                          ? t("quantityExceeded", {
+                              available: item.available,
+                            })
+                          : t("quantityExceededGeneric")}
                     </li>
                   ))}
                   {validation.itemsWithIssues.length > 3 && (

@@ -151,9 +151,11 @@ export function CartItem({ item, currency, locale }: CartItemProps) {
             <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-destructive">
-                {t("quantityExceeded", {
-                  available: variant.availableQuantity,
-                })}
+                {variant.availableQuantity < 5
+                  ? t("quantityExceeded", {
+                      available: variant.availableQuantity,
+                    })
+                  : t("quantityExceededGeneric")}
               </p>
             </div>
             <Button
