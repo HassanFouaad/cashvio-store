@@ -457,6 +457,11 @@ export function CheckoutForm({
     return hasName && hasValidPhone;
   }, [customerName, customerPhone, isPhoneValid]);
 
+  // Check if order is below minimum value
+  const isBelowMinimumOrder = useMemo(() => {
+    return preview?.isBelowMinimumOrder === true;
+  }, [preview?.isBelowMinimumOrder]);
+
   // Check if form can be submitted
   const canSubmitOrder = useMemo(() => {
     return (
@@ -464,7 +469,8 @@ export function CheckoutForm({
       !isLoadingPreview &&
       isDeliveryAddressComplete &&
       isCustomerInfoComplete &&
-      !isSubmitting
+      !isSubmitting &&
+      !isBelowMinimumOrder
     );
   }, [
     preview,
@@ -472,6 +478,7 @@ export function CheckoutForm({
     isDeliveryAddressComplete,
     isCustomerInfoComplete,
     isSubmitting,
+    isBelowMinimumOrder,
   ]);
 
   // Handle order submission
@@ -1025,6 +1032,22 @@ export function CheckoutForm({
               <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 text-sm">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>{submitError}</span>
+              </div>
+            )}
+
+            {/* Minimum order value warning */}
+            {isBelowMinimumOrder && preview?.minimumOrderValue && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 text-sm">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <span>
+                  {t("belowMinimumOrder", {
+                    minimumOrderValue: formatCurrency(
+                      preview.minimumOrderValue,
+                      currency,
+                      locale,
+                    ),
+                  })}
+                </span>
               </div>
             )}
 

@@ -73,6 +73,10 @@ export interface OrderPreviewResponse {
   deliveryFees: number;
   totalAmount: number;
   items: OrderPreviewItem[];
+  /** Minimum order value configured for the store (0 means no minimum) */
+  minimumOrderValue?: number;
+  /** Whether the order total is below the configured minimum order value */
+  isBelowMinimumOrder?: boolean;
 }
 
 /**

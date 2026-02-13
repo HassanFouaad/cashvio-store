@@ -394,6 +394,16 @@ export function computeCartValidation(cart: ApiCart | null): CartValidationResul
         requested: item.quantity,
         available: item.variant.availableQuantity,
       });
+    } else if (
+      item.variant.maxQuantityPerOrder != null &&
+      item.quantity > item.variant.maxQuantityPerOrder
+    ) {
+      itemsWithIssues.push({
+        variantId: item.variant.id,
+        productName: item.productName || item.variant.name,
+        requested: item.quantity,
+        available: item.variant.maxQuantityPerOrder,
+      });
     }
   }
 
@@ -413,7 +423,8 @@ export function useCartHasStockIssues(): boolean {
   if (!cart || cart.items.length === 0) return false;
   
   return cart.items.some(item => 
- ( (item.variant.inventoryTrackable) && (!item.variant.inStock || item.quantity > item.variant.availableQuantity))
+    ((item.variant.inventoryTrackable) && (!item.variant.inStock || item.quantity > item.variant.availableQuantity)) ||
+    (item.variant.maxQuantityPerOrder != null && item.quantity > item.variant.maxQuantityPerOrder)
   );
 }
 
@@ -429,8 +440,9 @@ export function useCanCheckout(): boolean {
     return false;
   }
   
-  // Check for stock issues
+  // Check for stock issues and max per order issues
   return !cart.items.some(item => 
-    (item.variant.inventoryTrackable) && (!item.variant.inStock || item.quantity > item.variant.availableQuantity)
+    ((item.variant.inventoryTrackable) && (!item.variant.inStock || item.quantity > item.variant.availableQuantity)) ||
+    (item.variant.maxQuantityPerOrder != null && item.quantity > item.variant.maxQuantityPerOrder)
   );
 }

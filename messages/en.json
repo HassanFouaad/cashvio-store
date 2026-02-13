@@ -254,7 +254,10 @@
     "reviewChanges": "Review Changes",
     "validatingCart": "Validating cart...",
     "maxInCart": "Maximum quantity in cart",
-    "viewCart": "View Cart"
+    "viewCart": "View Cart",
+    "maxPerOrder": "Max {max} per order",
+    "maxPerOrderReached": "Maximum of {max} allowed per order",
+    "maxPerOrderExceeded": "Exceeds limit of {max} per order. Please reduce quantity."
   },
   "checkout": {
     "pageTitle": "Checkout",
@@ -295,7 +298,8 @@
     "orderSuccessMessage": "Thank you for your order. We'll start preparing it right away.",
     "orderNumber": "Order Number",
     "redirectingToHome": "Redirecting to home page...",
-    "continueShopping": "Continue Shopping"
+    "continueShopping": "Continue Shopping",
+    "belowMinimumOrder": "The minimum order value for this store is {minimumOrderValue}. Please add more items to proceed."
   },
   "orderSuccess": {
     "title": "Thank You for Your Order!",

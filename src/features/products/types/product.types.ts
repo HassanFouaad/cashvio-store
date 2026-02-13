@@ -23,6 +23,7 @@ export interface PublicProductVariantDto {
   availableQuantity: number;
   inStock: boolean;
   inventoryTrackable: boolean;
+  maxQuantityPerOrder?: number | null;
 }
 
 export interface PublicProductImageDto {

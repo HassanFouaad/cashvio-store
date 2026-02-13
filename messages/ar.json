@@ -254,7 +254,10 @@
     "reviewChanges": "مراجعة التغييرات",
     "validatingCart": "جاري التحقق من السلة...",
     "maxInCart": "الحد الأقصى في السلة",
-    "viewCart": "عرض السلة"
+    "viewCart": "عرض السلة",
+    "maxPerOrder": "الحد الأقصى {max} لكل طلب",
+    "maxPerOrderReached": "الحد الأقصى المسموح {max} لكل طلب",
+    "maxPerOrderExceeded": "تجاوز الحد الأقصى {max} لكل طلب. يرجى تقليل الكمية."
   },
   "checkout": {
     "pageTitle": "إتمام الطلب",
@@ -295,7 +298,8 @@
     "orderSuccessMessage": "شكراً لطلبك. سنبدأ في تحضيره فوراً.",
     "orderNumber": "رقم الطلب",
     "redirectingToHome": "جاري التوجيه للصفحة الرئيسية...",
-    "continueShopping": "متابعة التسوق"
+    "continueShopping": "متابعة التسوق",
+    "belowMinimumOrder": "الحد الأدنى لقيمة الطلب لهذا المتجر هو {minimumOrderValue}. يرجى إضافة المزيد من العناصر للمتابعة."
   },
   "orderSuccess": {
     "title": "شكراً لطلبك!",
