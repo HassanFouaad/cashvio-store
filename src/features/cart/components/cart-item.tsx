@@ -170,24 +170,26 @@ export function CartItem({ item, currency, locale }: CartItemProps) {
         )}
 
         {/* Max per order warning */}
-        {!quantityExceedsStock && quantityExceedsMaxPerOrder && (
-          <div className="flex items-center gap-2 mt-2 p-2 rounded-md border border-destructive/50 bg-destructive/5">
-            <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-destructive">
-                {t("maxPerOrderExceeded", { max: maxPerOrder ?? 0 })}
-              </p>
+        {!quantityExceedsStock &&
+          quantityExceedsMaxPerOrder &&
+          maxPerOrder !== null && (
+            <div className="flex items-center gap-2 mt-2 p-2 rounded-md border border-destructive/50 bg-destructive/5">
+              <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-destructive">
+                  {t("maxPerOrderExceeded", { max: maxPerOrder })}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs shrink-0 border-destructive/50 text-destructive hover:bg-destructive/10"
+                onClick={handleReduceToAvailable}
+              >
+                {t("reduceQuantity")}
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs shrink-0 border-destructive/50 text-destructive hover:bg-destructive/10"
-              onClick={handleReduceToAvailable}
-            >
-              {t("reduceQuantity")}
-            </Button>
-          </div>
-        )}
+          )}
 
         {/* Quantity Controls */}
         <div className="flex items-center justify-between mt-2">
