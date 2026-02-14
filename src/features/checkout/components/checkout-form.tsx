@@ -593,17 +593,20 @@ export function CheckoutForm({
     return preview?.isBelowMinimumOrder === true;
   }, [preview?.isBelowMinimumOrder]);
 
-  // Check if payment method is selected (only required if methods are available)
-  // When RECEIPT is selected, receipt must be uploaded
+  // Whether the store has any active storefront payment methods
+  const hasPaymentMethods = sortedPaymentMethods.length > 0;
+
+  // Check if payment method is selected and valid
+  // When no payment methods are available, checkout is blocked
   const isPaymentMethodSelected = useMemo(() => {
-    if (sortedPaymentMethods.length === 0) return true; // No methods configured = backend defaults to CASH
+    if (!hasPaymentMethods) return false; // No methods = cannot checkout
     if (selectedPaymentMethod === null) return false;
     if (selectedPaymentMethod === PaymentMethod.RECEIPT) {
       return receiptFileKey !== null && receiptUploadProgress === "success";
     }
     return true;
   }, [
-    sortedPaymentMethods.length,
+    hasPaymentMethods,
     selectedPaymentMethod,
     receiptFileKey,
     receiptUploadProgress,
@@ -984,126 +987,142 @@ export function CheckoutForm({
         )}
 
         {/* Payment Method Selection */}
-        {sortedPaymentMethods.length > 0 && (
-          <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
-            <div className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold">{t("paymentMethod")}</h2>
+        <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+          <div className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold">{t("paymentMethod")}</h2>
+          </div>
+
+          {!hasPaymentMethods ? (
+            /* No payment methods available - show warning */
+            <div className="flex items-start gap-3 rounded-lg border-2 border-amber-300 dark:border-amber-700 p-4">
+              <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                  {t("noPaymentMethodsTitle")}
+                </p>
+                <p className="text-sm text-amber-700 dark:text-amber-400">
+                  {t("noPaymentMethodsDescription")}
+                </p>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {sortedPaymentMethods.map((pm) => {
-                const Icon =
-                  PAYMENT_METHOD_ICONS[pm.paymentMethod as PaymentMethod] ??
-                  CreditCard;
-                const isSelected = selectedPaymentMethod === pm.paymentMethod;
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {sortedPaymentMethods.map((pm) => {
+                  const Icon =
+                    PAYMENT_METHOD_ICONS[pm.paymentMethod as PaymentMethod] ??
+                    CreditCard;
+                  const isSelected = selectedPaymentMethod === pm.paymentMethod;
 
-                return (
-                  <button
-                    key={pm.paymentMethod}
-                    type="button"
-                    onClick={() => setSelectedPaymentMethod(pm.paymentMethod)}
-                    className={`relative flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all ${
-                      isSelected
-                        ? "border-primary bg-primary/5"
-                        : "border-muted hover:border-muted-foreground/30"
-                    }`}
-                  >
-                    <Icon className="h-6 w-6 mb-2" />
-                    <span className="text-sm font-medium">
-                      {t(`paymentMethods.${pm.paymentMethod.toLowerCase()}`)}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+                  return (
+                    <button
+                      key={pm.paymentMethod}
+                      type="button"
+                      onClick={() => setSelectedPaymentMethod(pm.paymentMethod)}
+                      className={`relative flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all ${
+                        isSelected
+                          ? "border-primary bg-primary/5"
+                          : "border-muted hover:border-muted-foreground/30"
+                      }`}
+                    >
+                      <Icon className="h-6 w-6 mb-2" />
+                      <span className="text-sm font-medium">
+                        {t(`paymentMethods.${pm.paymentMethod.toLowerCase()}`)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
 
-            {/* Receipt upload UI when RECEIPT payment method selected */}
-            {selectedPaymentMethod === PaymentMethod.RECEIPT && (
-              <div className="pt-4 border-t space-y-3">
-                <label className="block text-sm font-medium">
-                  {t("receiptUploadLabel")}
-                </label>
+              {/* Receipt upload UI when RECEIPT payment method selected */}
+              {selectedPaymentMethod === PaymentMethod.RECEIPT && (
+                <div className="pt-4 border-t space-y-3">
+                  <label className="block text-sm font-medium">
+                    {t("receiptUploadLabel")}
+                  </label>
 
-                {/* Hidden file input */}
-                <input
-                  ref={receiptInputRef}
-                  id="receipt-upload"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={handleReceiptFileChange}
-                  disabled={receiptUploadProgress === "uploading"}
-                  className="sr-only"
-                />
+                  {/* Hidden file input */}
+                  <input
+                    ref={receiptInputRef}
+                    id="receipt-upload"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleReceiptFileChange}
+                    disabled={receiptUploadProgress === "uploading"}
+                    className="sr-only"
+                  />
 
-                {receiptUploadProgress === "success" ? (
-                  /* Success state */
-                  <div className="flex items-center justify-between rounded-lg border border-green-200 dark:border-green-800/40 px-4 py-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  {receiptUploadProgress === "success" ? (
+                    /* Success state */
+                    <div className="flex items-center justify-between rounded-lg border border-green-200 dark:border-green-800/40 px-4 py-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                          <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </div>
+                        <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                          {t("receiptUploadSuccess")}
+                        </span>
                       </div>
-                      <span className="text-sm font-medium text-green-700 dark:text-green-400">
-                        {t("receiptUploadSuccess")}
+                      <button
+                        type="button"
+                        onClick={handleReceiptRemove}
+                        className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                        {t("receiptRemove")}
+                      </button>
+                    </div>
+                  ) : receiptUploadProgress === "uploading" ? (
+                    /* Uploading state */
+                    <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-primary/40 py-8 gap-3">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <span className="text-sm text-muted-foreground">
+                        {t("receiptUploading")}
                       </span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleReceiptRemove}
-                      className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                  ) : (
+                    /* Idle / Error state - drag-and-drop area */
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => receiptInputRef.current?.click()}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          receiptInputRef.current?.click();
+                        }
+                      }}
+                      onDragOver={handleReceiptDragOver}
+                      onDragLeave={handleReceiptDragLeave}
+                      onDrop={handleReceiptDrop}
+                      className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed py-8 gap-2 cursor-pointer transition-colors ${
+                        isDraggingReceipt
+                          ? "border-primary bg-primary/5"
+                          : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/30"
+                      }`}
                     >
-                      <X className="h-3.5 w-3.5" />
-                      {t("receiptRemove")}
-                    </button>
-                  </div>
-                ) : receiptUploadProgress === "uploading" ? (
-                  /* Uploading state */
-                  <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-primary/40 py-8 gap-3">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    <span className="text-sm text-muted-foreground">
-                      {t("receiptUploading")}
-                    </span>
-                  </div>
-                ) : (
-                  /* Idle / Error state - drag-and-drop area */
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => receiptInputRef.current?.click()}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        receiptInputRef.current?.click();
-                      }
-                    }}
-                    onDragOver={handleReceiptDragOver}
-                    onDragLeave={handleReceiptDragLeave}
-                    onDrop={handleReceiptDrop}
-                    className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed py-8 gap-2 cursor-pointer transition-colors ${
-                      isDraggingReceipt
-                        ? "border-primary bg-primary/5"
-                        : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/30"
-                    }`}
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                      <Upload className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <p className="text-sm font-medium">
-                      {t("receiptDragDrop")}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {t("receiptAcceptedFormats")}
-                    </p>
-                    {receiptUploadError && (
-                      <p className="text-xs text-destructive mt-1">
-                        {receiptUploadError}
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                        <Upload className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <p className="text-sm font-medium">
+                        {t("receiptDragDrop")}
                       </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+                      <p className="text-xs text-muted-foreground">
+                        {t("receiptAcceptedFormats")}
+                      </p>
+                      {receiptUploadError && (
+                        <p className="text-xs text-destructive mt-1">
+                          {receiptUploadError}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
 
         {/* Customer Information */}
         <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">

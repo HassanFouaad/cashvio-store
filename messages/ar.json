@@ -314,7 +314,9 @@
     "orderNumber": "رقم الطلب",
     "redirectingToHome": "جاري التوجيه للصفحة الرئيسية...",
     "continueShopping": "متابعة التسوق",
-    "belowMinimumOrder": "الحد الأدنى لقيمة الطلب لهذا المتجر هو {minimumOrderValue}. يرجى إضافة المزيد من العناصر للمتابعة."
+    "belowMinimumOrder": "الحد الأدنى لقيمة الطلب لهذا المتجر هو {minimumOrderValue}. يرجى إضافة المزيد من العناصر للمتابعة.",
+    "noPaymentMethodsTitle": "الدفع غير متاح حالياً",
+    "noPaymentMethodsDescription": "هذا المتجر لا يقبل المدفوعات في الوقت الحالي. يرجى المحاولة لاحقاً أو التواصل مع المتجر للمساعدة."
   },
   "orderSuccess": {
     "title": "شكراً لطلبك!",

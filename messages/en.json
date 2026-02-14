@@ -314,7 +314,9 @@
     "orderNumber": "Order Number",
     "redirectingToHome": "Redirecting to home page...",
     "continueShopping": "Continue Shopping",
-    "belowMinimumOrder": "The minimum order value for this store is {minimumOrderValue}. Please add more items to proceed."
+    "belowMinimumOrder": "The minimum order value for this store is {minimumOrderValue}. Please add more items to proceed.",
+    "noPaymentMethodsTitle": "Payments are currently unavailable",
+    "noPaymentMethodsDescription": "This store is not accepting payments at the moment. Please try again later or contact the store for assistance."
   },
   "orderSuccess": {
     "title": "Thank You for Your Order!",
