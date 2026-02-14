@@ -1,3 +1,4 @@
+import { appConfig } from "@/config/env.config";
 import {
   Facebook,
   Globe,
@@ -166,12 +167,23 @@ export async function StoreFooter({ store }: StoreFooterProps) {
           )}
         </div>
 
-        <div className="mt-5 sm:mt-8 pt-5 sm:pt-8 border-t text-center w-full">
+        <div className="mt-5 sm:mt-8 pt-5 sm:pt-8 border-t text-center w-full space-y-2">
           <p className="text-[10px] sm:text-xs text-muted-foreground break-words leading-relaxed">
             {t("footer.copyright", {
               year: currentYear,
               storeName: store.name,
             })}
+          </p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground/70">
+            {t("footer.poweredBy")}{" "}
+            <a
+              href={appConfig.websiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Cashvio
+            </a>
           </p>
         </div>
       </div>

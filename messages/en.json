@@ -202,7 +202,8 @@
     "quickLinks": "Quick Links",
     "policies": "Policies",
     "connectWithUs": "Connect With Us",
-    "copyright": "© {year} {storeName}. All rights reserved."
+    "copyright": "© {year} {storeName}. All rights reserved.",
+    "poweredBy": "Powered by"
   },
   "theme": {
     "light": "Light",

@@ -71,6 +71,12 @@ export const appConfig = {
   baseUrl: getOptionalEnvVar("NEXT_PUBLIC_APP_URL", "https://cash-vio.com"),
 
   /**
+   * Marketing website URL (used for "Powered by" link in footer)
+   * @default https://cash-vio.com
+   */
+  websiteUrl: getOptionalEnvVar("NEXT_PUBLIC_WEBSITE_URL", "https://cash-vio.com"),
+
+  /**
    * Image domains allowed by Next.js Image component
    * Configured in next.config.ts
    */

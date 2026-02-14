@@ -202,7 +202,8 @@
     "quickLinks": "روابط سريعة",
     "policies": "السياسات",
     "connectWithUs": "تواصل معنا",
-    "copyright": "© {year} {storeName}. جميع الحقوق محفوظة."
+    "copyright": "© {year} {storeName}. جميع الحقوق محفوظة.",
+    "poweredBy": "مدعوم من"
   },
   "theme": {
     "light": "فاتح",
