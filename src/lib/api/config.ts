@@ -18,6 +18,9 @@ export const endpoints = {
     getBySubdomain: (subdomain: string) => `/public/stores/${subdomain}`,
     getFulfillmentMethods: (storeId: string) => `/public/stores/${storeId}/fulfillment-methods`,
     getDeliveryZones: (storeId: string) => `/public/stores/${storeId}/delivery-zones`,
+    getStorefrontPaymentMethods: (storeId: string) => `/public/stores/${storeId}/storefront-payment-methods`,
+    getReceiptUploadUrl: (storeId: string) =>
+      `/public/stores/${storeId}/receipt-upload-url`,
     staticPages: {
       list: '/public/stores/static-pages',
       getBySlug: (slug: string) => `/public/stores/static-pages/${slug}`,

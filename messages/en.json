@@ -269,6 +269,20 @@
       "pickup": "Pickup",
       "dine_in": "Dine In"
     },
+    "paymentMethod": "How would you like to pay?",
+    "paymentMethods": {
+      "cash": "Cash",
+      "online": "Online Payment",
+      "receipt": "Upload Receipt"
+    },
+    "receiptUploadLabel": "Upload payment receipt (JPEG, PNG or WebP)",
+    "receiptUploading": "Uploading receipt...",
+    "receiptUploadSuccess": "Receipt uploaded successfully",
+    "receiptUploadError": "Failed to upload receipt. Please try again.",
+    "receiptInvalidType": "Please select a JPEG, PNG or WebP image.",
+    "receiptDragDrop": "Drag & drop your receipt here, or click to browse",
+    "receiptAcceptedFormats": "JPEG, PNG or WebP (max 10 MB)",
+    "receiptRemove": "Remove",
     "customerInfo": "Your Information",
     "name": "Name",
     "namePlaceholder": "Enter your name",

@@ -13,6 +13,7 @@ import {
     OrderPreviewResponse,
     PublicDeliveryZonesResponseDto,
     PublicFulfillmentMethodDto,
+    PublicStorefrontPaymentMethodDto,
 } from '../types/checkout.types';
 
 /**
@@ -79,6 +80,89 @@ export async function createOrder(
       throw error;
     }
     throw new ApiException(500, 'Failed to create order');
+  }
+}
+
+/**
+ * Get active storefront payment methods for a store
+ * @param storeId The store ID
+ * @returns Array of active storefront payment methods sorted by sortOrder
+ */
+export async function getStorefrontPaymentMethods(
+  storeId: string
+): Promise<PublicStorefrontPaymentMethodDto[]> {
+  try {
+    const methods = await apiClient.get<PublicStorefrontPaymentMethodDto[]>(
+      endpoints.stores.getStorefrontPaymentMethods(storeId)
+    );
+    return methods;
+  } catch (error) {
+    if (error instanceof ApiException) {
+      throw error;
+    }
+    throw new ApiException(500, 'Failed to fetch storefront payment methods');
+  }
+}
+
+/**
+ * Response from receipt upload URL endpoint
+ */
+export interface ReceiptUploadUrlResponse {
+  uploadUrl: string;
+  fileKey: string;
+}
+
+/**
+ * Get presigned URL for uploading a receipt image
+ * @param storeId The store ID
+ * @param fileName Original file name
+ * @param fileMimeType MIME type (image/jpeg, image/png, image/webp)
+ * @returns Presigned upload URL and file key for order creation
+ */
+export async function getReceiptUploadUrl(
+  storeId: string,
+  fileName: string,
+  fileMimeType: string
+): Promise<ReceiptUploadUrlResponse> {
+  try {
+    const response = await apiClient.post<
+      ReceiptUploadUrlResponse,
+      { fileName: string; fileMimeType: string }
+    >(endpoints.stores.getReceiptUploadUrl(storeId), {
+      fileName,
+      fileMimeType,
+    });
+    return response;
+  } catch (error) {
+    if (error instanceof ApiException) {
+      throw error;
+    }
+    throw new ApiException(500, 'Failed to get receipt upload URL');
+  }
+}
+
+/**
+ * Upload receipt file to S3 presigned URL
+ * @param uploadUrl Presigned URL from getReceiptUploadUrl
+ * @param file The file to upload
+ */
+export async function uploadReceiptToPresignedUrl(
+  uploadUrl: string,
+  file: File
+): Promise<void> {
+  const response = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': file.type,
+    },
+    body: file,
+  });
+
+  if (!response.ok) {
+    throw new ApiException(
+      response.status,
+      `Failed to upload receipt: ${response.statusText}`
+    );
   }
 }
 

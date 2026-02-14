@@ -10,8 +10,10 @@ import { getOrCreateVisitorId } from "@/features/cart/types/cart.types";
 import {
   createOrder,
   getCitiesByCountry,
+  getReceiptUploadUrl,
   groupDeliveryZonesByCountry,
   previewOrder,
+  uploadReceiptToPresignedUrl,
 } from "@/features/checkout/api/checkout-api";
 import {
   CommonCityDto,
@@ -23,22 +25,31 @@ import {
   GroupedDeliveryZonesDto,
   OrderPreviewDeliveryAddress,
   OrderPreviewResponse,
+  PaymentMethod,
   PublicDeliveryZonesResponseDto,
   PublicFulfillmentMethodDto,
+  PublicStorefrontPaymentMethodDto,
 } from "@/features/checkout/types/checkout.types";
 import { analytics } from "@/lib/analytics";
 import { formatCurrency } from "@/lib/utils/formatters";
 import {
   AlertCircle,
   AlertTriangle,
+  Banknote,
+  Check,
   ChevronDown,
+  CreditCard,
+  Globe,
   Loader2,
   MapPin,
   Package,
+  Receipt,
   ShoppingBag,
   Store,
+  Upload,
   User,
   UtensilsCrossed,
+  X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -52,7 +63,14 @@ interface CheckoutFormProps {
   fulfillmentMethods: PublicFulfillmentMethodDto[];
   deliveryZones: PublicDeliveryZonesResponseDto | null;
   fallbackCountries: CommonCountryDto[] | null;
+  storefrontPaymentMethods: PublicStorefrontPaymentMethodDto[];
 }
+
+const PAYMENT_METHOD_ICONS: Record<PaymentMethod, typeof CreditCard> = {
+  [PaymentMethod.CASH]: Banknote,
+  [PaymentMethod.ONLINE]: Globe,
+  [PaymentMethod.RECEIPT]: Receipt,
+};
 
 const FULFILLMENT_ICONS = {
   [FulfillmentMethod.DELIVERY]: Package,
@@ -79,6 +97,7 @@ export function CheckoutForm({
   fulfillmentMethods,
   deliveryZones: rawDeliveryZones,
   fallbackCountries,
+  storefrontPaymentMethods,
 }: CheckoutFormProps) {
   const t = useTranslations("checkout");
   const tCart = useTranslations("cart");
@@ -143,17 +162,17 @@ export function CheckoutForm({
     fallbackCountries !== null &&
     fallbackCountries.length > 0;
 
-  // Fallback countries (names already localized by backend)
+  // Fallback countries — use locale-aware name resolution
   const localizedFallbackCountries = useMemo(() => {
     if (!fallbackCountries) return [];
     return fallbackCountries
       .map((c) => ({
         id: c.id,
-        name: c.name || c.nameEn,
+        name: c.name || (locale === "ar" ? c.nameAr || c.nameEn : c.nameEn),
         code: c.code,
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [fallbackCountries]);
+  }, [fallbackCountries, locale]);
 
   // Fallback cities state (fetched dynamically on country selection)
   const [fallbackCities, setFallbackCities] = useState<
@@ -161,9 +180,34 @@ export function CheckoutForm({
   >([]);
   const [isLoadingFallbackCities, setIsLoadingFallbackCities] = useState(false);
 
+  // Sort payment methods by sortOrder
+  const sortedPaymentMethods = useMemo(() => {
+    return [...storefrontPaymentMethods].sort(
+      (a, b) => a.sortOrder - b.sortOrder,
+    );
+  }, [storefrontPaymentMethods]);
+
+  // Default to first available payment method
+  const defaultPaymentMethod = useMemo(() => {
+    return sortedPaymentMethods[0]?.paymentMethod ?? null;
+  }, [sortedPaymentMethods]);
+
   // Form state
   const [selectedMethod, setSelectedMethod] =
     useState<FulfillmentMethod | null>(defaultMethod);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState<PaymentMethod | null>(defaultPaymentMethod);
+
+  // Receipt upload state (when RECEIPT payment method selected)
+  const [receiptFileKey, setReceiptFileKey] = useState<string | null>(null);
+  const [receiptUploadProgress, setReceiptUploadProgress] = useState<
+    "idle" | "uploading" | "success" | "error"
+  >("idle");
+  const [receiptUploadError, setReceiptUploadError] = useState<string | null>(
+    null,
+  );
+  const [isDraggingReceipt, setIsDraggingReceipt] = useState(false);
+  const receiptInputRef = useRef<HTMLInputElement>(null);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [isPhoneValid, setIsPhoneValid] = useState(false);
@@ -276,7 +320,7 @@ export function CheckoutForm({
         const mapped = cities
           .map((c) => ({
             id: c.id,
-            name: c.name || c.nameEn,
+            name: c.name || (locale === "ar" ? c.nameAr || c.nameEn : c.nameEn),
           }))
           .sort((a, b) => a.name.localeCompare(b.name));
         setFallbackCities(mapped);
@@ -301,6 +345,93 @@ export function CheckoutForm({
       cancelled = true;
     };
   }, [isFallbackMode, selectedCountryId]);
+
+  // Reset receipt state when switching away from RECEIPT payment method
+  useEffect(() => {
+    if (selectedPaymentMethod !== PaymentMethod.RECEIPT) {
+      setReceiptFileKey(null);
+      setReceiptUploadProgress("idle");
+      setReceiptUploadError(null);
+    }
+  }, [selectedPaymentMethod]);
+
+  // Upload a receipt file (shared by input change and drag-and-drop)
+  const uploadReceiptFile = useCallback(
+    async (file: File) => {
+      if (selectedPaymentMethod !== PaymentMethod.RECEIPT) return;
+
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+      if (!allowedTypes.includes(file.type)) {
+        setReceiptUploadError(t("receiptInvalidType"));
+        return;
+      }
+
+      setReceiptUploadProgress("uploading");
+      setReceiptUploadError(null);
+
+      try {
+        const { uploadUrl, fileKey } = await getReceiptUploadUrl(
+          storeId,
+          file.name,
+          file.type,
+        );
+        await uploadReceiptToPresignedUrl(uploadUrl, file);
+        setReceiptFileKey(fileKey);
+        setReceiptUploadProgress("success");
+      } catch (err) {
+        console.error("Receipt upload failed:", err);
+        setReceiptUploadError(t("receiptUploadError"));
+        setReceiptUploadProgress("error");
+      }
+    },
+    [storeId, selectedPaymentMethod, t],
+  );
+
+  // Handle receipt file selection from input
+  const handleReceiptFileChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      await uploadReceiptFile(file);
+      e.target.value = "";
+    },
+    [uploadReceiptFile],
+  );
+
+  // Drag-and-drop handlers for receipt upload area
+  const handleReceiptDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingReceipt(true);
+  }, []);
+
+  const handleReceiptDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingReceipt(false);
+  }, []);
+
+  const handleReceiptDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDraggingReceipt(false);
+      const file = e.dataTransfer.files?.[0];
+      if (!file) return;
+      await uploadReceiptFile(file);
+    },
+    [uploadReceiptFile],
+  );
+
+  // Remove uploaded receipt
+  const handleReceiptRemove = useCallback(() => {
+    setReceiptFileKey(null);
+    setReceiptUploadProgress("idle");
+    setReceiptUploadError(null);
+    if (receiptInputRef.current) {
+      receiptInputRef.current.value = "";
+    }
+  }, []);
 
   // Handle phone change
   const handlePhoneChange = useCallback((phone: string, isValid: boolean) => {
@@ -462,6 +593,22 @@ export function CheckoutForm({
     return preview?.isBelowMinimumOrder === true;
   }, [preview?.isBelowMinimumOrder]);
 
+  // Check if payment method is selected (only required if methods are available)
+  // When RECEIPT is selected, receipt must be uploaded
+  const isPaymentMethodSelected = useMemo(() => {
+    if (sortedPaymentMethods.length === 0) return true; // No methods configured = backend defaults to CASH
+    if (selectedPaymentMethod === null) return false;
+    if (selectedPaymentMethod === PaymentMethod.RECEIPT) {
+      return receiptFileKey !== null && receiptUploadProgress === "success";
+    }
+    return true;
+  }, [
+    sortedPaymentMethods.length,
+    selectedPaymentMethod,
+    receiptFileKey,
+    receiptUploadProgress,
+  ]);
+
   // Check if form can be submitted
   const canSubmitOrder = useMemo(() => {
     return (
@@ -469,6 +616,7 @@ export function CheckoutForm({
       !isLoadingPreview &&
       isDeliveryAddressComplete &&
       isCustomerInfoComplete &&
+      isPaymentMethodSelected &&
       !isSubmitting &&
       !isBelowMinimumOrder
     );
@@ -477,6 +625,7 @@ export function CheckoutForm({
     isLoadingPreview,
     isDeliveryAddressComplete,
     isCustomerInfoComplete,
+    isPaymentMethodSelected,
     isSubmitting,
     isBelowMinimumOrder,
   ]);
@@ -505,6 +654,11 @@ export function CheckoutForm({
         notes: notes || undefined,
         deliveryAddress,
         visitorId,
+        paymentMethod: selectedPaymentMethod ?? undefined,
+        receiptFileKey:
+          selectedPaymentMethod === PaymentMethod.RECEIPT
+            ? (receiptFileKey ?? undefined)
+            : undefined,
       };
 
       const result = await createOrder(orderRequest);
@@ -563,6 +717,8 @@ export function CheckoutForm({
     currency,
     router,
     t,
+    selectedPaymentMethod,
+    receiptFileKey,
   ]);
 
   // Show loading state while initializing or validating cart
@@ -827,6 +983,128 @@ export function CheckoutForm({
           </div>
         )}
 
+        {/* Payment Method Selection */}
+        {sortedPaymentMethods.length > 0 && (
+          <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+            <div className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold">{t("paymentMethod")}</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {sortedPaymentMethods.map((pm) => {
+                const Icon =
+                  PAYMENT_METHOD_ICONS[pm.paymentMethod as PaymentMethod] ??
+                  CreditCard;
+                const isSelected = selectedPaymentMethod === pm.paymentMethod;
+
+                return (
+                  <button
+                    key={pm.paymentMethod}
+                    type="button"
+                    onClick={() => setSelectedPaymentMethod(pm.paymentMethod)}
+                    className={`relative flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all ${
+                      isSelected
+                        ? "border-primary bg-primary/5"
+                        : "border-muted hover:border-muted-foreground/30"
+                    }`}
+                  >
+                    <Icon className="h-6 w-6 mb-2" />
+                    <span className="text-sm font-medium">
+                      {t(`paymentMethods.${pm.paymentMethod.toLowerCase()}`)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Receipt upload UI when RECEIPT payment method selected */}
+            {selectedPaymentMethod === PaymentMethod.RECEIPT && (
+              <div className="pt-4 border-t space-y-3">
+                <label className="block text-sm font-medium">
+                  {t("receiptUploadLabel")}
+                </label>
+
+                {/* Hidden file input */}
+                <input
+                  ref={receiptInputRef}
+                  id="receipt-upload"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleReceiptFileChange}
+                  disabled={receiptUploadProgress === "uploading"}
+                  className="sr-only"
+                />
+
+                {receiptUploadProgress === "success" ? (
+                  /* Success state */
+                  <div className="flex items-center justify-between rounded-lg border border-green-200 dark:border-green-800/40 px-4 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      </div>
+                      <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                        {t("receiptUploadSuccess")}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleReceiptRemove}
+                      className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      {t("receiptRemove")}
+                    </button>
+                  </div>
+                ) : receiptUploadProgress === "uploading" ? (
+                  /* Uploading state */
+                  <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-primary/40 py-8 gap-3">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <span className="text-sm text-muted-foreground">
+                      {t("receiptUploading")}
+                    </span>
+                  </div>
+                ) : (
+                  /* Idle / Error state - drag-and-drop area */
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => receiptInputRef.current?.click()}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        receiptInputRef.current?.click();
+                      }
+                    }}
+                    onDragOver={handleReceiptDragOver}
+                    onDragLeave={handleReceiptDragLeave}
+                    onDrop={handleReceiptDrop}
+                    className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed py-8 gap-2 cursor-pointer transition-colors ${
+                      isDraggingReceipt
+                        ? "border-primary bg-primary/5"
+                        : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/30"
+                    }`}
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                      <Upload className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm font-medium">
+                      {t("receiptDragDrop")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("receiptAcceptedFormats")}
+                    </p>
+                    {receiptUploadError && (
+                      <p className="text-xs text-destructive mt-1">
+                        {receiptUploadError}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Customer Information */}
         <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
           <div className="flex items-center gap-2">
@@ -1037,7 +1315,7 @@ export function CheckoutForm({
 
             {/* Minimum order value warning */}
             {isBelowMinimumOrder && preview?.minimumOrderValue && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 text-sm">
+              <div className="flex items-center gap-2 p-3 rounded-lg text-amber-700 dark:text-amber-400 text-sm">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
                 <span>
                   {t("belowMinimumOrder", {

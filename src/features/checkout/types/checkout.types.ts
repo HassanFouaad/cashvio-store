@@ -14,6 +14,25 @@ export enum FulfillmentMethod {
 }
 
 /**
+ * Payment methods available for storefront (online) checkout.
+ * Matches backend PaymentMethod - only CASH, ONLINE, RECEIPT for storefront.
+ * STORE_CREDIT is not selectable on storefront.
+ */
+export enum PaymentMethod {
+  CASH = 'CASH',
+  ONLINE = 'ONLINE',
+  RECEIPT = 'RECEIPT',
+}
+
+/**
+ * Public storefront payment method from API
+ */
+export interface PublicStorefrontPaymentMethodDto {
+  paymentMethod: PaymentMethod;
+  sortOrder: number;
+}
+
+/**
  * Public fulfillment method from API
  */
 export interface PublicFulfillmentMethodDto {
@@ -208,6 +227,10 @@ export interface CreateOrderRequest {
   notes?: string;
   deliveryAddress?: OrderPreviewDeliveryAddress;
   visitorId: string;
+  /** Payment method selected by the customer at checkout */
+  paymentMethod?: PaymentMethod;
+  /** S3 file key for receipt image when paymentMethod is RECEIPT */
+  receiptFileKey?: string;
 }
 
 /**
