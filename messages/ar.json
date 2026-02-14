@@ -269,6 +269,20 @@
       "pickup": "استلام",
       "dine_in": "تناول في المكان"
     },
+    "paymentMethod": "كيف تريد الدفع؟",
+    "paymentMethods": {
+      "cash": "نقداً",
+      "online": "دفع إلكتروني",
+      "receipt": "رفع إيصال الدفع"
+    },
+    "receiptUploadLabel": "رفع إيصال الدفع (JPEG أو PNG أو WebP)",
+    "receiptUploading": "جاري رفع الإيصال...",
+    "receiptUploadSuccess": "تم رفع الإيصال بنجاح",
+    "receiptUploadError": "فشل في رفع الإيصال. يرجى المحاولة مرة أخرى.",
+    "receiptInvalidType": "يرجى اختيار صورة بصيغة JPEG أو PNG أو WebP.",
+    "receiptDragDrop": "اسحب وأفلت الإيصال هنا، أو انقر للاختيار",
+    "receiptAcceptedFormats": "JPEG أو PNG أو WebP (بحد أقصى ١٠ ميجابايت)",
+    "receiptRemove": "إزالة",
     "customerInfo": "معلوماتك",
     "name": "الاسم",
     "namePlaceholder": "أدخل اسمك",

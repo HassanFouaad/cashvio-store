@@ -2,12 +2,14 @@ import {
   getCountries,
   getDeliveryZones,
   getFulfillmentMethods,
+  getStorefrontPaymentMethods,
 } from "@/features/checkout/api/checkout-api";
 import { CheckoutForm } from "@/features/checkout/components/checkout-form";
 import {
   CommonCountryDto,
   FulfillmentMethod,
   PublicDeliveryZonesResponseDto,
+  PublicStorefrontPaymentMethodDto,
 } from "@/features/checkout/types/checkout.types";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { TrackBeginCheckoutEvent } from "@/lib/analytics/track-cart-events";
@@ -57,6 +59,15 @@ export default async function CheckoutPage() {
   // If no fulfillment methods available, redirect to cart
   if (!fulfillmentMethods || fulfillmentMethods.length === 0) {
     redirect("/cart");
+  }
+
+  // Fetch storefront payment methods
+  let storefrontPaymentMethods: PublicStorefrontPaymentMethodDto[] = [];
+  try {
+    storefrontPaymentMethods = await getStorefrontPaymentMethods(store.id);
+  } catch {
+    // Payment methods fetch failed — proceed with empty (default to CASH on backend)
+    storefrontPaymentMethods = [];
   }
 
   // Fetch delivery zones if delivery method is available
@@ -116,6 +127,7 @@ export default async function CheckoutPage() {
             fulfillmentMethods={fulfillmentMethods}
             deliveryZones={deliveryZones}
             fallbackCountries={fallbackCountries}
+            storefrontPaymentMethods={storefrontPaymentMethods}
           />
         </div>
       </section>
