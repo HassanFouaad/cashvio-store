@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { AddToCartSection } from "./add-to-cart-section";
 import { ProductImageGallery } from "./product-image-gallery";
+import { ProductReviews } from "./product-reviews";
 
 interface ProductDetailsProps {
   product: PublicProductDto;
@@ -123,6 +124,9 @@ export async function ProductDetails({
           </div>
         </section>
       )}
+
+      {/* Product Reviews Section */}
+      <ProductReviews productId={product.id} storeId={storeId} />
     </div>
   );
 }

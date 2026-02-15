@@ -2,6 +2,8 @@
  * Product-related types matching backend DTOs
  */
 
+import { PaginationMeta } from "@/lib/api/types";
+
 export enum ProductStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
@@ -50,12 +52,7 @@ export interface PublicProductDto {
 
 export interface PaginatedProductsResponse {
   items: PublicProductDto[];
-  pagination: {
-    page: number;
-    limit: number;
-    totalItems: number;
-    totalPages: number;
-  };
+  pagination: PaginationMeta;
 }
 
 export interface ProductFilters {
@@ -67,4 +64,30 @@ export interface ProductFilters {
   limit?: number;
   sortBy?: ProductSortBy;
   inStock?: boolean;
+}
+
+/**
+ * Product review types (public-facing, no storeVisitorId exposed)
+ */
+export interface ProductReviewDto {
+  id: string;
+  productId: string;
+  storeId: string;
+  name: string;
+  stars: number;
+  comment: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateProductReviewFormData {
+  name: string;
+  stars: number;
+  comment: string;
+}
+
+export interface PaginatedReviewsResponse {
+  items: ProductReviewDto[];
+  pagination: PaginationMeta;
 }

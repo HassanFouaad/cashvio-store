@@ -33,6 +33,7 @@ export const endpoints = {
   products: {
     getPublic: () => '/public/products',
     getPublicById: (id: string) => `/public/products/${id}`,
+    reviews: (productId: string) => `/public/products/${productId}/reviews`,
   },
   orders: {
     preview: '/public/orders/preview',

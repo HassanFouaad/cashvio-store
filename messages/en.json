@@ -110,7 +110,26 @@
         "inStockOnly": "In Stock",
         "activeFilters": "Filters"
       },
-      "resultsCount": "{count} products"
+      "resultsCount": "{count} products",
+      "customerReviews": "Customer Reviews",
+      "noReviews": "No reviews yet. Be the first to share your experience!",
+      "writeReview": "Write a Review",
+      "yourRating": "Your Rating",
+      "reviewerName": "Your Name",
+      "reviewerNamePlaceholder": "Enter your name",
+      "yourComment": "Your Comment",
+      "commentPlaceholder": "Share your experience with this product...",
+      "submitReview": "Submit Review",
+      "submitting": "Submitting...",
+      "reviewSubmitted": "Thank you for your review!",
+      "reviewPending": "Your review has been submitted and is pending approval.",
+      "writeAnother": "Write Another Review",
+      "ratingRequired": "Please select a star rating",
+      "reviewSubmitError": "Failed to submit review. Please try again.",
+      "outOf": "out of",
+      "review": "review",
+      "reviewsCount": "reviews",
+      "reviewDate": "Date"
     }
   },
   "features": {

@@ -110,7 +110,26 @@
         "inStockOnly": "متوفر",
         "activeFilters": "الفلاتر"
       },
-      "resultsCount": "{count} منتج"
+      "resultsCount": "{count} منتج",
+      "customerReviews": "تقييمات العملاء",
+      "noReviews": "لا توجد تقييمات بعد. كن أول من يشارك تجربته!",
+      "writeReview": "اكتب تقييم",
+      "yourRating": "تقييمك",
+      "reviewerName": "اسمك",
+      "reviewerNamePlaceholder": "أدخل اسمك",
+      "yourComment": "تعليقك",
+      "commentPlaceholder": "شارك تجربتك مع هذا المنتج...",
+      "submitReview": "إرسال التقييم",
+      "submitting": "جاري الإرسال...",
+      "reviewSubmitted": "شكراً لتقييمك!",
+      "reviewPending": "تم إرسال تقييمك وهو بانتظار الموافقة.",
+      "writeAnother": "اكتب تقييم آخر",
+      "ratingRequired": "يرجى اختيار تقييم بالنجوم",
+      "reviewSubmitError": "فشل إرسال التقييم. يرجى المحاولة مرة أخرى.",
+      "outOf": "من",
+      "review": "تقييم",
+      "reviewsCount": "تقييمات",
+      "reviewDate": "التاريخ"
     }
   },
   "features": {
