@@ -23,6 +23,7 @@ export interface StoreFrontHeroImageDto {
   storeFrontId: string;
   tenantId: string;
   imageUrl: string;
+  linkUrl: string | null;
   displayOrder: number;
   createdAt: Date;
   updatedAt: Date;
@@ -48,6 +49,7 @@ export interface StoreFrontWebEventsDto {
   tenantId: string;
   gtmId: string | null;
   facebookPixelId: string | null;
+  tiktokPixelId: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

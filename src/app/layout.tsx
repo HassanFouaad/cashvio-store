@@ -210,11 +210,14 @@ export default async function RootLayout({
                       {/* Initialize cart store with store info - renders nothing */}
                       <CartInitializer />
                       <VisitorTracker storeId={store.id} />
-                      {/* Analytics: GTM + Facebook Pixel (per-tenant configuration) */}
+                      {/* Analytics: GTM + Facebook Pixel + TikTok Pixel (per-tenant configuration) */}
                       <AnalyticsProvider
                         gtmId={store.storeFront?.webEvents?.gtmId}
                         facebookPixelId={
                           store.storeFront?.webEvents?.facebookPixelId
+                        }
+                        tiktokPixelId={
+                          store.storeFront?.webEvents?.tiktokPixelId
                         }
                       />
                       <StoreHeader store={store} />
