@@ -1,3 +1,4 @@
+import { getProductReviewsWithErrorHandling } from "@/features/products/api/get-product-reviews";
 import { getProductByIdWithErrorHandling } from "@/features/products/api/get-products";
 import { ProductDetails } from "@/features/products/components/product-details";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
@@ -101,6 +102,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
     product.variants?.find((v) => v.inStock) ?? product.variants?.[0];
   const productPrice = defaultVariant?.sellingPrice ?? 0;
 
+  // Fetch displayed reviews for JSON-LD structured data
+  const { reviews: reviewsData } = await getProductReviewsWithErrorHandling(
+    id,
+    1,
+    50,
+  );
+  const reviews = reviewsData?.items ?? [];
+
   // Build JSON-LD structured data for SEO (Schema.org Product)
   const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
   const inStock = product.variants?.some((v) => v.inStock) ?? false;
@@ -108,7 +117,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const minPrice = Math.min(...prices);
   const maxPrice = Math.max(...prices);
 
-  const jsonLd = {
+  // Build aggregateRating and individual reviews for rich snippets
+  const hasReviews = reviews.length > 0;
+  const averageRating = hasReviews
+    ? reviews.reduce((sum, r) => sum + r.stars, 0) / reviews.length
+    : 0;
+
+  const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
@@ -126,6 +141,32 @@ export default async function ProductPage({ params }: ProductPageProps) {
         : "https://schema.org/OutOfStock",
       url: `https://${hostname}/products/${id}`,
     },
+    ...(hasReviews
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: Math.round(averageRating * 10) / 10,
+            bestRating: 5,
+            worstRating: 1,
+            reviewCount: reviews.length,
+          },
+          review: reviews.map((r) => ({
+            "@type": "Review",
+            author: {
+              "@type": "Person",
+              name: r.name,
+            },
+            datePublished: r.createdAt,
+            reviewRating: {
+              "@type": "Rating",
+              ratingValue: r.stars,
+              bestRating: 5,
+              worstRating: 1,
+            },
+            reviewBody: r.comment,
+          })),
+        }
+      : {}),
   };
 
   return (
