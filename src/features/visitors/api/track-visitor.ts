@@ -1,12 +1,15 @@
-"use server";
-
 import { apiClient } from "@/lib/api/client";
 import { endpoints } from "@/lib/api/config";
 import { ApiException } from "@/lib/api/types";
 import { TrackVisitorParams } from "../types/visitor.types";
 
 /**
- * Track visitor visit - fire and forget
+ * Track visitor visit - client-side, fire and forget
+ *
+ * Follows the same pattern as checkout's createOrder and submitProductReview:
+ * called from a "use client" component where window.__STORE_ID__ is available,
+ * so apiClient automatically includes the X-Store-Id header.
+ *
  * Returns void (backend returns 204 No Content)
  */
 export async function trackVisitor(params: TrackVisitorParams): Promise<void> {
