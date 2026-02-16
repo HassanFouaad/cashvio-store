@@ -1,8 +1,8 @@
 import { getProductReviewsWithErrorHandling } from "@/features/products/api/get-product-reviews";
 import { getProductByIdWithErrorHandling } from "@/features/products/api/get-products";
 import { ProductDetails } from "@/features/products/components/product-details";
-import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { TrackViewItem } from "@/lib/analytics/track-event";
+import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
@@ -37,7 +37,8 @@ export async function generateMetadata({
     };
   }
 
-  const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
+  const primaryImage =
+    product.images?.find((img) => img.isPrimary) || product.images?.[0];
 
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
@@ -62,7 +63,9 @@ export async function generateMetadata({
           storeName: store.name,
         }),
       type: "website",
-      ...(primaryImage ? { images: [{ url: primaryImage.imageUrl, alt: product.name }] } : {}),
+      ...(primaryImage
+        ? { images: [{ url: primaryImage.imageUrl, alt: product.name }] }
+        : {}),
     },
     twitter: {
       card: "summary_large_image",
@@ -111,7 +114,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const reviews = reviewsData?.items ?? [];
 
   // Build JSON-LD structured data for SEO (Schema.org Product)
-  const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
+  const primaryImage =
+    product.images?.find((img) => img.isPrimary) || product.images?.[0];
   const inStock = product.variants?.some((v) => v.inStock) ?? false;
   const prices = product.variants?.map((v) => v.sellingPrice) ?? [0];
   const minPrice = Math.min(...prices);
@@ -127,11 +131,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
-    description: product.description?.replace(/<[^>]*>/g, "").slice(0, 500) || undefined,
+    description:
+      product.description?.replace(/<[^>]*>/g, "").slice(0, 500) || undefined,
     ...(primaryImage ? { image: primaryImage.imageUrl } : {}),
     ...(defaultVariant?.sku ? { sku: defaultVariant.sku } : {}),
     offers: {
-      "@type": product.variants && product.variants.length > 1 ? "AggregateOffer" : "Offer",
+      "@type":
+        product.variants && product.variants.length > 1
+          ? "AggregateOffer"
+          : "Offer",
       priceCurrency: store.currency,
       ...(product.variants && product.variants.length > 1
         ? { lowPrice: minPrice, highPrice: maxPrice }
