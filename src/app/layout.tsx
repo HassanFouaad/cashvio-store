@@ -230,6 +230,7 @@ export default async function RootLayout({
                       <MobileBottomNav
                         socialMedia={store.storeFront?.socialMedia}
                         storeName={store.name}
+                        storeId={store.id}
                       />
                     </div>
                   ) : (

@@ -22,7 +22,8 @@
     "cart": "السلة",
     "menu": "القائمة",
     "settings": "الإعدادات",
-    "contact": "تواصل"
+    "contact": "تواصل",
+    "more": "المزيد"
   },
   "contact": {
     "title": "تواصل معنا",
@@ -222,7 +223,9 @@
     "policies": "السياسات",
     "connectWithUs": "تواصل معنا",
     "copyright": "© {year} {storeName}. جميع الحقوق محفوظة.",
-    "poweredBy": "مدعوم من"
+    "poweredBy": "مدعوم من",
+    "information": "المعلومات",
+    "noPagesAvailable": "لا توجد صفحات معلومات متاحة"
   },
   "theme": {
     "light": "فاتح",

@@ -22,7 +22,8 @@
     "cart": "Cart",
     "menu": "Menu",
     "settings": "Settings",
-    "contact": "Contact"
+    "contact": "Contact",
+    "more": "More"
   },
   "contact": {
     "title": "Contact Us",
@@ -222,7 +223,9 @@
     "policies": "Policies",
     "connectWithUs": "Connect With Us",
     "copyright": "© {year} {storeName}. All rights reserved.",
-    "poweredBy": "Powered by"
+    "poweredBy": "Powered by",
+    "information": "Information",
+    "noPagesAvailable": "No information pages available"
   },
   "theme": {
     "light": "Light",

@@ -3,16 +3,17 @@
 import { useCartItemCount } from '@/features/cart/store';
 import { StoreFrontSocialMediaDto } from '@/features/store/types/store.types';
 import { cn } from '@/lib/utils/cn';
-import { Grid3X3, Home, Package, Phone, ShoppingCart } from 'lucide-react';
+import { Grid3X3, Home, Info, Phone, ShoppingCart } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { MobileContactSheet } from './mobile-contact-sheet';
+import { MobileFooterSheet } from './mobile-footer-sheet';
 
 interface NavItem {
   href: string;
-  labelKey: 'home' | 'collections' | 'products' | 'cart';
+  labelKey: 'home' | 'collections' | 'cart';
   icon: React.ComponentType<{ className?: string }>;
   matchPaths?: string[];
 }
@@ -31,12 +32,6 @@ const navItems: NavItem[] = [
     matchPaths: ['/categories'],
   },
   {
-    href: '/products',
-    labelKey: 'products',
-    icon: Package,
-    matchPaths: ['/products'],
-  },
-  {
     href: '/cart',
     labelKey: 'cart',
     icon: ShoppingCart,
@@ -47,12 +42,14 @@ const navItems: NavItem[] = [
 interface MobileBottomNavProps {
   socialMedia?: StoreFrontSocialMediaDto | null;
   storeName?: string;
+  storeId: string;
 }
 
-export function MobileBottomNav({ socialMedia, storeName }: MobileBottomNavProps) {
+export function MobileBottomNav({ socialMedia, storeName, storeId }: MobileBottomNavProps) {
   const t = useTranslations('common');
   const pathname = usePathname();
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [isFooterOpen, setIsFooterOpen] = useState(false);
   
   // Get cart item count from Zustand store
   const cartItemCount = useCartItemCount();
@@ -150,6 +147,19 @@ export function MobileBottomNav({ socialMedia, storeName }: MobileBottomNavProps
               <span className="text-[10px] font-medium">{t('contact')}</span>
             </button>
           )}
+
+          {/* More Button - for static pages/footer info */}
+          <button
+            onClick={() => setIsFooterOpen(true)}
+            className={cn(
+              'flex flex-col items-center justify-center gap-0.5 py-1.5 px-2 rounded-xl transition-all duration-200 min-w-0 min-h-0',
+              'active:scale-95 active:bg-muted/80',
+              'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            <Info className="h-5 w-5" />
+            <span className="text-[10px] font-medium">{t('more')}</span>
+          </button>
         </div>
       </nav>
 
@@ -162,6 +172,14 @@ export function MobileBottomNav({ socialMedia, storeName }: MobileBottomNavProps
           storeName={storeName}
         />
       )}
+
+      {/* Footer Sheet */}
+      <MobileFooterSheet
+        isOpen={isFooterOpen}
+        onClose={() => setIsFooterOpen(false)}
+        storeId={storeId}
+        storeName={storeName || ''}
+      />
     </>
   );
 }
