@@ -74,8 +74,11 @@
     "staticPages": {
       "backToStore": "Back to store"
     },
+    "specialProducts": {
+      "title": "Special Products"
+    },
     "products": {
-      "title": "Featured Products",
+      "title": "Latest Products",
       "viewAll": "View All",
       "pageTitle": "All Products",
       "pageDescription": "Browse our complete collection of products",

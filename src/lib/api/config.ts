@@ -25,6 +25,7 @@ export const endpoints = {
       list: '/public/stores/static-pages',
       getBySlug: (slug: string) => `/public/stores/static-pages/${slug}`,
     },
+    specialProducts: '/public/stores/special-products',
   },
   categories: {
     list: '/public/categories',

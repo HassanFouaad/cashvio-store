@@ -1,14 +1,15 @@
 import { getCategoriesWithErrorHandling } from "@/features/categories/api/get-categories";
 import { CategoriesSection } from "@/features/categories/components/categories-section";
 import { getProductsWithErrorHandling } from "@/features/products/api/get-products";
+import { getSpecialProductsWithErrorHandling } from "@/features/products/api/get-special-products";
 import { ProductsSection } from "@/features/products/components/products-section";
+import { SpecialProductsSection } from "@/features/products/components/special-products-section";
 import { StoreEmptyState } from "@/features/store/components/store-empty-state";
 import { StoreErrorComponent } from "@/features/store/components/store-error";
 import { StoreHero } from "@/features/store/components/store-hero";
 import { StoreErrorType } from "@/features/store/types/store.types";
 import { TrackViewItemList } from "@/lib/analytics/track-event";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
-import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 
 export default async function HomePage() {
@@ -36,8 +37,6 @@ export default async function HomePage() {
     );
   }
 
-  const t = await getTranslations();
-
   const heroImages = store.storeFront?.heroImages || [];
   // Fetch first 7 categories
   const { categories: categoriesData } = await getCategoriesWithErrorHandling({
@@ -53,6 +52,10 @@ export default async function HomePage() {
     page: 1,
     limit: 12,
   });
+
+  // Fetch special products
+  const { products: specialProducts } =
+    await getSpecialProductsWithErrorHandling();
 
   const categories = categoriesData?.items || [];
   const products = productsData?.items || [];
@@ -133,6 +136,11 @@ export default async function HomePage() {
 
       {/* Hero Section */}
       <StoreHero heroImages={heroImages} storeName={store.name} />
+      {/* Special Products Section */}
+      <SpecialProductsSection
+        products={specialProducts || []}
+        currency={store.currency}
+      />
 
       {/* Categories Section */}
       <CategoriesSection categories={categories} />

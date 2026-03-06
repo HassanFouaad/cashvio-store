@@ -74,8 +74,11 @@
     "staticPages": {
       "backToStore": "العودة إلى المتجر"
     },
+    "specialProducts": {
+      "title": "المنتجات المميزة"
+    },
     "products": {
-      "title": "المنتجات المميزة",
+      "title": "أحدث المنتجات",
       "viewAll": "عرض الكل",
       "pageTitle": "جميع المنتجات",
       "pageDescription": "تصفح مجموعتنا الكاملة من المنتجات",
