@@ -26,7 +26,7 @@ export function StoreHero({ heroImages, storeName }: StoreHeroProps) {
 
   // Sort images by display order
   const sortedImages = [...heroImages].sort(
-    (a, b) => a.displayOrder - b.displayOrder
+    (a, b) => a.displayOrder - b.displayOrder,
   );
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export function StoreHero({ heroImages, storeName }: StoreHeroProps) {
 
   const goToPrevious = () => {
     setCurrentIndex((prev) =>
-      prev === 0 ? sortedImages.length - 1 : prev - 1
+      prev === 0 ? sortedImages.length - 1 : prev - 1,
     );
   };
 
@@ -59,6 +59,7 @@ export function StoreHero({ heroImages, storeName }: StoreHeroProps) {
       {sortedImages.map((image, index) => {
         const imageContent = (
           <Image
+            key={image.id}
             src={image.imageUrl}
             alt={`${storeName} hero image ${index + 1}`}
             fill
@@ -70,12 +71,15 @@ export function StoreHero({ heroImages, storeName }: StoreHeroProps) {
           />
         );
 
+        const isActive = index === currentIndex;
+
         return (
           <div
             key={image.id}
             className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentIndex ? "opacity-100" : "opacity-0"
+              isActive ? "opacity-100" : "opacity-0 pointer-events-none"
             }`}
+            aria-hidden={!isActive}
           >
             {image.linkUrl ? (
               isInternalUrl(image.linkUrl) ? (
@@ -83,6 +87,7 @@ export function StoreHero({ heroImages, storeName }: StoreHeroProps) {
                   href={image.linkUrl}
                   className="block absolute inset-0 cursor-pointer"
                   aria-label={`${storeName} promotion`}
+                  tabIndex={isActive ? 0 : -1}
                 >
                   {imageContent}
                 </Link>
@@ -93,6 +98,7 @@ export function StoreHero({ heroImages, storeName }: StoreHeroProps) {
                   rel="noopener noreferrer"
                   className="block absolute inset-0 cursor-pointer"
                   aria-label={`${storeName} promotion`}
+                  tabIndex={isActive ? 0 : -1}
                 >
                   {imageContent}
                 </a>

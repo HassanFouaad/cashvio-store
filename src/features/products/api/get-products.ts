@@ -1,14 +1,14 @@
 "use server";
 
+import {
+    PaginatedProductsResponse,
+    ProductFilters,
+    PublicProductDto,
+} from "@/features/products/types/product.types";
 import { apiClient } from "@/lib/api/client";
 import { endpoints } from "@/lib/api/config";
 import { ApiException } from "@/lib/api/types";
 import { cache } from "react";
-import {
-  PaginatedProductsResponse,
-  ProductFilters,
-  PublicProductDto,
-} from "@/features/products/types/product.types";
 
 /**
  * Fetch paginated products for a store
@@ -84,6 +84,19 @@ export const getProductsWithErrorHandling = cache(
   }> => {
     try {
       const products = await getProducts(filters);
+      console.log("products", {
+        page: filters.page,
+        limit: filters.limit,
+        total: products.pagination.totalItems,
+        totalPages: products.pagination.totalPages,
+        currentPage: products.pagination.page,
+        itemsPerPage: products.pagination.limit,
+        items: products.items,
+        name: filters.name,
+        categoryId: filters.categoryId,
+        sortBy: filters.sortBy,
+        inStock: filters.inStock,
+      });
       return { products, error: null };
     } catch (error) {
       if (error instanceof ApiException) {
