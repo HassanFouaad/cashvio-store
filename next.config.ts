@@ -23,6 +23,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 's3.amazonaws.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'cdn.cash-vio.com',
+      },
       // Add more image hosts as needed
     ],
   },

@@ -19,7 +19,6 @@ export const getStoreBySubdomain = cache(async (subdomain: string): Promise<Publ
       endpoints.stores.getBySubdomain(subdomain)
     );
 
-    console.log('store', store.storeFront?.heroImages);
     return store;
   } catch (error) {
     if (error instanceof ApiException) {

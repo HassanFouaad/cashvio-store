@@ -84,19 +84,6 @@ export const getProductsWithErrorHandling = cache(
   }> => {
     try {
       const products = await getProducts(filters);
-      console.log("products", {
-        page: filters.page,
-        limit: filters.limit,
-        total: products.pagination.totalItems,
-        totalPages: products.pagination.totalPages,
-        currentPage: products.pagination.page,
-        itemsPerPage: products.pagination.limit,
-        items: products.items,
-        name: filters.name,
-        categoryId: filters.categoryId,
-        sortBy: filters.sortBy,
-        inStock: filters.inStock,
-      });
       return { products, error: null };
     } catch (error) {
       if (error instanceof ApiException) {
