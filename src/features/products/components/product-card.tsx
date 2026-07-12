@@ -71,18 +71,6 @@ export function ProductCard({
           <p className="text-sm font-bold text-foreground">{priceDisplay}</p>
         )}
 
-        {product.tags && product.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 pt-0.5">
-            {product.tags.slice(0, 2).map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
     </Link>
   );

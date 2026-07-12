@@ -91,21 +91,6 @@ export async function ProductDetails({
               />
             )}
 
-            {/* Tags */}
-            {product.tags && product.tags.length > 0 && (
-              <div className="pt-4 border-t border-border">
-                <div className="flex flex-wrap gap-2">
-                  {product.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-flex items-center rounded-full border border-border bg-muted/50 px-3 py-1 text-xs font-medium text-muted-foreground"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

@@ -42,7 +42,6 @@ export interface PublicProductDto {
   description?: string | null;
   categoryId?: string | null;
   status: ProductStatus;
-  tags?: string[];
   taxRate?: number | null;
   taxIncluded: boolean;
   inventoryTrackable: boolean;
