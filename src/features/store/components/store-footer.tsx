@@ -76,6 +76,14 @@ export async function StoreFooter({ store }: StoreFooterProps) {
                   {t("common.products")}
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/track"
+                  className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {t("common.trackOrder")}
+                </Link>
+              </li>
             </ul>
           </div>
 

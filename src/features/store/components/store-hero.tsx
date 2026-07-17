@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -22,7 +23,9 @@ function isInternalUrl(url: string): boolean {
 }
 
 export function StoreHero({ heroImages, storeName }: StoreHeroProps) {
+  const t = useTranslations("store.hero");
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   // Sort images by display order
   const sortedImages = [...heroImages].sort(
@@ -30,14 +33,22 @@ export function StoreHero({ heroImages, storeName }: StoreHeroProps) {
   );
 
   useEffect(() => {
-    if (sortedImages.length <= 1) return;
+    if (sortedImages.length <= 1 || isPaused) return;
+
+    // Respect users who prefer reduced motion — no auto-rotation
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
 
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % sortedImages.length);
     }, 5000); // Change image every 5 seconds
 
     return () => clearInterval(timer);
-  }, [sortedImages.length]);
+  }, [sortedImages.length, isPaused]);
 
   const goToPrevious = () => {
     setCurrentIndex((prev) =>
@@ -54,14 +65,20 @@ export function StoreHero({ heroImages, storeName }: StoreHeroProps) {
   }
 
   return (
-    <div className="mt-16 relative w-full max-w-full h-[250px] sm:h-[350px] md:h-[450px] overflow-hidden group bg-background">
+    <div
+      className="relative w-full max-w-full h-[250px] sm:h-[350px] md:h-[450px] overflow-hidden group bg-background"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={() => setIsPaused(true)}
+      onTouchEnd={() => setIsPaused(false)}
+    >
       {/* Images */}
       {sortedImages.map((image, index) => {
         const imageContent = (
           <Image
             key={image.id}
             src={image.imageUrl}
-            alt={`${storeName} hero image ${index + 1}`}
+            alt={t("imageAlt", { storeName, index: index + 1 })}
             fill
             sizes="100vw"
             className="object-contain"
@@ -86,7 +103,7 @@ export function StoreHero({ heroImages, storeName }: StoreHeroProps) {
                 <Link
                   href={image.linkUrl}
                   className="block absolute inset-0 cursor-pointer"
-                  aria-label={`${storeName} promotion`}
+                  aria-label={t("promotionLabel", { storeName })}
                   tabIndex={isActive ? 0 : -1}
                 >
                   {imageContent}
@@ -97,7 +114,7 @@ export function StoreHero({ heroImages, storeName }: StoreHeroProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block absolute inset-0 cursor-pointer"
-                  aria-label={`${storeName} promotion`}
+                  aria-label={t("promotionLabel", { storeName })}
                   tabIndex={isActive ? 0 : -1}
                 >
                   {imageContent}
@@ -118,7 +135,7 @@ export function StoreHero({ heroImages, storeName }: StoreHeroProps) {
             size="icon"
             className="absolute start-2 sm:start-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 sm:h-10 sm:w-10 z-10"
             onClick={goToPrevious}
-            aria-label="Previous image"
+            aria-label={t("previousImage")}
           >
             <ChevronLeft className="h-4 w-4 sm:h-6 sm:w-6 rtl:rotate-180" />
           </Button>
@@ -127,7 +144,7 @@ export function StoreHero({ heroImages, storeName }: StoreHeroProps) {
             size="icon"
             className="absolute end-2 sm:end-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 sm:h-10 sm:w-10 z-10"
             onClick={goToNext}
-            aria-label="Next image"
+            aria-label={t("nextImage")}
           >
             <ChevronRight className="h-4 w-4 sm:h-6 sm:w-6 rtl:rotate-180" />
           </Button>
@@ -143,7 +160,7 @@ export function StoreHero({ heroImages, storeName }: StoreHeroProps) {
                     : "w-1.5 sm:w-2 bg-white/50 hover:bg-white/75"
                 }`}
                 onClick={() => setCurrentIndex(index)}
-                aria-label={`Go to image ${index + 1}`}
+                aria-label={t("goToImage", { index: index + 1 })}
               />
             ))}
           </div>

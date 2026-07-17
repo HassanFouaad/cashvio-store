@@ -1,6 +1,7 @@
 "use client";
 
 import { PublicProductImageDto } from "@/features/products/types/product.types";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useCallback, useRef, useState } from "react";
 
@@ -20,6 +21,7 @@ export function ProductImageGallery({
   productName,
   noImageText,
 }: ProductImageGalleryProps) {
+  const t = useTranslations("store.gallery");
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const currentImage = images[selectedImageIndex];
   const touchStartX = useRef<number | null>(null);
@@ -88,7 +90,7 @@ export function ProductImageGallery({
         <div
           className="flex justify-center gap-1.5 sm:hidden"
           role="tablist"
-          aria-label="Image selector"
+          aria-label={t("imageSelector")}
         >
           {images.map((_, index) => (
             <button
@@ -96,7 +98,7 @@ export function ProductImageGallery({
               onClick={() => setSelectedImageIndex(index)}
               role="tab"
               aria-selected={index === selectedImageIndex}
-              aria-label={`Image ${index + 1}`}
+              aria-label={t("imageOf", { index: index + 1, total: images.length })}
               className={`rounded-full transition-all duration-200 ${
                 index === selectedImageIndex
                   ? "w-6 h-2 bg-foreground"
@@ -112,7 +114,7 @@ export function ProductImageGallery({
         <div
           className="hidden sm:grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3"
           role="tablist"
-          aria-label="Image thumbnails"
+          aria-label={t("imageThumbnails")}
         >
           {images.map((image, index) => (
             <button
@@ -120,7 +122,10 @@ export function ProductImageGallery({
               onClick={() => setSelectedImageIndex(index)}
               role="tab"
               aria-selected={index === selectedImageIndex}
-              aria-label={image.altText || `${productName} image ${index + 1}`}
+              aria-label={
+                image.altText ||
+                t("imageOf", { index: index + 1, total: images.length })
+              }
               className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${
                 index === selectedImageIndex
                   ? "border-foreground ring-1 ring-foreground/20"

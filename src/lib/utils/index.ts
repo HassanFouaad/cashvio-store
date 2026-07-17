@@ -16,3 +16,6 @@ export { cn } from './cn';
 
 // JSON-LD safe serialization
 export { serializeJsonLd } from './json-ld';
+
+// Tenant brand color CSS
+export { buildBrandStyle } from './brand-style';

@@ -59,6 +59,8 @@ export interface StoreFrontDto {
   storeId: string;
   tenantId: string;
   logoUrl: string | null;
+  primaryColor: string | null;
+  primaryTextColor: string | null;
   hideOutOfStock: boolean;
   status: StoreFrontStatus;
   socialMedia?: StoreFrontSocialMediaDto | null;

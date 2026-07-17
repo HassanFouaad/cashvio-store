@@ -1,4 +1,5 @@
 import { ProductReviewDto } from "@/features/products/types/product.types";
+import { getLocale } from "next-intl/server";
 import { StarRatingDisplay } from "./star-rating";
 
 interface ReviewCardProps {
@@ -10,9 +11,11 @@ interface ReviewCardProps {
  * Individual review card - Server component
  * Displays reviewer name, stars, comment, and relative date
  */
-export function ReviewCard({ review, dateLabel }: ReviewCardProps) {
+export async function ReviewCard({ review, dateLabel }: ReviewCardProps) {
+  // Format with the request locale — never the server's default locale
+  const locale = await getLocale();
   const reviewDate = new Date(review.createdAt);
-  const formattedDate = reviewDate.toLocaleDateString(undefined, {
+  const formattedDate = reviewDate.toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",

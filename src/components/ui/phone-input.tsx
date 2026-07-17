@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils/cn';
 import { ChevronDown, Search } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CountryIso2,
@@ -16,7 +17,8 @@ export interface PhoneInputProps {
   value: string;
   onChange: (phone: string, isValid: boolean) => void;
   placeholder?: string;
-  defaultCountry?: CountryIso2;
+  /** ISO2 country code — unknown codes safely fall back to 'eg' */
+  defaultCountry?: string;
   className?: string;
   disabled?: boolean;
   id?: string;
@@ -114,20 +116,29 @@ function sanitizePhoneNumber(phone: string, currentCountry: CountryIso2): { phon
 export function PhoneInput({
   value,
   onChange,
-  placeholder = 'Enter phone number',
+  placeholder,
   defaultCountry = 'eg',
   className,
   disabled,
   id,
   'aria-label': ariaLabel,
 }: PhoneInputProps) {
+  const t = useTranslations('common.phoneInput');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // Guard against unknown ISO codes (e.g. store country not in the lib's list)
+  const safeDefaultCountry = useMemo<CountryIso2>(() => {
+    const exists = defaultCountries.some(
+      (c) => parseCountry(c).iso2 === defaultCountry,
+    );
+    return exists ? (defaultCountry as CountryIso2) : 'eg';
+  }, [defaultCountry]);
+
   const { inputValue, handlePhoneValueChange, inputRef, country, setCountry } = usePhoneInput({
-    defaultCountry,
+    defaultCountry: safeDefaultCountry,
     value,
     countries: defaultCountries,
     onChange: (data) => {
@@ -203,7 +214,7 @@ export function PhoneInput({
           'disabled:cursor-not-allowed disabled:opacity-50',
           'min-w-[80px]'
         )}
-        aria-label="Select country"
+        aria-label={t('selectCountry')}
         aria-expanded={isDropdownOpen}
         aria-haspopup="listbox"
       >
@@ -220,9 +231,10 @@ export function PhoneInput({
         ref={inputRef}
         id={id}
         type="tel"
+        autoComplete="tel"
         value={inputValue}
         onChange={handlePhoneValueChange}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t('placeholder')}
         disabled={disabled}
         aria-label={ariaLabel}
         className={cn(
@@ -252,7 +264,7 @@ export function PhoneInput({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search countries..."
+                placeholder={t('searchCountries')}
                 className={cn(
                   'w-full h-9 ps-9 pe-3 rounded-md border border-input bg-background text-sm',
                   'placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring'
@@ -265,7 +277,7 @@ export function PhoneInput({
           <div className="overflow-y-auto max-h-60">
             {filteredCountries.length === 0 ? (
               <div className="p-4 text-center text-sm text-muted-foreground">
-                No countries found
+                {t('noCountriesFound')}
               </div>
             ) : (
               filteredCountries.map((c) => {

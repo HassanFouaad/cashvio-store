@@ -30,6 +30,7 @@ export function ProductsFilterBar({
   totalItems,
 }: ProductsFilterBarProps) {
   const t = useTranslations("store.products");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -143,7 +144,7 @@ export function ProductsFilterBar({
                 size="sm"
                 onClick={handleClearSearch}
                 className="h-8 w-8 p-0 rounded-full hover:bg-muted"
-                aria-label="Clear search"
+                aria-label={tCommon("close")}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -152,11 +153,11 @@ export function ProductsFilterBar({
               type="submit"
               size="sm"
               className="h-8 px-4 rounded-full"
-              aria-label="Search"
+              aria-label={tCommon("search")}
             >
               <Search className="h-4 w-4" />
               <span className="ms-1.5 hidden sm:inline">
-                {t("searchPlaceholder").split("...")[0]}
+                {tCommon("search")}
               </span>
             </Button>
           </div>
@@ -272,7 +273,7 @@ export function ProductsFilterBar({
             onClick={() => setShowFilters(false)}
             className="w-full rounded-full"
           >
-            {t("filters.activeFilters")}
+            {tCommon("done")}
           </Button>
         </div>
       )}

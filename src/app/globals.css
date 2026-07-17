@@ -225,15 +225,6 @@ p {
   * {
     -webkit-tap-highlight-color: transparent;
   }
-
-  /* Active state feedback for touch */
-  .touch-feedback:active {
-    transform: scale(0.97);
-    opacity: 0.9;
-    transition:
-      transform 0.1s ease,
-      opacity 0.1s ease;
-  }
 }
 
 /* Mobile card hover/active states */
@@ -256,33 +247,11 @@ p {
   }
 }
 
-/* Mobile Bottom Navigation Safe Area */
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .mobile-nav-spacer {
-    height: calc(4rem + env(safe-area-inset-bottom, 0px));
-  }
-}
-
-/* Floating action button positioning for mobile */
+/* Floating action button positioning for mobile (above the bottom nav) */
 @media (max-width: 767px) {
   .fixed-bottom-cta {
     bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
   }
-}
-
-/* Skeleton loading animation - smoother for mobile */
-@keyframes skeleton-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.animate-skeleton {
-  animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
 
 /* Mobile bottom navigation padding */

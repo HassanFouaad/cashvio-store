@@ -37,7 +37,7 @@ export function Select({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         className={cn(
-          "appearance-none w-full rounded-md border border-input bg-background px-3 py-2 pr-8 text-sm",
+          "appearance-none w-full rounded-md border border-input bg-background ps-3 pe-8 py-2 text-sm",
           "ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
           "disabled:cursor-not-allowed disabled:opacity-50",
           "cursor-pointer"
@@ -54,7 +54,7 @@ export function Select({
           </option>
         ))}
       </select>
-      <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+      <ChevronDown className="absolute end-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
     </div>
   );
 }

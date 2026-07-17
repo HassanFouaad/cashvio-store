@@ -25,10 +25,15 @@ export function StarRatingDisplay({
   className,
 }: StarRatingDisplayProps) {
   return (
-    <div className={cn("flex items-center gap-0.5", className)}>
+    <div
+      className={cn("flex items-center gap-0.5", className)}
+      role="img"
+      aria-label={`${rating}/${maxStars}`}
+    >
       {Array.from({ length: maxStars }, (_, i) => (
         <Star
           key={i}
+          aria-hidden="true"
           className={cn(
             sizeMap[size],
             i < rating

@@ -30,6 +30,10 @@ import {
   PublicFulfillmentMethodDto,
   PublicStorefrontPaymentMethodDto,
 } from "@/features/checkout/types/checkout.types";
+import {
+  buildOrderSuccessRecap,
+  saveOrderSuccessRecap,
+} from "@/features/checkout/utils/order-success-recap";
 import { analytics } from "@/lib/analytics";
 import { formatCurrency } from "@/lib/utils/formatters";
 import {
@@ -54,7 +58,14 @@ import {
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 interface CheckoutFormProps {
   storeId: string;
@@ -64,6 +75,8 @@ interface CheckoutFormProps {
   deliveryZones: PublicDeliveryZonesResponseDto | null;
   fallbackCountries: CommonCountryDto[] | null;
   storefrontPaymentMethods: PublicStorefrontPaymentMethodDto[];
+  /** ISO2 country code from the store's configuration (e.g. "eg") */
+  defaultPhoneCountry?: string;
 }
 
 const PAYMENT_METHOD_ICONS: Record<PaymentMethod, typeof CreditCard> = {
@@ -98,6 +111,7 @@ export function CheckoutForm({
   deliveryZones: rawDeliveryZones,
   fallbackCountries,
   storefrontPaymentMethods,
+  defaultPhoneCountry,
 }: CheckoutFormProps) {
   const t = useTranslations("checkout");
   const tCart = useTranslations("cart");
@@ -111,6 +125,8 @@ export function CheckoutForm({
   // Order submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // Inline validation messages are only shown after the first submit attempt
+  const [showValidation, setShowValidation] = useState(false);
   // Mobile order summary toggle (collapsed by default on mobile)
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
 
@@ -119,6 +135,14 @@ export function CheckoutForm({
 
   // Track if we've done initial cart validation
   const hasValidatedRef = useRef(false);
+
+  // Idempotency key — stable for this checkout session. Failed attempts
+  // retry with the same key so a timeout retry can never duplicate the order.
+  const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
+
+  // Monotonic sequence for preview requests — a slow older response must
+  // never overwrite a newer one (user changes city quickly, totals race).
+  const previewSeqRef = useRef(0);
 
   // Filter to allowed methods (PICKUP, DELIVERY only) and sort with Delivery first
   const sortedFulfillmentMethods = useMemo(() => {
@@ -508,6 +532,7 @@ export function CheckoutForm({
       return;
     }
 
+    const seq = ++previewSeqRef.current;
     setIsLoadingPreview(true);
     setPreviewError(null);
 
@@ -523,12 +548,18 @@ export function CheckoutForm({
         deliveryAddress: previewDeliveryAddress,
       });
 
+      // Drop stale responses that resolved after a newer request started
+      if (seq !== previewSeqRef.current) return;
+
       setPreview(previewResponse);
     } catch (error) {
+      if (seq !== previewSeqRef.current) return;
       console.error("Failed to preview order:", error);
       setPreviewError(t("previewError"));
     } finally {
-      setIsLoadingPreview(false);
+      if (seq === previewSeqRef.current) {
+        setIsLoadingPreview(false);
+      }
     }
   }, [
     isInitialized,
@@ -612,25 +643,23 @@ export function CheckoutForm({
     receiptUploadProgress,
   ]);
 
-  // Check if form can be submitted
-  const canSubmitOrder = useMemo(() => {
+  // Hard blockers — not fixable by typing, so the button stays disabled.
+  // Field-level issues (name/phone/address/receipt) keep the button ENABLED
+  // and surface inline messages on submit instead of a silently dead button.
+  const isSubmitBlocked = useMemo(() => {
     return (
-      preview !== null &&
-      !isLoadingPreview &&
-      isDeliveryAddressComplete &&
-      isCustomerInfoComplete &&
-      isPaymentMethodSelected &&
-      !isSubmitting &&
-      !isBelowMinimumOrder
+      preview === null ||
+      isLoadingPreview ||
+      isSubmitting ||
+      isBelowMinimumOrder ||
+      !hasPaymentMethods
     );
   }, [
     preview,
     isLoadingPreview,
-    isDeliveryAddressComplete,
-    isCustomerInfoComplete,
-    isPaymentMethodSelected,
     isSubmitting,
     isBelowMinimumOrder,
+    hasPaymentMethods,
   ]);
 
   // Handle order submission
@@ -662,6 +691,7 @@ export function CheckoutForm({
           selectedPaymentMethod === PaymentMethod.RECEIPT
             ? (receiptFileKey ?? undefined)
             : undefined,
+        idempotencyKey: idempotencyKeyRef.current,
       };
 
       const result = await createOrder(orderRequest);
@@ -671,7 +701,8 @@ export function CheckoutForm({
         analytics.trackPurchase({
           transaction_id: result.orderNumber,
           currency,
-          value: preview?.totalAmount ?? 0,
+          // Server-confirmed total — never the (possibly stale) preview
+          value: result.totalAmount ?? preview?.totalAmount ?? 0,
           shipping: preview?.deliveryFees ?? 0,
           items: items.map((item) => ({
             item_id: item.variant.id,
@@ -684,6 +715,21 @@ export function CheckoutForm({
       } catch {
         /* analytics should never break checkout */
       }
+
+      // Save a local recap BEFORE clearing the cart so the confirmation
+      // page can show what was ordered (refresh-safe)
+      saveOrderSuccessRecap(
+        buildOrderSuccessRecap({
+          orderNumber: result.orderNumber,
+          totalAmount: result.totalAmount ?? preview?.totalAmount ?? 0,
+          currency,
+          items: items.map((item) => ({
+            name: item.productName || item.variant.name,
+            variant: item.variant.name,
+            quantity: item.quantity,
+          })),
+        }),
+      );
 
       // Clear cart on frontend
       await clearCart();
@@ -724,6 +770,41 @@ export function CheckoutForm({
     receiptFileKey,
   ]);
 
+  // Form submit — validates and surfaces inline messages instead of
+  // silently blocking on a disabled button
+  const handleSubmit = useCallback(
+    (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      setShowValidation(true);
+
+      if (isSubmitBlocked) return;
+
+      const isFormValid =
+        isDeliveryAddressComplete &&
+        isCustomerInfoComplete &&
+        isPaymentMethodSelected;
+
+      if (!isFormValid) {
+        // Bring the first invalid field into view
+        requestAnimationFrame(() => {
+          document
+            .querySelector('[data-checkout-error="true"]')
+            ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        });
+        return;
+      }
+
+      void handlePlaceOrder();
+    },
+    [
+      isSubmitBlocked,
+      isDeliveryAddressComplete,
+      isCustomerInfoComplete,
+      isPaymentMethodSelected,
+      handlePlaceOrder,
+    ],
+  );
+
   // Show loading state while initializing or validating cart
   if (!isInitialized || (hasValidatedRef.current === false && isSyncing)) {
     return <CheckoutFormSkeleton />;
@@ -761,7 +842,12 @@ export function CheckoutForm({
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+    <form
+      onSubmit={handleSubmit}
+      noValidate
+      aria-label={t("pageTitle")}
+      className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8"
+    >
       {/* Checkout Form - Left Column */}
       <div className="lg:col-span-2 space-y-6">
         {/* Fulfillment Method Selection */}
@@ -775,6 +861,7 @@ export function CheckoutForm({
               return (
                 <button
                   key={fm.fulfillmentMethod}
+                  type="button"
                   onClick={() => handleMethodSelect(fm.fulfillmentMethod)}
                   className={`relative flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all ${
                     isSelected
@@ -983,6 +1070,16 @@ export function CheckoutForm({
                 </div>
               </div>
             ) : null}
+
+            {/* Inline validation — address incomplete */}
+            {showValidation && !isDeliveryAddressComplete && (
+              <p
+                className="text-sm text-destructive"
+                data-checkout-error="true"
+              >
+                {t("deliveryAddressRequired")}
+              </p>
+            )}
           </div>
         )}
 
@@ -1116,6 +1213,15 @@ export function CheckoutForm({
                           {receiptUploadError}
                         </p>
                       )}
+                      {/* This branch only renders while no receipt is uploaded */}
+                      {showValidation && !receiptUploadError && (
+                        <p
+                          className="text-xs text-destructive mt-1"
+                          data-checkout-error="true"
+                        >
+                          {t("receiptRequired")}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1141,11 +1247,21 @@ export function CheckoutForm({
               <Input
                 id="name"
                 type="text"
+                autoComplete="name"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder={t("namePlaceholder")}
                 required
+                aria-invalid={showValidation && !customerName.trim()}
               />
+              {showValidation && !customerName.trim() && (
+                <p
+                  className="mt-1.5 text-sm text-destructive"
+                  data-checkout-error="true"
+                >
+                  {t("nameRequired")}
+                </p>
+              )}
             </div>
             <div>
               <label
@@ -1159,11 +1275,15 @@ export function CheckoutForm({
                 value={customerPhone}
                 onChange={handlePhoneChange}
                 placeholder={t("phonePlaceholder")}
-                defaultCountry="eg"
+                defaultCountry={defaultPhoneCountry ?? "eg"}
                 aria-label={t("phone")}
               />
-              {customerPhone && !isPhoneValid && (
-                <p className="mt-1.5 text-sm text-destructive">
+              {((customerPhone && !isPhoneValid) ||
+                (showValidation && !isPhoneValid)) && (
+                <p
+                  className="mt-1.5 text-sm text-destructive"
+                  data-checkout-error="true"
+                >
                   {t("phoneInvalid")}
                 </p>
               )}
@@ -1348,12 +1468,13 @@ export function CheckoutForm({
               </div>
             )}
 
-            {/* Place Order Button */}
+            {/* Place Order Button — submits the form so Enter works and
+                field-level issues surface as inline messages */}
             <Button
+              type="submit"
               className="w-full"
               size="lg"
-              disabled={!canSubmitOrder}
-              onClick={handlePlaceOrder}
+              disabled={isSubmitBlocked}
             >
               {isSubmitting ? (
                 <>
@@ -1370,6 +1491,17 @@ export function CheckoutForm({
               )}
             </Button>
 
+            {/* Summary of what's missing after a submit attempt */}
+            {showValidation &&
+              !isSubmitting &&
+              (!isCustomerInfoComplete ||
+                !isDeliveryAddressComplete ||
+                !isPaymentMethodSelected) && (
+                <p className="text-sm text-destructive text-center">
+                  {t("completeRequiredFields")}
+                </p>
+              )}
+
             {/* Back to Cart */}
             <Link
               href="/cart"
@@ -1380,7 +1512,7 @@ export function CheckoutForm({
           </div>
         </div>
       </div>
-    </div>
+    </form>
   );
 }
 

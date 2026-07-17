@@ -47,30 +47,29 @@ export default async function CheckoutPage() {
   const t = await getTranslations("checkout");
   const locale = await getLocale();
 
-  // Fetch available fulfillment methods
-  let fulfillmentMethods;
-  try {
-    fulfillmentMethods = await getFulfillmentMethods(store.id);
-  } catch {
-    // If we can't get fulfillment methods, redirect to cart with error
+  // Fetch checkout config in parallel. Delivery zones are fetched
+  // speculatively (only wasted when the store doesn't offer delivery,
+  // which is the rare case) — this keeps checkout at one round-trip.
+  const [fulfillmentMethodsResult, paymentMethodsResult, deliveryZonesResult] =
+    await Promise.allSettled([
+      getFulfillmentMethods(store.id),
+      getStorefrontPaymentMethods(store.id),
+      getDeliveryZones(store.id),
+    ]);
+
+  // Fulfillment methods are required — without them checkout cannot work
+  if (
+    fulfillmentMethodsResult.status === "rejected" ||
+    fulfillmentMethodsResult.value.length === 0
+  ) {
     redirect("/cart");
   }
+  const fulfillmentMethods = fulfillmentMethodsResult.value;
 
-  // If no fulfillment methods available, redirect to cart
-  if (!fulfillmentMethods || fulfillmentMethods.length === 0) {
-    redirect("/cart");
-  }
+  // Payment methods fetch failed — proceed with empty (default to CASH on backend)
+  const storefrontPaymentMethods: PublicStorefrontPaymentMethodDto[] =
+    paymentMethodsResult.status === "fulfilled" ? paymentMethodsResult.value : [];
 
-  // Fetch storefront payment methods
-  let storefrontPaymentMethods: PublicStorefrontPaymentMethodDto[] = [];
-  try {
-    storefrontPaymentMethods = await getStorefrontPaymentMethods(store.id);
-  } catch {
-    // Payment methods fetch failed — proceed with empty (default to CASH on backend)
-    storefrontPaymentMethods = [];
-  }
-
-  // Fetch delivery zones if delivery method is available
   let deliveryZones: PublicDeliveryZonesResponseDto | null = null;
   let fallbackCountries: CommonCountryDto[] | null = null;
   const hasDeliveryMethod = fulfillmentMethods.some(
@@ -78,12 +77,10 @@ export default async function CheckoutPage() {
   );
 
   if (hasDeliveryMethod) {
-    try {
-      deliveryZones = await getDeliveryZones(store.id);
-    } catch {
-      // Delivery zones fetch failed, but we can still proceed
-      deliveryZones = null;
-    }
+    deliveryZones =
+      deliveryZonesResult.status === "fulfilled"
+        ? deliveryZonesResult.value
+        : null;
 
     // If store has no configured delivery zones, fallback to common countries/cities
     const hasNoZones =
@@ -128,6 +125,7 @@ export default async function CheckoutPage() {
             deliveryZones={deliveryZones}
             fallbackCountries={fallbackCountries}
             storefrontPaymentMethods={storefrontPaymentMethods}
+            defaultPhoneCountry={store.country?.code?.toLowerCase()}
           />
         </div>
       </section>

@@ -13,6 +13,7 @@ import {
 import { AnalyticsProvider } from "@/lib/analytics";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { setApiLocale } from "@/lib/api/types";
+import { buildBrandStyle } from "@/lib/utils";
 import { QueryProvider } from "@/providers/query-provider";
 import { StoreProvider } from "@/providers/store-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -174,6 +175,12 @@ export default async function RootLayout({
     !!store?.storeFront &&
     store.storeFront.status === StoreFrontStatus.ACTIVE;
 
+  // Tenant brand colors — validated hex only, applied to theme tokens
+  const brandStyle = buildBrandStyle(
+    store?.storeFront?.primaryColor,
+    store?.storeFront?.primaryTextColor,
+  );
+
   // Get visitor ID from cookie (set by middleware)
   const cookieStore = await cookies();
   const visitorId = cookieStore.get("sf_visitor_id")?.value;
@@ -195,6 +202,10 @@ export default async function RootLayout({
         {/* Set store ID cookie BEFORE React hydrates */}
         {storeIdScript && (
           <script dangerouslySetInnerHTML={{ __html: storeIdScript }} />
+        )}
+        {/* Tenant brand colors (hex-validated in buildBrandStyle) */}
+        {brandStyle && (
+          <style dangerouslySetInnerHTML={{ __html: brandStyle }} />
         )}
       </head>
       <body
@@ -226,7 +237,7 @@ export default async function RootLayout({
                   ) : store ? (
                     <div className="flex min-h-screen flex-col">
                       {/* Initialize cart store with store info - renders nothing */}
-                      <CartInitializer />
+                      <CartInitializer currency={store.currency} />
                       <VisitorTracker storeId={store.id} />
                       {/* Analytics: GTM + Facebook Pixel + TikTok Pixel (per-tenant configuration) */}
                       <AnalyticsProvider

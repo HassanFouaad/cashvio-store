@@ -36,7 +36,7 @@ export async function CategoriesSection({
 
         {/* Horizontal Scrolling Categories - Enhanced for mobile native feel */}
         <div className="relative -mx-3 sm:mx-0">
-          <div className="overflow-x-auto scrollbar-thin pb-2 snap-x snap-mandatory scroll-smooth px-3 sm:px-0" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth px-3 sm:px-0" style={{ WebkitOverflowScrolling: 'touch' }}>
             <div className="flex gap-3 sm:gap-4 md:gap-6 min-w-max px-0.5">
               {categories.map((category) => (
                 <div
@@ -49,9 +49,9 @@ export async function CategoriesSection({
             </div>
           </div>
 
-          {/* Fade Gradients for Scroll Indication - Hidden on mobile for cleaner look */}
-          <div className="pointer-events-none absolute top-0 start-0 h-full w-8 bg-gradient-to-e from-background to-transparent hidden sm:block" />
-          <div className="pointer-events-none absolute top-0 end-0 h-full w-8 bg-gradient-to-s from-background to-transparent hidden sm:block" />
+          {/* Fade overlays hinting at horizontal scroll (flip in RTL) */}
+          <div className="pointer-events-none absolute top-0 start-0 h-full w-8 bg-gradient-to-r rtl:bg-gradient-to-l from-background to-transparent hidden sm:block" />
+          <div className="pointer-events-none absolute top-0 end-0 h-full w-8 bg-gradient-to-l rtl:bg-gradient-to-r from-background to-transparent hidden sm:block" />
         </div>
       </div>
     </section>

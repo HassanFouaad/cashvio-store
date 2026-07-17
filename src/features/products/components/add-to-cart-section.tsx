@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface AddToCartSectionProps {
   product: PublicProductDto;
@@ -50,6 +50,31 @@ export function AddToCartSection({
     },
   );
   const [justAdded, setJustAdded] = useState(false);
+
+  // Sticky mobile CTA — shown only while the inline controls are scrolled
+  // out of view, so customers never lose the buy action on long pages
+  const inlineControlsRef = useRef<HTMLDivElement>(null);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+
+  useEffect(() => {
+    const target = inlineControlsRef.current;
+    if (!target || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyBar(!entry.isIntersecting),
+      { rootMargin: "-56px 0px 0px 0px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
+  // Clean up the "just added" feedback timer on unmount
+  const justAddedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    return () => {
+      if (justAddedTimerRef.current) clearTimeout(justAddedTimerRef.current);
+    };
+  }, []);
 
   // Zustand store - subscribe to cart state directly for reactivity
   const isInitialized = useCartStore((state) => state.isInitialized);
@@ -173,7 +198,8 @@ export function AddToCartSection({
 
     // Show success feedback
     setJustAdded(true);
-    setTimeout(() => {
+    if (justAddedTimerRef.current) clearTimeout(justAddedTimerRef.current);
+    justAddedTimerRef.current = setTimeout(() => {
       setJustAdded(false);
     }, 1500);
   }, [selectedVariant, canAddMore, addItem, product]);
@@ -279,7 +305,7 @@ export function AddToCartSection({
                     </span>
                   )}
                   {variantCartQty > 0 && !variantMaxReached && (
-                    <div className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                    <div className="absolute -top-1.5 -end-1.5 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
                       {variantCartQty}
                     </div>
                   )}
@@ -304,7 +330,7 @@ export function AddToCartSection({
 
       {/* Quantity Controls - Different UX based on cart state */}
       {isInStock && (
-        <div className="space-y-3">
+        <div className="space-y-3" ref={inlineControlsRef}>
           {/* Stock info */}
           {isInitialized && (
             <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground">
@@ -355,7 +381,7 @@ export function AddToCartSection({
                     className="h-11 w-11 sm:h-10 sm:w-10 rounded-lg touch-manipulation"
                     onClick={handleRemoveFromCart}
                     disabled={isLoading}
-                    aria-label="Remove from cart"
+                    aria-label={tCart("remove")}
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
@@ -366,7 +392,7 @@ export function AddToCartSection({
                     className="h-11 w-11 sm:h-10 sm:w-10 rounded-lg touch-manipulation"
                     onClick={() => handleQuantityChange(-1)}
                     disabled={isLoading}
-                    aria-label="Decrease quantity"
+                    aria-label={tCart("decreaseQuantity")}
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
@@ -380,7 +406,7 @@ export function AddToCartSection({
                   className="h-11 w-11 sm:h-10 sm:w-10 rounded-lg touch-manipulation"
                   onClick={() => handleQuantityChange(1)}
                   disabled={isMaxReached || isLoading}
-                  aria-label="Increase quantity"
+                  aria-label={tCart("increaseQuantity")}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -429,6 +455,70 @@ export function AddToCartSection({
         <Button size="lg" className="w-full h-12 sm:h-11" disabled>
           {t("outOfStock")}
         </Button>
+      )}
+
+      {/* Sticky mobile CTA — appears when inline controls scroll away */}
+      {selectedVariant && isInStock && showStickyBar && (
+        <div className="fixed-bottom-cta fixed inset-x-0 z-40 px-3 md:hidden">
+          <div className="flex items-center gap-3 rounded-xl border border-border bg-background/95 backdrop-blur p-2.5">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-muted-foreground truncate">
+                {selectedVariant.name || product.name}
+              </p>
+              <p className="text-base font-bold">
+                {formatCurrency(selectedVariant.sellingPrice, currency, locale)}
+              </p>
+            </div>
+            {isInCart ? (
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10 rounded-lg touch-manipulation"
+                  onClick={() =>
+                    cartQuantity === 1
+                      ? handleRemoveFromCart()
+                      : handleQuantityChange(-1)
+                  }
+                  disabled={isLoading}
+                  aria-label={
+                    cartQuantity === 1
+                      ? tCart("remove")
+                      : tCart("decreaseQuantity")
+                  }
+                >
+                  {cartQuantity === 1 ? (
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  ) : (
+                    <Minus className="h-4 w-4" />
+                  )}
+                </Button>
+                <span className="min-w-[2.5rem] text-center text-lg font-bold tabular-nums">
+                  {cartQuantity}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10 rounded-lg touch-manipulation"
+                  onClick={() => handleQuantityChange(1)}
+                  disabled={isMaxReached || isLoading}
+                  aria-label={tCart("increaseQuantity")}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                className="h-10 gap-1.5 touch-manipulation"
+                disabled={!canAddMore}
+                onClick={handleAddToCart}
+              >
+                <ShoppingCart className="h-4 w-4" />
+                {t("addToCart")}
+              </Button>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

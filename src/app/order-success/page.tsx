@@ -1,16 +1,20 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Home } from "lucide-react";
-import { useTranslations } from "next-intl";
+import {
+  getOrderSuccessRecap,
+  type OrderSuccessRecap,
+} from "@/features/checkout/utils/order-success-recap";
+import { formatCurrency } from "@/lib/utils/formatters";
+import { Check, CheckCircle, Copy, Home, PackageSearch } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 
-const REDIRECT_SECONDS = 30;
 const TOKEN_KEY = "order-success-token";
-/** Max token age (5 minutes) – prevents stale tokens from granting access. */
-const TOKEN_MAX_AGE_MS = 5 * 60 * 1000;
+/** Max token age (30 minutes) — the page stays refresh-safe for this window. */
+const TOKEN_MAX_AGE_MS = 30 * 60 * 1000;
 
 /**
  * Inner content component that uses useSearchParams.
@@ -18,38 +22,34 @@ const TOKEN_MAX_AGE_MS = 5 * 60 * 1000;
  */
 function OrderSuccessContent() {
   const t = useTranslations("orderSuccess");
+  const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const orderNumber = searchParams.get("orderNumber") ?? "";
-  const [secondsLeft, setSecondsLeft] = useState(REDIRECT_SECONDS);
   const [authorized, setAuthorized] = useState(false);
+  const [recap, setRecap] = useState<OrderSuccessRecap | null>(null);
+  const [copied, setCopied] = useState(false);
   const guardChecked = useRef(false);
 
   // ---------- Access guard ----------
+  // The token is NOT consumed on read: refreshing the confirmation page
+  // must keep working — this is the customer's only record of the order.
   useEffect(() => {
     if (guardChecked.current) return;
     guardChecked.current = true;
 
     try {
       const token = sessionStorage.getItem(TOKEN_KEY);
-      if (!token) {
-        router.replace("/");
-        return;
-      }
+      const tokenTime = token ? parseInt(token, 10) : NaN;
 
-      const tokenTime = parseInt(token, 10);
-      if (
-        Number.isNaN(tokenTime) ||
-        Date.now() - tokenTime > TOKEN_MAX_AGE_MS
-      ) {
+      if (Number.isNaN(tokenTime) || Date.now() - tokenTime > TOKEN_MAX_AGE_MS) {
         sessionStorage.removeItem(TOKEN_KEY);
         router.replace("/");
         return;
       }
 
-      // Token valid — consume it so a page refresh won't re-enter
-      sessionStorage.removeItem(TOKEN_KEY);
+      setRecap(getOrderSuccessRecap(orderNumber));
       setAuthorized(true);
     } catch {
       // sessionStorage unavailable — allow access if orderNumber exists
@@ -61,23 +61,15 @@ function OrderSuccessContent() {
     }
   }, [router, orderNumber]);
 
-  // ---------- Countdown ----------
-  const redirectToHome = useCallback(() => {
-    router.push("/");
-  }, [router]);
-
-  useEffect(() => {
-    if (!authorized) return;
-    if (secondsLeft <= 0) {
-      redirectToHome();
-      return;
+  const handleCopyOrderNumber = async () => {
+    try {
+      await navigator.clipboard.writeText(orderNumber);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard unavailable — the number is still visible to copy manually
     }
-
-    const timer = setTimeout(() => {
-      setSecondsLeft((prev) => prev - 1);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [authorized, secondsLeft, redirectToHome]);
+  };
 
   // Don't render anything until the guard check has completed
   if (!authorized) {
@@ -86,52 +78,110 @@ function OrderSuccessContent() {
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4 py-12 sm:py-20">
-      <div className="w-full max-w-md text-center space-y-8">
-        {/* Animated check icon */}
-        <div className="flex justify-center">
-          <div className="relative">
-            {/* Outer pulse ring */}
-            <span className="absolute inset-0 rounded-full bg-green-400/20 animate-ping" />
-            <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-green-100 dark:bg-green-950/30 flex items-center justify-center shadow-lg">
-              <CheckCircle className="h-12 w-12 sm:h-14 sm:w-14 text-green-600 dark:text-green-400" />
+      <div className="w-full max-w-md space-y-6">
+        {/* Confirmation heading */}
+        <div className="text-center space-y-3">
+          <div className="flex justify-center">
+            <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-950/30 flex items-center justify-center">
+              <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
           </div>
-        </div>
-
-        {/* Heading & sub-text */}
-        <div className="space-y-2">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             {t("title")}
           </h1>
-          <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">
+          <p className="text-muted-foreground text-base leading-relaxed">
             {t("message")}
           </p>
         </div>
 
         {/* Order number card */}
         {orderNumber && (
-          <div className="mx-auto max-w-xs p-5 bg-muted/50 rounded-2xl border border-border space-y-1">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">
-              {t("orderNumber")}
-            </p>
-            <p className="text-xl sm:text-2xl font-bold font-mono break-all">
-              {orderNumber}
+          <div className="p-4 bg-muted/50 rounded-xl border border-border">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
+                  {t("orderNumber")}
+                </p>
+                <p className="text-lg sm:text-xl font-bold font-mono break-all">
+                  {orderNumber}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyOrderNumber}
+                className="gap-1.5 shrink-0"
+              >
+                {copied ? (
+                  <>
+                    <Check className="h-3.5 w-3.5" />
+                    {t("copied")}
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5" />
+                    {t("copy")}
+                  </>
+                )}
+              </Button>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {t("saveNumberHint")}
             </p>
           </div>
         )}
 
-        {/* Countdown + CTA */}
-        <div className="space-y-4 pt-2">
-          <p className="text-sm text-muted-foreground">
-            {t("redirecting", { seconds: secondsLeft })}
-          </p>
+        {/* Order recap (stored locally at checkout — survives refresh) */}
+        {recap && recap.items.length > 0 && (
+          <div className="rounded-xl border border-border overflow-hidden">
+            <div className="px-4 py-3 bg-muted/50 border-b border-border">
+              <p className="text-sm font-semibold">{t("recapTitle")}</p>
+            </div>
+            <div className="p-4 space-y-2.5">
+              {recap.items.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between gap-3 text-sm"
+                >
+                  <span className="truncate">
+                    {item.name}
+                    {item.variant && item.variant !== item.name && (
+                      <span className="text-muted-foreground"> — {item.variant}</span>
+                    )}
+                  </span>
+                  <span className="text-muted-foreground shrink-0">
+                    ×{item.quantity}
+                  </span>
+                </div>
+              ))}
+              {recap.moreItemsCount > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {t("moreItems", { count: recap.moreItemsCount })}
+                </p>
+              )}
+            </div>
+            <div className="px-4 py-3 border-t border-border flex items-center justify-between">
+              <span className="text-sm font-semibold">{t("total")}</span>
+              <span className="font-bold">
+                {formatCurrency(recap.totalAmount, recap.currency, locale)}
+              </span>
+            </div>
+          </div>
+        )}
 
-          <Link href="/" className="inline-block w-full sm:w-auto">
-            <Button
-              size="lg"
-              className="w-full sm:w-auto gap-2 px-8"
-              onClick={redirectToHome}
-            >
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Link
+            href={`/track?orderNumber=${encodeURIComponent(orderNumber)}`}
+            className="flex-1"
+          >
+            <Button className="w-full gap-2">
+              <PackageSearch className="h-4 w-4" />
+              {t("trackOrder")}
+            </Button>
+          </Link>
+          <Link href="/" className="flex-1">
+            <Button variant="outline" className="w-full gap-2">
               <Home className="h-4 w-4" />
               {t("backToHome")}
             </Button>

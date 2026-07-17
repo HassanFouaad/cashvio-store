@@ -39,24 +39,26 @@ export default async function HomePage() {
   }
 
   const heroImages = store.storeFront?.heroImages || [];
-  // Fetch first 7 categories
-  const { categories: categoriesData } = await getCategoriesWithErrorHandling({
-    tenantId: store.tenantId,
-    page: 1,
-    limit: 7,
-  });
 
-  // Fetch first 12 products
-  const { products: productsData } = await getProductsWithErrorHandling({
-    storeId: store.id,
-    tenantId: store.tenantId,
-    page: 1,
-    limit: 12,
-  });
-
-  // Fetch special products
-  const { products: specialProducts } =
-    await getSpecialProductsWithErrorHandling();
+  // Independent data — fetched in parallel to keep TTFB low
+  const [
+    { categories: categoriesData },
+    { products: productsData },
+    { products: specialProducts },
+  ] = await Promise.all([
+    getCategoriesWithErrorHandling({
+      tenantId: store.tenantId,
+      page: 1,
+      limit: 7,
+    }),
+    getProductsWithErrorHandling({
+      storeId: store.id,
+      tenantId: store.tenantId,
+      page: 1,
+      limit: 12,
+    }),
+    getSpecialProductsWithErrorHandling(),
+  ]);
 
   const categories = categoriesData?.items || [];
   const products = productsData?.items || [];

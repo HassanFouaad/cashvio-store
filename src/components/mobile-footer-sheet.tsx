@@ -3,7 +3,7 @@
 import { appConfig } from '@/config/env.config';
 import { getStaticPages } from '@/features/store/api/get-static-pages';
 import { StaticPageListItem } from '@/features/store/types/store.types';
-import { ChevronRight, FileText, X } from 'lucide-react';
+import { ChevronRight, FileText, PackageSearch, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -75,6 +75,21 @@ export function MobileFooterSheet({
             className="p-4 space-y-2 overflow-y-auto"
             style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom, 0px))' }}
           >
+            {/* Track order — always available */}
+            <Link
+              href="/track"
+              onClick={onClose}
+              className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl active:scale-[0.98] active:bg-muted transition-all"
+            >
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary shrink-0">
+                <PackageSearch className="h-5 w-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{t('common.trackOrder')}</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 rtl:rotate-180" />
+            </Link>
+
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <p className="text-sm text-muted-foreground">
@@ -97,7 +112,7 @@ export function MobileFooterSheet({
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{page.title}</p>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 rtl:rotate-180" />
                   </Link>
                 ))}
 

@@ -39,6 +39,7 @@ export const endpoints = {
   orders: {
     preview: '/public/orders/preview',
     create: '/public/orders',
+    track: '/public/orders/track',
   },
   visitors: {
     track: '/public/visitors/track',

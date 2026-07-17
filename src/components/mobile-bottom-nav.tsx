@@ -3,7 +3,7 @@
 import { useCartItemCount } from '@/features/cart/store';
 import { StoreFrontSocialMediaDto } from '@/features/store/types/store.types';
 import { cn } from '@/lib/utils/cn';
-import { Grid3X3, Home, Info, Phone, ShoppingCart } from 'lucide-react';
+import { Grid3X3, Home, Info, Phone, Search, ShoppingCart } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -13,7 +13,7 @@ import { MobileFooterSheet } from './mobile-footer-sheet';
 
 interface NavItem {
   href: string;
-  labelKey: 'home' | 'collections' | 'cart';
+  labelKey: 'home' | 'collections' | 'products' | 'cart';
   icon: React.ComponentType<{ className?: string }>;
   matchPaths?: string[];
 }
@@ -30,6 +30,13 @@ const navItems: NavItem[] = [
     labelKey: 'collections',
     icon: Grid3X3,
     matchPaths: ['/categories'],
+  },
+  {
+    // Full catalog + search — must be reachable from primary mobile nav
+    href: '/products',
+    labelKey: 'products',
+    icon: Search,
+    matchPaths: ['/products'],
   },
   {
     href: '/cart',
@@ -77,7 +84,7 @@ export function MobileBottomNav({ socialMedia, storeName, storeId }: MobileBotto
       <nav 
         className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/95 backdrop-blur-lg supports-[backdrop-filter]:bg-background/80 border-t shadow-[0_-4px_20px_rgba(0,0,0,0.08)]"
         role="navigation"
-        aria-label="Mobile navigation"
+        aria-label={t('menu')}
       >
         {/* Safe area padding for notched devices */}
         <div 
@@ -115,7 +122,7 @@ export function MobileBottomNav({ socialMedia, storeName, storeId }: MobileBotto
                   
                   {/* Cart Badge */}
                   {isCart && cartItemCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                    <span className="absolute -top-1.5 -end-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
                       {cartItemCount > 99 ? '99+' : cartItemCount}
                     </span>
                   )}

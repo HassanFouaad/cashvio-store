@@ -231,6 +231,8 @@ export interface CreateOrderRequest {
   paymentMethod?: PaymentMethod;
   /** S3 file key for receipt image when paymentMethod is RECEIPT */
   receiptFileKey?: string;
+  /** Client-generated UUID — server replays the original order on retries */
+  idempotencyKey?: string;
 }
 
 /**

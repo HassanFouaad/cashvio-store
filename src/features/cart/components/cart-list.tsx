@@ -1,9 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
+import { ArrowLeft, Info, Loader2, Trash2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { useCartStore, useIsCartSyncing } from "../store";
 import { CartEmpty } from "./cart-empty";
 import { CartItem } from "./cart-item";
@@ -13,6 +14,9 @@ interface CartListProps {
   locale: string;
 }
 
+/** How long the destructive "confirm clear" state stays armed */
+const CLEAR_CONFIRM_TIMEOUT_MS = 4000;
+
 /**
  * Cart items list component
  * Displays all items in cart or empty state
@@ -21,6 +25,38 @@ export function CartList({ currency, locale }: CartListProps) {
   const t = useTranslations("cart");
   const { cart, clearCart, isInitialized, isLoading } = useCartStore();
   const isSyncing = useIsCartSyncing();
+
+  // Two-step destructive action: first tap arms, second tap clears
+  const [isConfirmingClear, setIsConfirmingClear] = useState(false);
+  const confirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Removed-items notice (backend drops unavailable variants from the cart)
+  const removedIds = cart?.removedVariantIds ?? [];
+  const [dismissedRemovedKey, setDismissedRemovedKey] = useState("");
+  const removedKey = removedIds.join(",");
+  const showRemovedNotice =
+    removedIds.length > 0 && removedKey !== dismissedRemovedKey;
+
+  useEffect(() => {
+    return () => {
+      if (confirmTimeoutRef.current) clearTimeout(confirmTimeoutRef.current);
+    };
+  }, []);
+
+  const handleClearClick = () => {
+    if (!isConfirmingClear) {
+      setIsConfirmingClear(true);
+      confirmTimeoutRef.current = setTimeout(
+        () => setIsConfirmingClear(false),
+        CLEAR_CONFIRM_TIMEOUT_MS,
+      );
+      return;
+    }
+
+    if (confirmTimeoutRef.current) clearTimeout(confirmTimeoutRef.current);
+    setIsConfirmingClear(false);
+    void clearCart();
+  };
 
   // Show loading skeleton while initializing
   if (!isInitialized || isLoading) {
@@ -55,6 +91,24 @@ export function CartList({ currency, locale }: CartListProps) {
         {t("continueShopping")}
       </Link>
 
+      {/* Items silently removed by the store (out of stock / unpublished) */}
+      {showRemovedNotice && (
+        <div className="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/40 text-sm">
+          <Info className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
+          <p className="flex-1 text-muted-foreground">
+            {t("removedItemsNotice")}
+          </p>
+          <button
+            type="button"
+            onClick={() => setDismissedRemovedKey(removedKey)}
+            className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label={t("dismiss")}
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       {/* Header with clear button */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -65,13 +119,17 @@ export function CartList({ currency, locale }: CartListProps) {
         </h2>
 
         <Button
-          variant="ghost"
+          variant={isConfirmingClear ? "destructive" : "ghost"}
           size="sm"
-          className="text-muted-foreground hover:text-destructive"
-          onClick={clearCart}
+          className={
+            isConfirmingClear
+              ? undefined
+              : "text-muted-foreground hover:text-destructive"
+          }
+          onClick={handleClearClick}
         >
           <Trash2 className="h-4 w-4 me-2" />
-          {t("clearAll")}
+          {isConfirmingClear ? t("clearAllConfirm") : t("clearAll")}
         </Button>
       </div>
 

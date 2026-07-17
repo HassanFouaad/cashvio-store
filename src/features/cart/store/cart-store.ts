@@ -34,8 +34,11 @@ interface CartStore {
   isSyncing: boolean;
   error: string | null;
   pendingChanges: Map<string, number>;
+  /** Store currency — used for analytics revenue attribution */
+  currency: string;
 
   // Actions
+  setCurrency: (currency: string) => void;
   fetchCart: () => Promise<void>;
   addItem: (variantId: string, quantity: number, item?: Partial<ApiCartItem>) => void;
   updateQuantity: (variantId: string, quantity: number) => void;
@@ -109,6 +112,13 @@ export const useCartStore = create<CartStore>((set, get) => ({
   isSyncing: false,
   error: null,
   pendingChanges: new Map(),
+  currency: '',
+
+  setCurrency: (currency: string) => {
+    if (currency && currency !== get().currency) {
+      set({ currency });
+    }
+  },
 
   fetchCart: async () => {
     if (get().isLoading) return;
@@ -134,7 +144,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
     try {
       const price = item?.variant?.sellingPrice ?? 0;
       analytics.trackAddToCart({
-        currency: '',
+        currency: get().currency,
         value: price * quantity,
         items: [{
           item_id: variantId,
@@ -233,7 +243,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
       const existingItem = cart?.items.find(i => i.variant.id === variantId);
       if (existingItem) {
         analytics.trackRemoveFromCart({
-          currency: '',
+          currency: get().currency,
           value: existingItem.lineTotal,
           items: [{
             item_id: variantId,

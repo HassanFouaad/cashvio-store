@@ -23,7 +23,15 @@
     "menu": "Menu",
     "settings": "Settings",
     "contact": "Contact",
-    "more": "More"
+    "more": "More",
+    "done": "Done",
+    "trackOrder": "Track Order",
+    "phoneInput": {
+      "placeholder": "Enter phone number",
+      "selectCountry": "Select country",
+      "searchCountries": "Search countries...",
+      "noCountriesFound": "No countries found"
+    }
   },
   "contact": {
     "title": "Contact Us",
@@ -32,28 +40,26 @@
     "tapToOpen": "Tap to open",
     "reachUs": "Get in touch with {storeName}"
   },
-  "landing": {
-    "title": "Welcome to StoreFront",
-    "description": "Multi-tenant e-commerce platform. Access your store using the URL format:",
-    "urlFormat": "/store/YOUR-STORE-SUBDOMAIN",
-    "exampleStores": "Example stores (for testing):",
-    "tryDemoStore": "Try Demo Store",
-    "tryTestStore": "Try Test Store"
-  },
   "store": {
     "welcome": "Welcome to {storeName}",
     "browseProducts": "Browse Products",
     "description": "Discover our amazing collection of products",
     "shoppingCart": "Shopping cart",
     "emptyStore": {
-      "title": "Welcome to {storeName}",
-      "description": "We're setting things up! Our store is being prepared with amazing products just for you. Check back soon!",
-      "feature1Title": "Coming Soon",
-      "feature1Description": "Products being added",
-      "feature2Title": "Stay Tuned",
-      "feature2Description": "New arrivals daily",
-      "refreshButton": "Refresh Page",
-      "footerNote": "This store is currently being set up"
+      "title": "{storeName} is opening soon",
+      "description": "We're adding products to the store. Check back shortly to browse the collection."
+    },
+    "hero": {
+      "imageAlt": "{storeName} banner {index}",
+      "promotionLabel": "{storeName} promotion",
+      "previousImage": "Previous image",
+      "nextImage": "Next image",
+      "goToImage": "Go to image {index}"
+    },
+    "gallery": {
+      "imageSelector": "Image selector",
+      "imageThumbnails": "Image thumbnails",
+      "imageOf": "Image {index} of {total}"
     },
     "categories": {
       "title": "Shop by Collection",
@@ -93,10 +99,6 @@
       "leftInStock": "{count} left in stock",
       "price": "Price",
       "description": "Description",
-      "specifications": "Specifications",
-      "fastShipping": "Fast Shipping",
-      "securePayment": "Secure Payment",
-      "easyReturns": "Easy Returns",
       "quantity": "Quantity",
       "backToStore": "Back to store",
       "noImageAvailable": "No Image Available",
@@ -134,20 +136,6 @@
       "review": "review",
       "reviewsCount": "reviews",
       "reviewDate": "Date"
-    }
-  },
-  "features": {
-    "quality": {
-      "title": "Quality Products",
-      "description": "We offer only the best quality products for our customers"
-    },
-    "delivery": {
-      "title": "Fast Delivery",
-      "description": "Quick and reliable delivery to your doorstep"
-    },
-    "support": {
-      "title": "Customer Support",
-      "description": "Dedicated support team ready to help you"
     }
   },
   "errors": {
@@ -219,6 +207,12 @@
       "title": "Product Not Found",
       "titleWithStore": "{productName} - {storeName}",
       "descriptionWithStore": "Buy {productName} at {storeName}"
+    },
+    "track": {
+      "title": "Track Order",
+      "description": "Track your order status",
+      "titleWithStore": "Track Order - {storeName}",
+      "descriptionWithStore": "Track your order status at {storeName}"
     }
   },
   "footer": {
@@ -284,7 +278,13 @@
     "viewCart": "View Cart",
     "maxPerOrder": "Max {max} per order",
     "maxPerOrderReached": "Maximum of {max} allowed per order",
-    "maxPerOrderExceeded": "Exceeds limit of {max} per order. Please reduce quantity."
+    "maxPerOrderExceeded": "Exceeds limit of {max} per order. Please reduce quantity.",
+    "clearAllConfirm": "Confirm clear?",
+    "removedItemsNotice": "Some items were removed from your cart because they are no longer available.",
+    "dismiss": "Dismiss",
+    "decreaseQuantity": "Decrease quantity",
+    "increaseQuantity": "Increase quantity",
+    "moreItems": "+{count} more"
   },
   "checkout": {
     "pageTitle": "Checkout",
@@ -312,9 +312,13 @@
     "customerInfo": "Your Information",
     "name": "Name",
     "namePlaceholder": "Enter your name",
+    "nameRequired": "Please enter your name",
     "phone": "Phone Number",
     "phonePlaceholder": "Enter phone number",
     "phoneInvalid": "Please enter a valid phone number",
+    "deliveryAddressRequired": "Please select your country and city",
+    "receiptRequired": "Please upload your payment receipt",
+    "completeRequiredFields": "Please complete the highlighted fields above",
     "deliveryAddress": "Delivery Address",
     "selectCountry": "Select Country",
     "selectCity": "Select City",
@@ -335,11 +339,6 @@
     "calculating": "Calculating...",
     "previewError": "Failed to calculate order totals. Please try again.",
     "orderError": "Failed to place order. Please try again.",
-    "orderSuccessTitle": "Order Placed Successfully!",
-    "orderSuccessMessage": "Thank you for your order. We'll start preparing it right away.",
-    "orderNumber": "Order Number",
-    "redirectingToHome": "Redirecting to home page...",
-    "continueShopping": "Continue Shopping",
     "belowMinimumOrder": "The minimum order value for this store is {minimumOrderValue}. Please add more items to proceed.",
     "noPaymentMethodsTitle": "Payments are currently unavailable",
     "noPaymentMethodsDescription": "This store is not accepting payments at the moment. Please try again later or contact the store for assistance."
@@ -348,7 +347,41 @@
     "title": "Thank You for Your Order!",
     "message": "Your order has been placed successfully. We'll start preparing it right away.",
     "orderNumber": "Order Number",
-    "redirecting": "Redirecting to home page in {seconds} seconds...",
+    "copy": "Copy",
+    "copied": "Copied",
+    "saveNumberHint": "Keep this number — you'll need it to track your order.",
+    "recapTitle": "Order Summary",
+    "moreItems": "+ {count} more items",
+    "total": "Total",
+    "trackOrder": "Track Order",
     "backToHome": "Back to Home"
+  },
+  "orderTracking": {
+    "pageTitle": "Track Your Order",
+    "pageDescription": "Enter your order number and the phone you used at checkout",
+    "formAriaLabel": "Order tracking form",
+    "orderNumber": "Order Number",
+    "orderNumberPlaceholder": "e.g. ORD-2026-00001",
+    "orderNumberRequired": "Please enter your order number",
+    "phone": "Phone Number",
+    "phonePlaceholder": "Phone used at checkout",
+    "phoneInvalid": "Please enter a valid phone number",
+    "trackButton": "Track Order",
+    "searching": "Searching...",
+    "notFoundTitle": "We couldn't find that order",
+    "notFoundDescription": "Check that the order number and phone match what you used at checkout, then try again.",
+    "orderDate": "Order Date",
+    "progressAriaLabel": "Order progress",
+    "status": {
+      "pending": "Received",
+      "preparing": "Preparing",
+      "ready": "Ready",
+      "delivering": "On its way",
+      "completed": "Delivered",
+      "cancelled": "This order has been cancelled"
+    },
+    "discount": "Discount",
+    "deliveryFees": "Delivery Fees",
+    "total": "Total"
   }
 }

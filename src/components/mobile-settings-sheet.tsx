@@ -79,7 +79,7 @@ export function MobileSettingsSheet({ isOpen, onClose }: MobileSettingsSheetProp
             {/* Theme Setting - Fully Clickable Row */}
             <button
               onClick={toggleTheme}
-              className="w-full flex items-center gap-4 p-4 bg-muted/50 rounded-xl active:scale-[0.98] active:bg-muted transition-all text-left"
+              className="w-full flex items-center gap-4 p-4 bg-muted/50 rounded-xl active:scale-[0.98] active:bg-muted transition-all text-start"
             >
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary shrink-0">
                 {mounted && isLight ? (
@@ -94,14 +94,14 @@ export function MobileSettingsSheet({ isOpen, onClose }: MobileSettingsSheetProp
                   {mounted ? (isLight ? t('theme.light') : t('theme.dark')) : '...'}
                 </p>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 rtl:rotate-180" />
             </button>
             
             {/* Language Setting - Fully Clickable Row */}
             <button
               onClick={toggleLocale}
               disabled={isPending}
-              className="w-full flex items-center gap-4 p-4 bg-muted/50 rounded-xl active:scale-[0.98] active:bg-muted transition-all text-left disabled:opacity-50"
+              className="w-full flex items-center gap-4 p-4 bg-muted/50 rounded-xl active:scale-[0.98] active:bg-muted transition-all text-start disabled:opacity-50"
             >
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary shrink-0">
                 <Globe className="h-5 w-5" />
@@ -110,7 +110,7 @@ export function MobileSettingsSheet({ isOpen, onClose }: MobileSettingsSheetProp
                 <p className="text-sm font-medium">{t('language.changeLanguage')}</p>
                 <p className="text-xs text-muted-foreground">{currentLanguage}</p>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 rtl:rotate-180" />
             </button>
           </div>
         </Drawer.Content>

@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useCallback, useState } from "react";
 
@@ -26,9 +27,10 @@ interface SearchInputProps {
  * ```
  */
 export function SearchInput({
-  placeholder = "Search...",
+  placeholder,
   searchKey = "search",
 }: SearchInputProps) {
+  const t = useTranslations("common");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -80,13 +82,13 @@ export function SearchInput({
     <form onSubmit={handleSubmit} className="relative w-full max-w-sm">
       <div className="relative flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
-            placeholder={placeholder}
+            placeholder={placeholder ?? `${t("search")}...`}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            className="pl-10 pr-10"
+            className="ps-10 pe-10"
           />
           {inputValue && (
             <Button
@@ -94,8 +96,8 @@ export function SearchInput({
               variant="ghost"
               size="sm"
               onClick={handleClear}
-              className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 p-0 hover:bg-transparent"
-              aria-label="Clear search"
+              className="absolute end-1 top-1/2 h-7 w-7 -translate-y-1/2 p-0 hover:bg-transparent"
+              aria-label={t("close")}
             >
               <X className="h-4 w-4" />
             </Button>
@@ -106,7 +108,7 @@ export function SearchInput({
           type="submit"
           size="icon"
           className="shrink-0"
-          aria-label="Search"
+          aria-label={t("search")}
         >
           <Search className="h-4 w-4" />
         </Button>

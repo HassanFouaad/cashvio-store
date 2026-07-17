@@ -1,4 +1,4 @@
-import { getProductReviewsWithErrorHandling } from "@/features/products/api/get-product-reviews";
+import { PaginatedReviewsResponse } from "@/features/products/types/product.types";
 import { getTranslations } from "next-intl/server";
 import { ReviewCard } from "./review-card";
 import { ReviewForm } from "./review-form";
@@ -6,20 +6,20 @@ import { StarRatingDisplay } from "./star-rating";
 
 interface ProductReviewsProps {
   productId: string;
-  storeId: string;
+  /** Reviews fetched once by the page (also used for JSON-LD) */
+  reviews: PaginatedReviewsResponse | null;
 }
 
 /**
  * Product reviews section - Server Component
- * Fetches and displays approved reviews + review submission form
+ * Displays approved reviews + review submission form.
+ * Data is fetched by the page so JSON-LD and UI share one request.
  */
 export async function ProductReviews({
   productId,
-  storeId,
+  reviews,
 }: ProductReviewsProps) {
   const t = await getTranslations("store.products");
-
-  const { reviews } = await getProductReviewsWithErrorHandling(productId);
 
   const reviewItems = reviews?.items ?? [];
   const totalReviews = reviews?.pagination?.totalItems ?? 0;

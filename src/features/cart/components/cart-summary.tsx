@@ -91,7 +91,12 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
                     </li>
                   ))}
                   {validation.itemsWithIssues.length > 3 && (
-                    <li>• +{validation.itemsWithIssues.length - 3} more...</li>
+                    <li>
+                      •{" "}
+                      {t("moreItems", {
+                        count: validation.itemsWithIssues.length - 3,
+                      })}
+                    </li>
                   )}
                 </ul>
               )}

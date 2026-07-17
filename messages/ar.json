@@ -23,7 +23,15 @@
     "menu": "القائمة",
     "settings": "الإعدادات",
     "contact": "تواصل",
-    "more": "المزيد"
+    "more": "المزيد",
+    "done": "تم",
+    "trackOrder": "تتبع الطلب",
+    "phoneInput": {
+      "placeholder": "أدخل رقم الهاتف",
+      "selectCountry": "اختر الدولة",
+      "searchCountries": "ابحث عن الدول...",
+      "noCountriesFound": "لا توجد دول مطابقة"
+    }
   },
   "contact": {
     "title": "تواصل معنا",
@@ -32,28 +40,26 @@
     "tapToOpen": "انقر للفتح",
     "reachUs": "تواصل مع {storeName}"
   },
-  "landing": {
-    "title": "مرحباً بك في StoreFront",
-    "description": "منصة تجارة إلكترونية متعددة المتاجر. يمكنك الوصول إلى متجرك باستخدام صيغة الرابط:",
-    "urlFormat": "/store/رمز-المتجر",
-    "exampleStores": "متاجر تجريبية (للاختبار):",
-    "tryDemoStore": "جرب المتجر التجريبي",
-    "tryTestStore": "جرب متجر الاختبار"
-  },
   "store": {
     "welcome": "مرحباً بك في {storeName}",
     "browseProducts": "تصفح المنتجات",
     "description": "اكتشف مجموعتنا الرائعة من المنتجات",
     "shoppingCart": "عربة التسوق",
     "emptyStore": {
-      "title": "مرحباً بك في {storeName}",
-      "description": "نحن نجهز كل شيء! متجرنا قيد الإعداد بمنتجات رائعة خصيصاً لك. عد قريباً!",
-      "feature1Title": "قريباً",
-      "feature1Description": "المنتجات قيد الإضافة",
-      "feature2Title": "ترقب",
-      "feature2Description": "وصول منتجات جديدة يومياً",
-      "refreshButton": "تحديث الصفحة",
-      "footerNote": "هذا المتجر قيد الإعداد حالياً ."
+      "title": "{storeName} يفتح قريباً",
+      "description": "نقوم بإضافة المنتجات إلى المتجر. عد قريباً لتصفح التشكيلة."
+    },
+    "hero": {
+      "imageAlt": "بانر {storeName} رقم {index}",
+      "promotionLabel": "عرض {storeName}",
+      "previousImage": "الصورة السابقة",
+      "nextImage": "الصورة التالية",
+      "goToImage": "الانتقال إلى الصورة {index}"
+    },
+    "gallery": {
+      "imageSelector": "اختيار الصورة",
+      "imageThumbnails": "الصور المصغرة",
+      "imageOf": "صورة {index} من {total}"
     },
     "categories": {
       "title": "تسوق حسب المجموعة",
@@ -93,10 +99,6 @@
       "leftInStock": "{count} متبقي في المخزون",
       "price": "السعر",
       "description": "الوصف",
-      "specifications": "المواصفات",
-      "fastShipping": "شحن سريع",
-      "securePayment": "دفع آمن",
-      "easyReturns": "إرجاع سهل",
       "quantity": "الكمية",
       "backToStore": "العودة إلى المتجر",
       "noImageAvailable": "لا توجد صورة متاحة",
@@ -134,20 +136,6 @@
       "review": "تقييم",
       "reviewsCount": "تقييمات",
       "reviewDate": "التاريخ"
-    }
-  },
-  "features": {
-    "quality": {
-      "title": "منتجات عالية الجودة",
-      "description": "نقدم فقط أفضل المنتجات لعملائنا"
-    },
-    "delivery": {
-      "title": "توصيل سريع",
-      "description": "توصيل سريع وموثوق إلى باب منزلك"
-    },
-    "support": {
-      "title": "دعم العملاء",
-      "description": "فريق دعم متخصص جاهز لمساعدتك"
     }
   },
   "errors": {
@@ -219,6 +207,12 @@
       "title": "المنتج غير موجود",
       "titleWithStore": "{productName} - {storeName}",
       "descriptionWithStore": "اشتر {productName} من {storeName}"
+    },
+    "track": {
+      "title": "تتبع الطلب",
+      "description": "تتبع حالة طلبك",
+      "titleWithStore": "تتبع الطلب - {storeName}",
+      "descriptionWithStore": "تتبع حالة طلبك في {storeName}"
     }
   },
   "footer": {
@@ -284,7 +278,13 @@
     "viewCart": "عرض السلة",
     "maxPerOrder": "الحد الأقصى {max} لكل طلب",
     "maxPerOrderReached": "الحد الأقصى المسموح {max} لكل طلب",
-    "maxPerOrderExceeded": "تجاوز الحد الأقصى {max} لكل طلب. يرجى تقليل الكمية."
+    "maxPerOrderExceeded": "تجاوز الحد الأقصى {max} لكل طلب. يرجى تقليل الكمية.",
+    "clearAllConfirm": "تأكيد الإزالة؟",
+    "removedItemsNotice": "تمت إزالة بعض المنتجات من سلتك لأنها لم تعد متوفرة.",
+    "dismiss": "إغلاق",
+    "decreaseQuantity": "تقليل الكمية",
+    "increaseQuantity": "زيادة الكمية",
+    "moreItems": "+{count} أخرى"
   },
   "checkout": {
     "pageTitle": "إتمام الطلب",
@@ -312,9 +312,13 @@
     "customerInfo": "معلوماتك",
     "name": "الاسم",
     "namePlaceholder": "أدخل اسمك",
+    "nameRequired": "يرجى إدخال اسمك",
     "phone": "رقم الهاتف",
     "phonePlaceholder": "أدخل رقم الهاتف",
     "phoneInvalid": "يرجى إدخال رقم هاتف صحيح",
+    "deliveryAddressRequired": "يرجى اختيار الدولة والمدينة",
+    "receiptRequired": "يرجى رفع إيصال الدفع",
+    "completeRequiredFields": "يرجى إكمال الحقول المطلوبة أعلاه",
     "deliveryAddress": "عنوان التوصيل",
     "selectCountry": "اختر الدولة",
     "selectCity": "اختر المدينة",
@@ -335,11 +339,6 @@
     "calculating": "جاري الحساب...",
     "previewError": "فشل في حساب إجمالي الطلب. يرجى المحاولة مرة أخرى.",
     "orderError": "فشل في تقديم الطلب. يرجى المحاولة مرة أخرى.",
-    "orderSuccessTitle": "تم تقديم الطلب بنجاح!",
-    "orderSuccessMessage": "شكراً لطلبك. سنبدأ في تحضيره فوراً.",
-    "orderNumber": "رقم الطلب",
-    "redirectingToHome": "جاري التوجيه للصفحة الرئيسية...",
-    "continueShopping": "متابعة التسوق",
     "belowMinimumOrder": "الحد الأدنى لقيمة الطلب لهذا المتجر هو {minimumOrderValue}. يرجى إضافة المزيد من العناصر للمتابعة.",
     "noPaymentMethodsTitle": "الدفع غير متاح حالياً",
     "noPaymentMethodsDescription": "هذا المتجر لا يقبل المدفوعات في الوقت الحالي. يرجى المحاولة لاحقاً أو التواصل مع المتجر للمساعدة."
@@ -348,7 +347,41 @@
     "title": "شكراً لطلبك!",
     "message": "تم تقديم طلبك بنجاح. سنبدأ في تحضيره فوراً.",
     "orderNumber": "رقم الطلب",
-    "redirecting": "سيتم التوجيه للصفحة الرئيسية خلال {seconds} ثانية...",
+    "copy": "نسخ",
+    "copied": "تم النسخ",
+    "saveNumberHint": "احتفظ بهذا الرقم — ستحتاجه لتتبع طلبك.",
+    "recapTitle": "ملخص الطلب",
+    "moreItems": "+ {count} منتجات أخرى",
+    "total": "الإجمالي",
+    "trackOrder": "تتبع الطلب",
     "backToHome": "العودة للرئيسية"
+  },
+  "orderTracking": {
+    "pageTitle": "تتبع طلبك",
+    "pageDescription": "أدخل رقم الطلب ورقم الهاتف الذي استخدمته عند الشراء",
+    "formAriaLabel": "نموذج تتبع الطلب",
+    "orderNumber": "رقم الطلب",
+    "orderNumberPlaceholder": "مثال: ORD-2026-00001",
+    "orderNumberRequired": "يرجى إدخال رقم الطلب",
+    "phone": "رقم الهاتف",
+    "phonePlaceholder": "الهاتف المستخدم عند الشراء",
+    "phoneInvalid": "يرجى إدخال رقم هاتف صحيح",
+    "trackButton": "تتبع الطلب",
+    "searching": "جاري البحث...",
+    "notFoundTitle": "لم نتمكن من العثور على هذا الطلب",
+    "notFoundDescription": "تأكد من تطابق رقم الطلب ورقم الهاتف مع ما استخدمته عند الشراء، ثم حاول مرة أخرى.",
+    "orderDate": "تاريخ الطلب",
+    "progressAriaLabel": "حالة الطلب",
+    "status": {
+      "pending": "تم الاستلام",
+      "preparing": "قيد التحضير",
+      "ready": "جاهز",
+      "delivering": "في الطريق",
+      "completed": "تم التسليم",
+      "cancelled": "تم إلغاء هذا الطلب"
+    },
+    "discount": "خصم",
+    "deliveryFees": "رسوم التوصيل",
+    "total": "الإجمالي"
   }
 }

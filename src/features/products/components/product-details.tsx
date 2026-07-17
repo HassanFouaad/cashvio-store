@@ -1,5 +1,8 @@
 import { SafeHtmlRenderer } from "@/components/ui/safe-html-renderer";
-import { PublicProductDto } from "@/features/products/types/product.types";
+import {
+  PaginatedReviewsResponse,
+  PublicProductDto,
+} from "@/features/products/types/product.types";
 import { sortProductImages } from "@/features/products/utils/product-helpers";
 import { ChevronRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
@@ -13,6 +16,7 @@ interface ProductDetailsProps {
   currency: string;
   locale: string;
   storeId: string;
+  reviews: PaginatedReviewsResponse | null;
 }
 
 /**
@@ -26,6 +30,7 @@ export async function ProductDetails({
   currency,
   locale,
   storeId,
+  reviews,
 }: ProductDetailsProps) {
   const t = await getTranslations("store.products");
 
@@ -111,7 +116,7 @@ export async function ProductDetails({
       )}
 
       {/* Product Reviews Section */}
-      <ProductReviews productId={product.id} storeId={storeId} />
+      <ProductReviews productId={product.id} reviews={reviews} />
     </div>
   );
 }

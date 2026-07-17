@@ -106,13 +106,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
     product.variants?.find((v) => v.inStock) ?? product.variants?.[0];
   const productPrice = defaultVariant?.sellingPrice ?? 0;
 
-  // Fetch displayed reviews for JSON-LD structured data
+  // Fetch displayed reviews ONCE — shared by JSON-LD and the reviews section
   const { reviews: reviewsData } = await getProductReviewsWithErrorHandling(
     id,
     1,
-    50,
+    10,
   );
   const reviews = reviewsData?.items ?? [];
+  const totalReviewCount = reviewsData?.pagination?.totalItems ?? reviews.length;
 
   // Build JSON-LD structured data for SEO (Schema.org Product)
   const primaryImage =
@@ -157,7 +158,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             ratingValue: Math.round(averageRating * 10) / 10,
             bestRating: 5,
             worstRating: 1,
-            reviewCount: reviews.length,
+            reviewCount: totalReviewCount,
           },
           review: reviews.map((r) => ({
             "@type": "Review",
@@ -204,6 +205,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           currency={store.currency}
           locale={locale}
           storeId={store.id}
+          reviews={reviewsData}
         />
       </div>
     </div>
