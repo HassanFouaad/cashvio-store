@@ -179,6 +179,26 @@ export default async function ProductPage({ params }: ProductPageProps) {
       : {}),
   };
 
+  // BreadcrumbList structured data — mirrors the visual breadcrumb
+  const breadcrumbJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: store.name,
+        item: `https://${hostname}/`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: product.name,
+        item: `https://${hostname}/products/${id}`,
+      },
+    ],
+  };
+
   return (
     <div className="w-full max-w-full overflow-x-hidden py-4 sm:py-6 lg:py-8">
       <div className="container">
@@ -186,6 +206,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
         />
         <TrackViewItem
           currency={store.currency}

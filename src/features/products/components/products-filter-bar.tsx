@@ -1,19 +1,27 @@
 "use client";
 
+import { SearchInput } from "@/components/common/search-input";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { ProductSortBy } from "@/features/products/types/product.types";
-import { analytics } from "@/lib/analytics";
 import { Check, Package, Search, SlidersHorizontal, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
+
+interface ProductsFilterCategoryOption {
+  id: string;
+  name: string;
+}
 
 interface ProductsFilterBarProps {
   currentSort: ProductSortBy;
   inStockOnly: boolean;
   totalItems?: number;
+  /** Category options for the category filter (empty hides the filter) */
+  categories: ProductsFilterCategoryOption[];
+  /** Currently selected category id ("" = all) */
+  currentCategoryId: string;
 }
 
 /**
@@ -28,6 +36,8 @@ export function ProductsFilterBar({
   currentSort,
   inStockOnly,
   totalItems,
+  categories,
+  currentCategoryId,
 }: ProductsFilterBarProps) {
   const t = useTranslations("store.products");
   const tCommon = useTranslations("common");
@@ -38,8 +48,6 @@ export function ProductsFilterBar({
   // Get current search value from URL
   const urlSearch = searchParams.get("search") || "";
 
-  // Local state for input value
-  const [searchValue, setSearchValue] = useState(urlSearch);
   const [showFilters, setShowFilters] = useState(false);
 
   const sortOptions = [
@@ -75,28 +83,7 @@ export function ProductsFilterBar({
     [searchParams],
   );
 
-  const handleSearchSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const trimmedSearch = searchValue.trim();
-
-    // Track search event
-    if (trimmedSearch) {
-      try {
-        analytics.trackSearch({ search_term: trimmedSearch });
-      } catch {
-        // Analytics errors must never affect the store
-      }
-    }
-
-    const queryString = createQueryString({
-      search: trimmedSearch || null,
-    });
-    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
-    router.push(newUrl);
-  };
-
   const handleClearSearch = () => {
-    setSearchValue("");
     const queryString = createQueryString({ search: null });
     const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
     router.push(newUrl);
@@ -118,51 +105,40 @@ export function ProductsFilterBar({
     router.push(newUrl);
   };
 
+  const handleCategoryChange = (categoryId: string) => {
+    const queryString = createQueryString({
+      categoryId: categoryId || null,
+    });
+    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    router.push(newUrl);
+  };
+
+  const categoryOptions = [
+    { value: "", label: t("filters.allCategories") },
+    ...categories.map((category) => ({
+      value: category.id,
+      label: category.name,
+    })),
+  ];
+
+  const selectedCategoryName = categories.find(
+    (category) => category.id === currentCategoryId,
+  )?.name;
+
   // Count active filters
   const activeFiltersCount =
-    (inStockOnly ? 1 : 0) + (currentSort !== ProductSortBy.CREATED_AT ? 1 : 0);
+    (inStockOnly ? 1 : 0) +
+    (currentCategoryId ? 1 : 0) +
+    (currentSort !== ProductSortBy.CREATED_AT ? 1 : 0);
 
   return (
     <div className="space-y-3">
-      {/* Search Bar - Full Width, Shopify-like */}
-      <form onSubmit={handleSearchSubmit} className="relative w-full">
-        <div className="relative flex items-center">
-          <Search className="absolute start-4 h-5 w-5 text-muted-foreground pointer-events-none" />
-          <Input
-            type="text"
-            placeholder={t("searchPlaceholder")}
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            className="w-full h-12 ps-12 pe-24 text-base rounded-full border-2 border-muted bg-muted/30 focus:border-primary focus:bg-background transition-all placeholder:text-muted-foreground/70"
-          />
-          {/* Clear and Search buttons */}
-          <div className="absolute end-2 flex items-center gap-1">
-            {searchValue && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleClearSearch}
-                className="h-8 w-8 p-0 rounded-full hover:bg-muted"
-                aria-label={tCommon("close")}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-            <Button
-              type="submit"
-              size="sm"
-              className="h-8 px-4 rounded-full"
-              aria-label={tCommon("search")}
-            >
-              <Search className="h-4 w-4" />
-              <span className="ms-1.5 hidden sm:inline">
-                {tCommon("search")}
-              </span>
-            </Button>
-          </div>
-        </div>
-      </form>
+      {/* Search Bar - single shared implementation */}
+      <SearchInput
+        rounded
+        trackAnalytics
+        placeholder={t("searchPlaceholder")}
+      />
 
       {/* Filter Controls Row */}
       <div className="flex items-center justify-between gap-3">
@@ -193,6 +169,16 @@ export function ProductsFilterBar({
 
         {/* Desktop Filters - Always Visible */}
         <div className="hidden sm:flex items-center gap-3">
+          {/* Category Filter */}
+          {categories.length > 0 && (
+            <Select
+              value={currentCategoryId}
+              onChange={handleCategoryChange}
+              options={categoryOptions}
+              className="w-[180px]"
+            />
+          )}
+
           {/* In Stock Toggle - Chip style */}
           <Button
             variant={inStockOnly ? "default" : "outline"}
@@ -233,6 +219,21 @@ export function ProductsFilterBar({
       {/* Mobile Filters Drawer */}
       {showFilters && (
         <div className="sm:hidden p-4 bg-muted/30 rounded-xl border space-y-4 animate-in slide-in-from-top-2 duration-200">
+          {/* Category */}
+          {categories.length > 0 && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                {t("filters.category")}
+              </label>
+              <Select
+                value={currentCategoryId}
+                onChange={handleCategoryChange}
+                options={categoryOptions}
+                className="w-full"
+              />
+            </div>
+          )}
+
           {/* Sort */}
           <div className="space-y-2">
             <label className="text-sm font-medium">{t("sortBy.label")}</label>
@@ -279,8 +280,17 @@ export function ProductsFilterBar({
       )}
 
       {/* Active Filters Pills (when filters are closed on mobile) */}
-      {!showFilters && (inStockOnly || urlSearch) && (
+      {!showFilters && (inStockOnly || urlSearch || currentCategoryId) && (
         <div className="flex flex-wrap items-center gap-2 sm:hidden">
+          {selectedCategoryName && (
+            <button
+              onClick={() => handleCategoryChange("")}
+              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors"
+            >
+              {selectedCategoryName}
+              <X className="h-3 w-3 ms-0.5" />
+            </button>
+          )}
           {urlSearch && (
             <button
               onClick={handleClearSearch}

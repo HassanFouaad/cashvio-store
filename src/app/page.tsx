@@ -11,7 +11,13 @@ import { StoreErrorType } from "@/features/store/types/store.types";
 import { TrackViewItemList } from "@/lib/analytics/track-event";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { serializeJsonLd } from "@/lib/utils";
+import { Metadata } from "next";
 import { headers } from "next/headers";
+
+export function generateMetadata(): Metadata {
+  // Canonical for the home page — resolved against metadataBase (layout)
+  return { alternates: { canonical: "/" } };
+}
 
 export default async function HomePage() {
   // Resolve store and set API context (critical for X-Store-Id header)

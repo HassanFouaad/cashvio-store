@@ -50,6 +50,7 @@ import {
   Receipt,
   ShoppingBag,
   Store,
+  TicketPercent,
   Upload,
   User,
   UtensilsCrossed,
@@ -248,6 +249,12 @@ export function CheckoutForm({
   const [preview, setPreview] = useState<OrderPreviewResponse | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
+
+  // Coupon state — the input value and the code submitted for validation
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(
+    null,
+  );
 
   // Validate cart on mount - refetch to ensure latest stock info
   useEffect(() => {
@@ -546,6 +553,8 @@ export function CheckoutForm({
         })),
         // Don't include customer info in preview - it doesn't affect pricing
         deliveryAddress: previewDeliveryAddress,
+        couponCode: appliedCouponCode ?? undefined,
+        visitorId: appliedCouponCode ? getOrCreateVisitorId() : undefined,
       });
 
       // Drop stale responses that resolved after a newer request started
@@ -567,8 +576,30 @@ export function CheckoutForm({
     selectedMethod,
     storeId,
     previewDeliveryAddress,
+    appliedCouponCode,
     t,
   ]);
+
+  // Coupon handlers
+  const handleApplyCoupon = useCallback(() => {
+    const trimmed = couponInput.trim();
+    if (!trimmed) return;
+    setAppliedCouponCode(trimmed);
+  }, [couponInput]);
+
+  const handleRemoveCoupon = useCallback(() => {
+    setAppliedCouponCode(null);
+    setCouponInput("");
+  }, []);
+
+  // A coupon is applied only when the server confirmed a discount
+  const hasValidCoupon = preview?.couponDiscount != null;
+  const couponErrorMessage =
+    appliedCouponCode &&
+    preview?.couponValidation &&
+    !preview.couponValidation.isValid
+      ? preview.couponValidation.message
+      : null;
 
   // Fetch preview when dependencies change
   // This includes: fulfillment method, items, country/city selection (for delivery fees calculation)
@@ -692,6 +723,10 @@ export function CheckoutForm({
             ? (receiptFileKey ?? undefined)
             : undefined,
         idempotencyKey: idempotencyKeyRef.current,
+        // Only send the coupon when the preview confirmed it's valid
+        couponCode: preview?.couponDiscount
+          ? preview.couponDiscount.couponCode
+          : undefined,
       };
 
       const result = await createOrder(orderRequest);
@@ -1426,6 +1461,72 @@ export function CheckoutForm({
                           {formatCurrency(preview.totalTax, currency, locale)}
                         </span>
                       </div>
+                    )}
+                  </div>
+
+                  {/* Promo code */}
+                  <div className="border-t pt-4 space-y-2">
+                    {hasValidCoupon && preview.couponDiscount ? (
+                      <div className="flex items-center justify-between gap-2 rounded-lg bg-primary/5 border border-primary/20 px-3 py-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <TicketPercent className="h-4 w-4 text-primary shrink-0" />
+                          <span className="text-sm font-medium font-mono truncate">
+                            {preview.couponDiscount.couponCode}
+                          </span>
+                          <span className="text-sm text-green-600 dark:text-green-500 shrink-0">
+                            -
+                            {formatCurrency(
+                              preview.couponDiscount.appliedAmount,
+                              currency,
+                              locale,
+                            )}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemoveCoupon}
+                          className="shrink-0 rounded p-1 text-muted-foreground hover:text-destructive transition-colors"
+                          aria-label={t("removeCoupon")}
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex gap-2">
+                          <Input
+                            id="coupon-code"
+                            type="text"
+                            value={couponInput}
+                            onChange={(e) => setCouponInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleApplyCoupon();
+                              }
+                            }}
+                            placeholder={t("couponPlaceholder")}
+                            autoComplete="off"
+                            className="h-9 text-sm"
+                            aria-label={t("couponLabel")}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-9 shrink-0"
+                            onClick={handleApplyCoupon}
+                            disabled={!couponInput.trim() || isLoadingPreview}
+                          >
+                            {t("applyCoupon")}
+                          </Button>
+                        </div>
+                        {couponErrorMessage && (
+                          <p className="text-sm text-destructive">
+                            {couponErrorMessage}
+                          </p>
+                        )}
+                      </>
                     )}
                   </div>
 

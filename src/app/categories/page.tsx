@@ -28,6 +28,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t("titleWithStore", { storeName: store.name }),
     description: t("descriptionWithStore", { storeName: store.name }),
+    // One canonical for all search/page permutations
+    alternates: { canonical: "/categories" },
   };
 }
 

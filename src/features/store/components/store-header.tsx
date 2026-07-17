@@ -5,7 +5,7 @@ import { MobileSettingsSheet } from "@/components/mobile-settings-sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { useCartItemCount } from "@/features/cart/store";
-import { Settings, ShoppingCart } from "lucide-react";
+import { Search, Settings, ShoppingCart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -80,6 +80,19 @@ export function StoreHeader({ store }: StoreHeaderProps) {
 
           {/* Actions */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            {/* Desktop: Search entry (products page hosts the search bar) */}
+            <Link href="/products" className="hidden md:block">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 sm:h-10 sm:w-10"
+                title={t("common.search")}
+              >
+                <Search className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="sr-only">{t("common.search")}</span>
+              </Button>
+            </Link>
+
             {/* Desktop: Theme and Language toggles */}
             <div className="hidden md:flex items-center gap-1 sm:gap-2">
               <ThemeToggle />

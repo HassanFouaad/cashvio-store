@@ -41,7 +41,7 @@ export const resolveRequestStore = cache(async (): Promise<{
   // default to ENGLISH. Setting it here guarantees every page's
   // API calls use the correct Accept-Language header.
   const localeString = await getLocale();
-  const locale = isValidLocale(localeString) ? localeString : Locale.ENGLISH;
+  const locale = isValidLocale(localeString) ? localeString : Locale.ARABIC;
   setApiLocale(locale);
 
   if (!subdomain) {

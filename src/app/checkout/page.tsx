@@ -11,8 +11,8 @@ import {
   PublicDeliveryZonesResponseDto,
   PublicStorefrontPaymentMethodDto,
 } from "@/features/checkout/types/checkout.types";
-import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { TrackBeginCheckoutEvent } from "@/lib/analytics/track-cart-events";
+import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
@@ -68,7 +68,9 @@ export default async function CheckoutPage() {
 
   // Payment methods fetch failed — proceed with empty (default to CASH on backend)
   const storefrontPaymentMethods: PublicStorefrontPaymentMethodDto[] =
-    paymentMethodsResult.status === "fulfilled" ? paymentMethodsResult.value : [];
+    paymentMethodsResult.status === "fulfilled"
+      ? paymentMethodsResult.value
+      : [];
 
   let deliveryZones: PublicDeliveryZonesResponseDto | null = null;
   let fallbackCountries: CommonCountryDto[] | null = null;
@@ -84,7 +86,9 @@ export default async function CheckoutPage() {
 
     // If store has no configured delivery zones, fallback to common countries/cities
     const hasNoZones =
-      !deliveryZones || !deliveryZones.zones || deliveryZones.zones.length === 0;
+      !deliveryZones ||
+      !deliveryZones.zones ||
+      deliveryZones.zones.length === 0;
     if (hasNoZones) {
       try {
         fallbackCountries = await getCountries();

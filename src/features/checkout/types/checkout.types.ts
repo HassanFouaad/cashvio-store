@@ -59,6 +59,27 @@ export interface CreateOrderPreviewRequest {
   customerPhone?: string;
   notes?: string;
   deliveryAddress?: OrderPreviewDeliveryAddress;
+  /** Coupon code to validate and apply */
+  couponCode?: string;
+  /** Visitor ID — enables per-customer coupon limits for guests */
+  visitorId?: string;
+}
+
+/**
+ * Coupon validation feedback from preview
+ */
+export interface OrderPreviewCouponValidation {
+  isValid: boolean;
+  message: string;
+  couponCode: string;
+}
+
+/**
+ * Applied coupon discount from preview
+ */
+export interface OrderPreviewCouponDiscount {
+  couponCode: string;
+  appliedAmount: number;
 }
 
 /**
@@ -96,6 +117,10 @@ export interface OrderPreviewResponse {
   minimumOrderValue?: number;
   /** Whether the order total is below the configured minimum order value */
   isBelowMinimumOrder?: boolean;
+  /** Coupon validation feedback (present when a coupon code was submitted) */
+  couponValidation?: OrderPreviewCouponValidation;
+  /** Applied coupon discount (present when the coupon is valid) */
+  couponDiscount?: OrderPreviewCouponDiscount;
 }
 
 /**
@@ -233,6 +258,8 @@ export interface CreateOrderRequest {
   receiptFileKey?: string;
   /** Client-generated UUID — server replays the original order on retries */
   idempotencyKey?: string;
+  /** Valid coupon code applied during preview */
+  couponCode?: string;
 }
 
 /**

@@ -60,6 +60,8 @@ export async function generateMetadata({
           storeName: store.name,
         })
       : t("description"),
+    // One canonical for all filter/sort/page permutations
+    alternates: { canonical: `/categories/${resolvedParams.id}` },
   };
 }
 
@@ -193,6 +195,8 @@ export default async function CategoryDetailPage({
               currentSort={sortBy}
               inStockOnly={inStock}
               totalItems={productsData?.pagination?.totalItems}
+              categories={[]}
+              currentCategoryId=""
             />
           </Suspense>
 

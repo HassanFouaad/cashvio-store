@@ -1,9 +1,12 @@
+import { CookieName, getAllLocales, isValidLocale, Locale } from '@/types/enums';
 import { getRequestConfig } from 'next-intl/server';
 import { cookies } from 'next/headers';
-import { Locale, CookieName, getAllLocales, isValidLocale } from '@/types/enums';
 
 export const locales = getAllLocales();
-export const defaultLocale = Locale.ENGLISH;
+// MUST match middleware DEFAULT_LOCALE — a request that bypasses the
+// middleware (no cookie yet) must render the same language the middleware
+// would have chosen, otherwise users see a one-request language flash.
+export const defaultLocale = Locale.ARABIC;
 
 export type LocaleType = Locale;
 

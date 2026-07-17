@@ -1,3 +1,4 @@
+import { getCategoriesWithErrorHandling } from "@/features/categories/api/get-categories";
 import { getProductsWithErrorHandling } from "@/features/products/api/get-products";
 import { ProductsFilterBar } from "@/features/products/components/products-filter-bar";
 import { ProductsGrid } from "@/features/products/components/products-grid";
@@ -16,8 +17,12 @@ interface ProductsPageProps {
     search?: string;
     sortBy?: ProductSortBy;
     inStock?: string;
+    categoryId?: string;
   }>;
 }
+
+/** Max categories offered in the filter dropdown */
+const CATEGORY_FILTER_LIMIT = 50;
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("metadata.products");
@@ -35,6 +40,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t("titleWithStore", { storeName: store.name }),
     description: t("descriptionWithStore", { storeName: store.name }),
+    // One canonical for all filter/sort/page permutations
+    alternates: { canonical: "/products" },
   };
 }
 
@@ -56,23 +63,41 @@ export default async function ProductsPage({
   const search = resolvedSearchParams.search || "";
   const sortBy = resolvedSearchParams.sortBy || ProductSortBy.CREATED_AT;
   const inStock = resolvedSearchParams.inStock === "true";
+  const categoryId = resolvedSearchParams.categoryId || "";
 
-  const { products: productsData, error } = await getProductsWithErrorHandling({
-    storeId: store.id,
-    tenantId: store.tenantId,
-    page: requestedPage,
-    limit: 18,
-    name: search || undefined,
-    sortBy,
-    inStock: inStock || undefined,
-  });
+  // Products + category options in parallel
+  const [{ products: productsData, error }, { categories: categoriesData }] =
+    await Promise.all([
+      getProductsWithErrorHandling({
+        storeId: store.id,
+        tenantId: store.tenantId,
+        page: requestedPage,
+        limit: 18,
+        name: search || undefined,
+        sortBy,
+        inStock: inStock || undefined,
+        categoryId: categoryId || undefined,
+      }),
+      getCategoriesWithErrorHandling({
+        tenantId: store.tenantId,
+        page: 1,
+        limit: CATEGORY_FILTER_LIMIT,
+      }),
+    ]);
+
+  const categories = categoriesData?.items ?? [];
 
   // Validate pagination and redirect if out of range
   validatePaginationAndRedirect(
     productsData?.pagination,
     requestedPage,
     `/products`,
-    { search, sortBy, inStock: inStock ? "true" : undefined },
+    {
+      search,
+      sortBy,
+      inStock: inStock ? "true" : undefined,
+      categoryId: categoryId || undefined,
+    },
   );
 
   if (error || !productsData) {
@@ -130,6 +155,11 @@ export default async function ProductsPage({
               currentSort={sortBy}
               inStockOnly={inStock}
               totalItems={productsData.pagination.totalItems}
+              categories={categories.map((category) => ({
+                id: category.id,
+                name: category.name,
+              }))}
+              currentCategoryId={categoryId}
             />
           </Suspense>
 

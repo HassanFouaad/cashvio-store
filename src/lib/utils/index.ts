@@ -19,3 +19,6 @@ export { serializeJsonLd } from './json-ld';
 
 // Tenant brand color CSS
 export { buildBrandStyle } from './brand-style';
+
+// WhatsApp deep link
+export { buildWhatsAppLink } from './whatsapp';

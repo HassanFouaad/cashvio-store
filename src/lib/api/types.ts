@@ -115,15 +115,18 @@ import { cache } from "react";
  * React.cache() creates a memoized function that returns the SAME object
  * per server request, preventing race conditions between concurrent requests.
  * On the client, it returns the same object (effectively a singleton, which is fine).
+ *
+ * Default is ARABIC — MUST match the middleware and i18n/request.ts
+ * defaults so every layer resolves the same language when no cookie exists.
  */
 const getServerLocaleContext = cache(() => ({
-  locale: Locale.ENGLISH as Locale,
+  locale: Locale.ARABIC as Locale,
 }));
 
 /**
  * Client-side locale (module variable is fine since client is single-threaded)
  */
-let clientLocale: Locale = Locale.ENGLISH;
+let clientLocale: Locale = Locale.ARABIC;
 
 export function setApiLocale(locale: Locale): void {
   if (typeof window !== "undefined") {

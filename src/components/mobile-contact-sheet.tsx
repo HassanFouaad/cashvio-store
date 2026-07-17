@@ -1,11 +1,13 @@
 'use client';
 
 import { StoreFrontSocialMediaDto } from '@/features/store/types/store.types';
+import { buildWhatsAppLink } from '@/lib/utils/whatsapp';
 import {
     ExternalLink,
     Facebook,
     Globe,
     Instagram,
+    MessageCircle,
     Music2,
     Phone,
     X,
@@ -38,6 +40,8 @@ export function MobileContactSheet({
 }: MobileContactSheetProps) {
   const t = useTranslations();
 
+  const whatsAppLink = buildWhatsAppLink(socialMedia.contactPhone);
+
   const contactItems: ContactItem[] = [
     {
       icon: Phone,
@@ -45,6 +49,13 @@ export function MobileContactSheet({
       value: socialMedia.contactPhone,
       href: socialMedia.contactPhone ? `tel:${socialMedia.contactPhone}` : undefined,
       isPhone: true,
+    },
+    {
+      // WhatsApp is the dominant support channel in the target market
+      icon: MessageCircle,
+      label: t('contact.whatsapp'),
+      value: whatsAppLink ? socialMedia.contactPhone : null,
+      href: whatsAppLink ?? undefined,
     },
     {
       icon: Facebook,

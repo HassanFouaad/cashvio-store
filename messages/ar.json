@@ -36,6 +36,7 @@
   "contact": {
     "title": "تواصل معنا",
     "phone": "الهاتف",
+    "whatsapp": "واتساب",
     "website": "الموقع",
     "tapToOpen": "انقر للفتح",
     "reachUs": "تواصل مع {storeName}"
@@ -114,7 +115,9 @@
       },
       "filters": {
         "inStockOnly": "متوفر",
-        "activeFilters": "الفلاتر"
+        "activeFilters": "الفلاتر",
+        "category": "المجموعة",
+        "allCategories": "كل المجموعات"
       },
       "resultsCount": "{count} منتج",
       "customerReviews": "تقييمات العملاء",
@@ -340,6 +343,11 @@
     "previewError": "فشل في حساب إجمالي الطلب. يرجى المحاولة مرة أخرى.",
     "orderError": "فشل في تقديم الطلب. يرجى المحاولة مرة أخرى.",
     "belowMinimumOrder": "الحد الأدنى لقيمة الطلب لهذا المتجر هو {minimumOrderValue}. يرجى إضافة المزيد من العناصر للمتابعة.",
+    "couponLabel": "كود الخصم",
+    "couponPlaceholder": "كود الخصم",
+    "applyCoupon": "تطبيق",
+    "removeCoupon": "إزالة كود الخصم",
+    "agreeToPolicy": "بتأكيد طلبك، فإنك توافق على",
     "noPaymentMethodsTitle": "الدفع غير متاح حالياً",
     "noPaymentMethodsDescription": "هذا المتجر لا يقبل المدفوعات في الوقت الحالي. يرجى المحاولة لاحقاً أو التواصل مع المتجر للمساعدة."
   },

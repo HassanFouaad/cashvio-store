@@ -61,6 +61,9 @@ export async function generateMetadata(): Promise<Metadata> {
   // Resolve store and set API context (critical for X-Store-Id header)
   const { store, subdomain } = await resolveRequestStore();
 
+  const localeString = await getLocale();
+  const ogLocale = localeString === Locale.ARABIC ? "ar_EG" : "en_US";
+
   // If no store subdomain, return default metadata
   if (!subdomain) {
     return {
@@ -119,6 +122,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: "website",
       siteName: storeName,
+      locale: ogLocale,
       title: seo?.title || storeName,
       description: storeDescription,
       ...(ogImage
@@ -157,7 +161,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const localeString = await getLocale();
-  const locale = isValidLocale(localeString) ? localeString : Locale.ENGLISH;
+  const locale = isValidLocale(localeString) ? localeString : Locale.ARABIC;
   const messages = await getMessages();
 
   // Set locale for server-side API calls
@@ -172,8 +176,7 @@ export default async function RootLayout({
   // Gate deactivated storefronts: a store whose storefront is missing or
   // INACTIVE must not be browsable or accept orders (mirrors generateMetadata)
   const isStoreFrontActive =
-    !!store?.storeFront &&
-    store.storeFront.status === StoreFrontStatus.ACTIVE;
+    !!store?.storeFront && store.storeFront.status === StoreFrontStatus.ACTIVE;
 
   // Tenant brand colors — validated hex only, applied to theme tokens
   const brandStyle = buildBrandStyle(

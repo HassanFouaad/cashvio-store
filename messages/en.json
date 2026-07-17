@@ -36,6 +36,7 @@
   "contact": {
     "title": "Contact Us",
     "phone": "Phone",
+    "whatsapp": "WhatsApp",
     "website": "Website",
     "tapToOpen": "Tap to open",
     "reachUs": "Get in touch with {storeName}"
@@ -114,7 +115,9 @@
       },
       "filters": {
         "inStockOnly": "In Stock",
-        "activeFilters": "Filters"
+        "activeFilters": "Filters",
+        "category": "Collection",
+        "allCategories": "All collections"
       },
       "resultsCount": "{count} products",
       "customerReviews": "Customer Reviews",
@@ -340,6 +343,11 @@
     "previewError": "Failed to calculate order totals. Please try again.",
     "orderError": "Failed to place order. Please try again.",
     "belowMinimumOrder": "The minimum order value for this store is {minimumOrderValue}. Please add more items to proceed.",
+    "couponLabel": "Promo code",
+    "couponPlaceholder": "Promo code",
+    "applyCoupon": "Apply",
+    "removeCoupon": "Remove promo code",
+    "agreeToPolicy": "By placing your order, you agree to our",
     "noPaymentMethodsTitle": "Payments are currently unavailable",
     "noPaymentMethodsDescription": "This store is not accepting payments at the moment. Please try again later or contact the store for assistance."
   },

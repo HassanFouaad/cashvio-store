@@ -200,24 +200,22 @@ function buildSitemapXml(
   categories: { id: string }[],
   staticPages: { slug: string }[]
 ): string {
-  const now = new Date().toISOString();
-
   const urls: { loc: string; lastmod?: string; changefreq: string; priority: string }[] = [];
 
-  // Homepage
-  urls.push({ loc: baseUrl, lastmod: now, changefreq: "daily", priority: "1.0" });
+  // Landing/list pages: omit lastmod instead of faking freshness with "now"
+  urls.push({ loc: baseUrl, changefreq: "daily", priority: "1.0" });
 
   // Products listing
-  urls.push({ loc: `${baseUrl}/products`, lastmod: now, changefreq: "daily", priority: "0.8" });
+  urls.push({ loc: `${baseUrl}/products`, changefreq: "daily", priority: "0.8" });
 
   // Categories listing
-  urls.push({ loc: `${baseUrl}/categories`, lastmod: now, changefreq: "daily", priority: "0.8" });
+  urls.push({ loc: `${baseUrl}/categories`, changefreq: "daily", priority: "0.8" });
 
-  // Individual products
+  // Individual products — lastmod only when the API provides it
   for (const product of products) {
     urls.push({
       loc: `${baseUrl}/products/${product.id}`,
-      lastmod: product.updatedAt ?? now,
+      lastmod: product.updatedAt,
       changefreq: "weekly",
       priority: "0.7",
     });

@@ -1,8 +1,10 @@
 import { appConfig } from "@/config/env.config";
+import { buildWhatsAppLink } from "@/lib/utils";
 import {
   Facebook,
   Globe,
   Instagram,
+  MessageCircle,
   Music2,
   Phone,
   Youtube,
@@ -20,6 +22,7 @@ export async function StoreFooter({ store }: StoreFooterProps) {
   const t = await getTranslations();
   const locale = await getLocale();
   const socialMedia = store.storeFront?.socialMedia;
+  const whatsAppLink = buildWhatsAppLink(socialMedia?.contactPhone);
   // Use a stable year value to avoid hydration mismatches
   const currentYear = new Date().getUTCFullYear();
 
@@ -115,6 +118,17 @@ export async function StoreFooter({ store }: StoreFooterProps) {
                 {t("footer.connectWithUs")}
               </h3>
               <div className="flex gap-3 sm:gap-4">
+                {whatsAppLink && (
+                  <a
+                    href={whatsAppLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={t("contact.whatsapp")}
+                  >
+                    <MessageCircle className="h-5 w-5" />
+                  </a>
+                )}
                 {socialMedia.facebook && (
                   <a
                     href={socialMedia.facebook}

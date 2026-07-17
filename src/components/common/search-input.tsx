@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { analytics } from "@/lib/analytics";
 import { Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -10,25 +11,23 @@ import { FormEvent, useCallback, useState } from "react";
 interface SearchInputProps {
   placeholder?: string;
   searchKey?: string;
+  /** Rounded full-width style (product listing) vs compact default */
+  rounded?: boolean;
+  /** Fire the analytics `search` event on submit */
+  trackAnalytics?: boolean;
 }
 
 /**
- * Search input with submit button
- * - User types and clicks search button to execute
- * - No focus loss (URL updates only on submit)
- * - Clean and simple UX
- *
- * @example
- * ```tsx
- * <SearchInput
- *   placeholder="Search categories..."
- *   searchKey="search"
- * />
- * ```
+ * THE search input — single implementation for every search surface.
+ * - URL-synced: updates the query param on submit, resets pagination
+ * - RTL-safe (logical properties only)
+ * - Optional rounded variant and analytics tracking
  */
 export function SearchInput({
   placeholder,
   searchKey = "search",
+  rounded = false,
+  trackAnalytics = false,
 }: SearchInputProps) {
   const t = useTranslations("common");
   const router = useRouter();
@@ -58,25 +57,76 @@ export function SearchInput({
     [searchParams, searchKey]
   );
 
+  const navigate = useCallback(
+    (value: string) => {
+      const queryString = createQueryString(value);
+      const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+      router.push(newUrl);
+    },
+    [createQueryString, pathname, router]
+  );
+
   // Handle search submission
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const queryString = createQueryString(inputValue);
-    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    const trimmed = inputValue.trim();
+    if (trackAnalytics && trimmed) {
+      try {
+        analytics.trackSearch({ search_term: trimmed });
+      } catch {
+        // Analytics errors must never affect the store
+      }
+    }
 
-    router.push(newUrl);
+    navigate(inputValue);
   };
 
   // Handle clear button
   const handleClear = () => {
     setInputValue("");
-
-    const queryString = createQueryString("");
-    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
-
-    router.push(newUrl);
+    navigate("");
   };
+
+  if (rounded) {
+    return (
+      <form onSubmit={handleSubmit} className="relative w-full">
+        <div className="relative flex items-center">
+          <Search className="absolute start-4 h-5 w-5 text-muted-foreground pointer-events-none" />
+          <Input
+            type="text"
+            placeholder={placeholder ?? `${t("search")}...`}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            className="w-full h-12 ps-12 pe-24 text-base rounded-full border-2 border-muted bg-muted/30 focus:border-primary focus:bg-background transition-all placeholder:text-muted-foreground/70"
+          />
+          <div className="absolute end-2 flex items-center gap-1">
+            {inputValue && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleClear}
+                className="h-8 w-8 p-0 rounded-full hover:bg-muted"
+                aria-label={t("close")}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              type="submit"
+              size="sm"
+              className="h-8 px-4 rounded-full"
+              aria-label={t("search")}
+            >
+              <Search className="h-4 w-4" />
+              <span className="ms-1.5 hidden sm:inline">{t("search")}</span>
+            </Button>
+          </div>
+        </div>
+      </form>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="relative w-full max-w-sm">
