@@ -13,3 +13,6 @@ export * from './pagination-redirect';
 
 // Class name utilities (if you add cn utility)
 export { cn } from './cn';
+
+// JSON-LD safe serialization
+export { serializeJsonLd } from './json-ld';

@@ -3,6 +3,7 @@ import { getProductByIdWithErrorHandling } from "@/features/products/api/get-pro
 import { ProductDetails } from "@/features/products/components/product-details";
 import { TrackViewItem } from "@/lib/analytics/track-event";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
+import { serializeJsonLd } from "@/lib/utils";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
@@ -183,7 +184,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         {/* JSON-LD structured data for SEO */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
         />
         <TrackViewItem
           currency={store.currency}

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils/cn";
-import DOMPurify from "dompurify";
+import DOMPurify from "isomorphic-dompurify";
 import * as React from "react";
 
 export interface SafeHtmlRendererProps {
@@ -16,7 +16,9 @@ export interface SafeHtmlRendererProps {
  * Use this for rendering rich text content from the backend (e.g., product descriptions).
  *
  * Features:
- * - Sanitizes HTML to prevent XSS attacks
+ * - Sanitizes HTML to prevent XSS attacks on BOTH server and client
+ *   (isomorphic-dompurify uses jsdom during SSR, so the initial HTML
+ *   payload is sanitized too — never ship raw tenant HTML)
  * - Removes potentially dangerous tags and attributes
  * - Preserves safe formatting (bold, italic, lists, links, colors, etc.)
  * - Supports RTL languages properly
@@ -24,11 +26,6 @@ export interface SafeHtmlRendererProps {
  */
 export function SafeHtmlRenderer({ html, className }: SafeHtmlRendererProps) {
   const sanitizedHtml = React.useMemo(() => {
-    if (typeof window === "undefined") {
-      // Server-side: return the raw html (will be sanitized on client during hydration)
-      return html;
-    }
-
     return DOMPurify.sanitize(html, {
       // Allow safe tags for rich text
       ALLOWED_TAGS: [

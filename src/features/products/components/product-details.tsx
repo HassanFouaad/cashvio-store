@@ -70,7 +70,7 @@ export async function ProductDetails({
         {/* Right Column - Product Info (5 cols on desktop) */}
         <div className="lg:col-span-5">
           <div className="space-y-5">
-            {/* Product Title}
+            {/* Product Title */}
             <div className="space-y-2">
               <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground leading-tight">
                 {product.name}

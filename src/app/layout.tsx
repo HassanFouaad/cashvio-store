@@ -3,9 +3,13 @@ import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { VisitorTracker } from "@/components/visitor-tracker";
 import { appConfig, validateEnvironment } from "@/config/env.config";
 import { CartInitializer } from "@/features/cart/components";
+import { StoreErrorComponent } from "@/features/store/components/store-error";
 import { StoreFooter } from "@/features/store/components/store-footer";
 import { StoreHeader } from "@/features/store/components/store-header";
-import { StoreFrontStatus } from "@/features/store/types/store.types";
+import {
+  StoreErrorType,
+  StoreFrontStatus,
+} from "@/features/store/types/store.types";
 import { AnalyticsProvider } from "@/lib/analytics";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { setApiLocale } from "@/lib/api/types";
@@ -164,6 +168,12 @@ export default async function RootLayout({
   // Resolve store and set API context (cached — shares result with generateMetadata)
   const { store, subdomain: storeSubdomain } = await resolveRequestStore();
 
+  // Gate deactivated storefronts: a store whose storefront is missing or
+  // INACTIVE must not be browsable or accept orders (mirrors generateMetadata)
+  const isStoreFrontActive =
+    !!store?.storeFront &&
+    store.storeFront.status === StoreFrontStatus.ACTIVE;
+
   // Get visitor ID from cookie (set by middleware)
   const cookieStore = await cookies();
   const visitorId = cookieStore.get("sf_visitor_id")?.value;
@@ -205,7 +215,15 @@ export default async function RootLayout({
             >
               <VisitorProvider initialVisitorId={visitorId}>
                 <QueryProvider>
-                  {store ? (
+                  {store && !isStoreFrontActive ? (
+                    <StoreErrorComponent
+                      error={{
+                        type: StoreErrorType.INACTIVE,
+                        message: "Store is currently inactive",
+                        subdomain: storeSubdomain ?? undefined,
+                      }}
+                    />
+                  ) : store ? (
                     <div className="flex min-h-screen flex-col">
                       {/* Initialize cart store with store info - renders nothing */}
                       <CartInitializer />

@@ -10,6 +10,7 @@ import { StoreHero } from "@/features/store/components/store-hero";
 import { StoreErrorType } from "@/features/store/types/store.types";
 import { TrackViewItemList } from "@/lib/analytics/track-event";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
+import { serializeJsonLd } from "@/lib/utils";
 import { headers } from "next/headers";
 
 export default async function HomePage() {
@@ -97,7 +98,7 @@ export default async function HomePage() {
       <div className="w-full max-w-full overflow-x-hidden">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
         />
         {/* Hero Section (if has images) */}
         {heroImages.length > 0 && (
@@ -123,7 +124,7 @@ export default async function HomePage() {
       {/* JSON-LD structured data for SEO */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
 
       {products.length > 0 && (
