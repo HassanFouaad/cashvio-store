@@ -1,5 +1,3 @@
-'use server';
-
 import { apiClient } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/config';
 import { ApiException } from '@/lib/api/types';

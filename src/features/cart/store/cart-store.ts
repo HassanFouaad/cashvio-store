@@ -18,7 +18,7 @@ import {
     updateCartItemQuantity as apiUpdateQuantity,
 } from '../api/cart.service';
 import { ApiCart, ApiCartItem } from '../api/cart.types';
-import { getOrCreateVisitorId } from '../types/cart.types';
+import { getOrCreateVisitorId } from '@/lib/visitor/visitor-id';
 
 // Debounce delay in ms
 const DEBOUNCE_DELAY = 300;
@@ -423,19 +423,6 @@ export function computeCartValidation(cart: ApiCart | null): CartValidationResul
     hasOutOfStockItems,
     itemsWithIssues,
   };
-}
-
-/**
- * Hook to check if cart has validation issues (simple boolean)
- */
-export function useCartHasStockIssues(): boolean {
-  const cart = useCartStore((state) => state.cart);
-  if (!cart || cart.items.length === 0) return false;
-  
-  return cart.items.some(item => 
-    ((item.variant.inventoryTrackable) && (!item.variant.inStock || item.quantity > item.variant.availableQuantity)) ||
-    (item.variant.maxQuantityPerOrder != null && item.quantity > item.variant.maxQuantityPerOrder)
-  );
 }
 
 /**

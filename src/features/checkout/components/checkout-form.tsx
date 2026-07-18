@@ -6,7 +6,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { computeCartValidation, useCartStore } from "@/features/cart/store";
-import { getOrCreateVisitorId } from "@/features/cart/types/cart.types";
+import { getOrCreateVisitorId } from "@/lib/visitor/visitor-id";
 import {
   createOrder,
   getCitiesByCountry,

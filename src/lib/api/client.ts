@@ -1,12 +1,12 @@
 import { normalizePagination } from "../utils/pagination";
 import { apiConfig } from "./config";
 import {
-  ApiException,
-  ApiResponse,
-  FetchOptions,
-  getApiLocale,
-  getApiStoreId,
-  PaginatedResponse,
+    ApiException,
+    ApiResponse,
+    FetchOptions,
+    getApiLocale,
+    getApiStoreId,
+    PaginatedResponse,
 } from "./types";
 
 
@@ -57,36 +57,59 @@ class ApiClient {
   }
 
   /**
-   * Handle API response and extract data
+   * Check whether a response body is JSON
    */
-  private async handleResponse<T>(response: Response): Promise<T> {
-    const contentType = response.headers.get("content-type");
-    const isJson = contentType?.includes("application/json");
+  private isJsonResponse(response: Response): boolean {
+    return (
+      response.headers.get("content-type")?.includes("application/json") ??
+      false
+    );
+  }
 
-    if (!response.ok) {
-      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-      let errorDetails: string | undefined;
+  /**
+   * Parse an error response into an ApiException (single implementation)
+   */
+  private async toApiException(response: Response): Promise<ApiException> {
+    let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+    let errorCode: string | undefined;
 
-      if (isJson) {
-        try {
-          const errorData = await response.json();
-          errorMessage =
-            errorData.error?.message || errorData.message || errorMessage;
-          errorDetails = errorData.error?.code;
-        } catch {
-          // If JSON parsing fails, use default error message
-        }
+    if (this.isJsonResponse(response)) {
+      try {
+        const errorData = (await response.json()) as {
+          message?: string;
+          error?: { message?: string; code?: string };
+        };
+        errorMessage =
+          errorData.error?.message || errorData.message || errorMessage;
+        errorCode = errorData.error?.code;
+      } catch {
+        // If JSON parsing fails, use default error message
       }
-
-      throw new ApiException(response.status, errorMessage, errorDetails);
     }
 
-    if (!isJson) {
+    return new ApiException(response.status, errorMessage, errorCode);
+  }
+
+  /**
+   * Validate a response and parse the standard API envelope
+   */
+  private async parseEnvelope<T>(response: Response): Promise<ApiResponse<T>> {
+    if (!response.ok) {
+      throw await this.toApiException(response);
+    }
+
+    if (!this.isJsonResponse(response)) {
       throw new ApiException(500, "Expected JSON response from API");
     }
 
-    const apiResponse: ApiResponse<T> = await response.json();
-    return apiResponse.data;
+    return (await response.json()) as ApiResponse<T>;
+  }
+
+  /**
+   * Handle API response and extract data
+   */
+  private async handleResponse<T>(response: Response): Promise<T> {
+    return (await this.parseEnvelope<T>(response)).data;
   }
 
   /**
@@ -95,45 +118,18 @@ class ApiClient {
   private async handlePaginatedResponse<T>(
     response: Response
   ): Promise<PaginatedResponse<T>> {
-    const contentType = response.headers.get("content-type");
-    const isJson = contentType?.includes("application/json");
+    const envelope = await this.parseEnvelope<T[]>(response);
 
-    if (!response.ok) {
-      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-      let errorDetails: string | undefined;
-
-      if (isJson) {
-        try {
-          const errorData = await response.json();
-          errorMessage =
-            errorData.error?.message || errorData.message || errorMessage;
-          errorDetails = errorData.error?.code;
-        } catch {
-          // If JSON parsing fails, use default error message
-        }
-      }
-
-      throw new ApiException(response.status, errorMessage, errorDetails);
-    }
-
-    if (!isJson) {
-      throw new ApiException(500, "Expected JSON response from API");
-    }
-
-    const apiResponse: ApiResponse<T[]> = await response.json();
-
-    // Verify pagination meta exists
-    if (!apiResponse.meta.pagination) {
+    if (!envelope.meta.pagination) {
       throw new ApiException(
         500,
         "Expected paginated response but pagination meta is missing"
       );
     }
 
-    // Transform to application format and normalize pagination values to numbers
     return {
-      items: apiResponse.data,
-      pagination: normalizePagination(apiResponse.meta.pagination),
+      items: envelope.data,
+      pagination: normalizePagination(envelope.meta.pagination),
     };
   }
 
@@ -209,22 +205,7 @@ class ApiClient {
     });
 
     if (!response.ok && response.status !== 204) {
-      const contentType = response.headers.get("content-type");
-      const isJson = contentType?.includes("application/json");
-
-      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-
-      if (isJson) {
-        try {
-          const errorData = await response.json();
-          errorMessage =
-            errorData.error?.message || errorData.message || errorMessage;
-        } catch {
-          // If JSON parsing fails, use default error message
-        }
-      }
-
-      throw new ApiException(response.status, errorMessage);
+      throw await this.toApiException(response);
     }
   }
 

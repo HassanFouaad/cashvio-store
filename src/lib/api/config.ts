@@ -7,7 +7,6 @@ import { apiConfig as envApiConfig } from '@/config/env.config';
 export const apiConfig = {
   baseUrl: envApiConfig.baseUrl,
   timeout: envApiConfig.timeout,
-  enableLogging: envApiConfig.enableLogging,
   headers: {
     'Content-Type': 'application/json',
   },

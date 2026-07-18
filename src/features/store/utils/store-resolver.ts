@@ -1,15 +1,16 @@
 /**
- * Utility functions for resolving store code from subdomain
+ * Utility functions for resolving the store subdomain from a hostname
  */
 
+import { RESERVED_SUBDOMAINS } from "@/lib/constants";
+
 /**
- * Extract store code from subdomain
+ * Extract the store subdomain from a hostname.
  * Example: storeA.yourdomain.com -> storeA
  * Example: storeA.localhost -> storeA (development)
  */
-export function getStoreSubdomainFromSubdomain(hostname: string): string | null {
+export function getStoreSubdomain(hostname: string): string | null {
   const parts = hostname.split(".");
-
 
   // Handle localhost development (e.g., storeA.localhost)
   if (parts.length === 2 && parts?.[1]?.toLowerCase().includes("localhost")) {
@@ -20,9 +21,7 @@ export function getStoreSubdomainFromSubdomain(hostname: string): string | null 
   if (parts.length >= 3) {
     const subdomain = parts[0];
 
-    // Ignore common subdomains
-    const ignoredSubdomains = ["www", "api", "admin", "app"];
-    if (ignoredSubdomains.includes(subdomain.toLowerCase())) {
+    if (RESERVED_SUBDOMAINS.includes(subdomain.toLowerCase())) {
       return null;
     }
 
@@ -30,19 +29,4 @@ export function getStoreSubdomainFromSubdomain(hostname: string): string | null 
   }
 
   return null;
-}
-
-/**
- * Get store code from hostname
- * This is the main function to use for subdomain-based routing
- */
-export function getStoreSubdomain(hostname: string): string | null {
-  return getStoreSubdomainFromSubdomain(hostname);
-}
-
-/**
- * Check if the current hostname represents a store subdomain
- */
-export function isStoreSubdomain(hostname: string): boolean {
-  return getStoreSubdomain(hostname) !== null;
 }

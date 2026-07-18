@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStoreSubdomain } from "./features/store/utils/store-resolver";
+import {
+  VISITOR_COOKIE_MAX_AGE_SECONDS,
+  VISITOR_ID_COOKIE_NAME,
+} from "./lib/constants";
 import { CookieName, isValidLocale, Locale } from "./types/enums";
 
 /**
@@ -19,15 +23,18 @@ import { CookieName, isValidLocale, Locale } from "./types/enums";
  */
 
 const COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year
-const VISITOR_COOKIE_MAX_AGE = 365 * 24 * 60 * 60 * 2; // 2 years
 const DEFAULT_LOCALE = Locale.ARABIC;
-const VISITOR_ID_COOKIE = "sf_visitor_id";
-export const STORE_ID_COOKIE = "sf_store_id";
 
 /**
- * Generate a UUID v4 for visitor ID
+ * Generate a UUID v4 for visitor ID.
+ * crypto.randomUUID is available in the middleware runtime; the manual
+ * fallback only guards exotic self-hosted environments.
  */
 function generateVisitorId(): string {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
     const v = c === "x" ? r : (r & 0x3) | 0x8;
@@ -98,7 +105,7 @@ function handleLocaleAndVisitor(request: NextRequest) {
   }
 
   // Check visitor ID cookie
-  const visitorCookie = request.cookies.get(VISITOR_ID_COOKIE)?.value;
+  const visitorCookie = request.cookies.get(VISITOR_ID_COOKIE_NAME)?.value;
 
   if (!visitorCookie) {
     needsVisitorCookie = true;
@@ -123,8 +130,8 @@ function handleLocaleAndVisitor(request: NextRequest) {
   }
 
   if (needsVisitorCookie) {
-    response.cookies.set(VISITOR_ID_COOKIE, visitorId, {
-      maxAge: VISITOR_COOKIE_MAX_AGE,
+    response.cookies.set(VISITOR_ID_COOKIE_NAME, visitorId, {
+      maxAge: VISITOR_COOKIE_MAX_AGE_SECONDS,
       path: "/",
       sameSite: "lax",
       // No domain - store-specific cookie

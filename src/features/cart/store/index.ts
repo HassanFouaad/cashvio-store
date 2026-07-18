@@ -1,7 +1,6 @@
 export {
   computeCartValidation,
   useCanCheckout,
-  useCartHasStockIssues,
   useCartItemCount,
   useCartStore,
   useCartSubtotal,

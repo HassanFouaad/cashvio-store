@@ -3,6 +3,10 @@
 import { PublicStoreDto } from "@/features/store/types/store.types";
 import { setApiStoreId } from "@/lib/api/types";
 import {
+  STORE_ID_COOKIE_MAX_AGE_SECONDS,
+  STORE_ID_COOKIE_NAME,
+} from "@/lib/constants";
+import {
   createContext,
   ReactNode,
   useContext,
@@ -19,11 +23,7 @@ const StoreContext = createContext<StoreContextValue>({ storeId: null });
 interface StoreProviderProps {
   children: ReactNode;
   store: PublicStoreDto | null;
-  subdomain: string | null;
 }
-
-// Cookie name must match the one in types.ts and layout.tsx
-const STORE_ID_COOKIE_NAME = "sf_store_id";
 
 /**
  * Store Provider - Client-side store ID management
@@ -38,11 +38,7 @@ const STORE_ID_COOKIE_NAME = "sf_store_id";
  *   React hydrates. This provider keeps it in sync on client-side navigations
  *   and sets a cookie for persistence.
  */
-export function StoreProvider({
-  store,
-  subdomain,
-  children,
-}: StoreProviderProps) {
+export function StoreProvider({ store, children }: StoreProviderProps) {
   const storeId = store?.id ?? null;
 
   // Keep window.__STORE_ID__ and cookie in sync on client-side navigations.
@@ -55,8 +51,7 @@ export function StoreProvider({
     setApiStoreId(storeId);
 
     // Set cookie for persistence across full page loads
-    const maxAge = 365 * 24 * 60 * 60;
-    document.cookie = `${STORE_ID_COOKIE_NAME}=${encodeURIComponent(storeId)}; path=/; max-age=${maxAge}; samesite=lax`;
+    document.cookie = `${STORE_ID_COOKIE_NAME}=${encodeURIComponent(storeId)}; path=/; max-age=${STORE_ID_COOKIE_MAX_AGE_SECONDS}; samesite=lax`;
   }, [storeId]);
 
   const value = useMemo(() => ({ storeId }), [storeId]);

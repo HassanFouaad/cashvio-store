@@ -52,21 +52,6 @@ export interface PaginatedResponse<T> {
 }
 
 /**
- * API error response
- */
-export interface ApiError {
-  success: false;
-  error: {
-    code: string;
-    message: string;
-  };
-  meta: {
-    timestamp: string;
-    path?: string;
-  };
-}
-
-/**
  * API Exception class for structured error handling
  */
 export class ApiException extends Error {
@@ -107,6 +92,7 @@ export interface FetchOptions extends RequestInit {
  * ============================================
  */
 
+import { STORE_ID_COOKIE_NAME } from "@/lib/constants";
 import { Locale } from "@/types/enums";
 import { cache } from "react";
 
@@ -168,9 +154,6 @@ export function getApiLocale(): Locale {
  *   Set by: Inline script in layout.tsx <head>, StoreProvider useEffect
  *   Read by: All client-side API calls (cart, checkout, etc.)
  */
-
-// Cookie name for store ID - must match middleware and layout
-const STORE_ID_COOKIE_NAME = "sf_store_id";
 
 // Declare window type augmentation
 declare global {
@@ -262,11 +245,4 @@ export function getApiStoreId(): string | null {
   }
 
   return null;
-}
-
-/**
- * Check if store ID is available
- */
-export function hasStoreId(): boolean {
-  return getApiStoreId() !== null;
 }

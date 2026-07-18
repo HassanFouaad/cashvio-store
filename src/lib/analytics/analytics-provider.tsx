@@ -36,11 +36,12 @@ export function AnalyticsProvider({
   facebookPixelId,
   tiktokPixelId,
 }: AnalyticsProviderProps) {
-  const initialized = useRef(false);
+  const initialized = useRef<boolean | null>(null);
 
   // Register adapters synchronously on first render (not in useEffect)
   // This ensures adapters are ready before any child useEffect fires events.
-  if (!initialized.current) {
+  // (null-check init pattern — the only ref access allowed during render)
+  if (initialized.current == null) {
     initialized.current = true;
     try {
       analytics.reset();

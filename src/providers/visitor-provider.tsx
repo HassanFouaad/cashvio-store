@@ -8,14 +8,14 @@ import {
   ReactNode,
 } from "react";
 import {
-  VISITOR_ID_COOKIE,
-  VISITOR_COOKIE_MAX_AGE,
-  generateVisitorId,
   generateFingerprint,
-  getStoredVisitorId,
-  storeVisitorId,
+  getOrCreateVisitorId,
   getStoredFingerprint,
+  getStoredVisitorId,
+  getVisitorIdFromCookie,
+  setVisitorIdCookie,
   storeFingerprint,
+  storeVisitorId,
 } from "@/lib/visitor/visitor-id";
 
 interface VisitorData {
@@ -45,42 +45,6 @@ export function useVisitor() {
   return context;
 }
 
-/**
- * Get visitor ID from cookie (works both client and server)
- */
-function getVisitorIdFromCookie(): string | null {
-  if (typeof document === "undefined") {
-    return null;
-  }
-
-  const cookies = document.cookie.split(";");
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split("=");
-    if (name === VISITOR_ID_COOKIE) {
-      return decodeURIComponent(value);
-    }
-  }
-  return null;
-}
-
-/**
- * Set visitor ID cookie
- *
- * Note: This is a store-specific cookie (no domain set).
- * Each store has its own visitor tracking.
- */
-function setVisitorIdCookie(visitorId: string): void {
-  if (typeof document === "undefined") {
-    return;
-  }
-
-  const expires = new Date();
-  expires.setTime(expires.getTime() + VISITOR_COOKIE_MAX_AGE * 1000);
-
-  // Store-specific visitor cookie (no domain = current host only)
-  document.cookie = `${VISITOR_ID_COOKIE}=${encodeURIComponent(visitorId)}; expires=${expires.toUTCString()}; path=/; samesite=lax`;
-}
-
 interface VisitorProviderProps {
   children: ReactNode;
   initialVisitorId?: string;
@@ -104,23 +68,18 @@ export function VisitorProvider({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize visitor identification
+    // Initialize visitor identification.
+    // The middleware mints the cookie on the first response, so by the time
+    // this runs the ID already exists — resolution NEVER generates here,
+    // keeping cart/checkout/tracking on the exact same ID.
     const initializeVisitor = async () => {
-      let visitorId = initialVisitorId || getVisitorIdFromCookie();
-      let isNewVisitor = false;
+      const existingId =
+        initialVisitorId || getVisitorIdFromCookie() || getStoredVisitorId();
+      const isNewVisitor = !existingId;
+      // Cookies-disabled edge case: the shared resolver generates + heals
+      const visitorId = existingId ?? getOrCreateVisitorId();
 
-      // Try localStorage if cookie not found
-      if (!visitorId) {
-        visitorId = getStoredVisitorId();
-      }
-
-      // Generate new ID if still not found
-      if (!visitorId) {
-        visitorId = generateVisitorId();
-        isNewVisitor = true;
-      }
-
-      // Always ensure ID is stored in both cookie and localStorage
+      // Always heal both storages so every consumer resolves the same ID
       setVisitorIdCookie(visitorId);
       storeVisitorId(visitorId);
 

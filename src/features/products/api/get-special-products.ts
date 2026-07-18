@@ -1,5 +1,3 @@
-'use server';
-
 import { PublicProductDto } from '@/features/products/types/product.types';
 import { apiClient } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/config';

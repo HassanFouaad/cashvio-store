@@ -1,14 +1,11 @@
 /**
  * Centralized Environment Configuration
- * All environment variables are defined and validated here
+ *
+ * IMPORTANT: every NEXT_PUBLIC_* variable MUST be read with a static
+ * `process.env.NEXT_PUBLIC_X` expression — Next.js inlines these into the
+ * client bundle at build time only when the access is static. Dynamic
+ * lookups (process.env[key]) are always undefined on the client.
  */
-
-/**
- * Optional environment variable with fallback
- */
-function getOptionalEnvVar(key: string, defaultValue: string): string {
-  return process.env[key] || defaultValue;
-}
 
 /**
  * API Configuration
@@ -18,24 +15,16 @@ export const apiConfig = {
    * Base URL for the backend API
    * @default http://localhost:3000/api/v1
    */
-  baseUrl: process.env.NEXT_PUBLIC_API_URL ?? 
-  getOptionalEnvVar("NEXT_API_URL", "http://localhost:3000/api/v1"),
+  baseUrl:
+    process.env.NEXT_PUBLIC_API_URL ??
+    process.env.NEXT_API_URL ??
+    "http://localhost:3000/api/v1",
 
   /**
    * Request timeout in milliseconds
    * @default 30000 (30 seconds)
    */
-  timeout: parseInt(getOptionalEnvVar("NEXT_PUBLIC_API_TIMEOUT", "30000"), 10),
-
-  /**
-   * Enable request logging in development
-   * @default true in development, false in production
-   */
-  enableLogging:
-    getOptionalEnvVar(
-      "NEXT_PUBLIC_ENABLE_API_LOGGING",
-      process.env.NODE_ENV === "development" ? "true" : "false"
-    ) === "true",
+  timeout: parseInt(process.env.NEXT_PUBLIC_API_TIMEOUT ?? "30000", 10),
 } as const;
 
 /**
@@ -45,12 +34,12 @@ export const appConfig = {
   /**
    * Application name
    */
-  name: getOptionalEnvVar("NEXT_PUBLIC_APP_NAME", "Cashvio"),
+  name: process.env.NEXT_PUBLIC_APP_NAME ?? "Cashvio",
 
   /**
    * Application environment
    */
-  env: getOptionalEnvVar("NODE_ENV", "development") as
+  env: (process.env.NODE_ENV ?? "development") as
     | "development"
     | "production"
     | "test",
@@ -66,105 +55,15 @@ export const appConfig = {
   isDevelopment: process.env.NODE_ENV === "development",
 
   /**
-   * Base URL for the application (used for SEO, OG tags, etc.)
+   * Base URL for the application (used for SEO, OG tags, error page exits)
    */
-  baseUrl: getOptionalEnvVar("NEXT_PUBLIC_APP_URL", "https://cash-vio.com"),
+  baseUrl: process.env.NEXT_PUBLIC_APP_URL ?? "https://cash-vio.com",
 
   /**
    * Marketing website URL (used for "Powered by" link in footer)
    * @default https://cash-vio.com
    */
-  websiteUrl: getOptionalEnvVar("NEXT_PUBLIC_WEBSITE_URL", "https://cash-vio.com"),
-
-  /**
-   * Image domains allowed by Next.js Image component
-   * Configured in next.config.ts
-   */
-  imageDomains: [
-    "s3.eu-central-003.backblazeb2.com",
-    "s3.amazonaws.com",
-  ] as const,
-} as const;
-
-/**
- * Feature Flags
- */
-export const features = {
-  /**
-   * Enable analytics
-   * @default false
-   */
-  enableAnalytics:
-    getOptionalEnvVar("NEXT_PUBLIC_ENABLE_ANALYTICS", "false") === "true",
-
-  /**
-   * Enable error reporting
-   * @default false
-   */
-  enableErrorReporting:
-    getOptionalEnvVar("NEXT_PUBLIC_ENABLE_ERROR_REPORTING", "false") === "true",
-} as const;
-
-/**
- * Cache Configuration
- */
-export const cacheConfig = {
-  /**
-   * Default cache time in milliseconds
-   * @default 300000 (5 minutes)
-   */
-  defaultStaleTime: parseInt(
-    getOptionalEnvVar("NEXT_PUBLIC_CACHE_STALE_TIME", "300000"),
-    10
-  ),
-
-  /**
-   * Store cache time in milliseconds
-   * @default 600000 (10 minutes)
-   */
-  storeStaleTime: parseInt(
-    getOptionalEnvVar("NEXT_PUBLIC_STORE_CACHE_TIME", "600000"),
-    10
-  ),
-
-  /**
-   * Products cache time in milliseconds
-   * @default 300000 (5 minutes)
-   */
-  productsStaleTime: parseInt(
-    getOptionalEnvVar("NEXT_PUBLIC_PRODUCTS_CACHE_TIME", "300000"),
-    10
-  ),
-} as const;
-
-/**
- * Analytics Configuration (if enabled)
- */
-export const analyticsConfig = {
-  /**
-   * Google Analytics ID
-   */
-  googleAnalyticsId: process.env.NEXT_PUBLIC_GA_ID,
-
-  /**
-   * Facebook Pixel ID
-   */
-  facebookPixelId: process.env.NEXT_PUBLIC_FB_PIXEL_ID,
-} as const;
-
-/**
- * Error Reporting Configuration (if enabled)
- */
-export const errorReportingConfig = {
-  /**
-   * Sentry DSN
-   */
-  sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-
-  /**
-   * Error reporting environment
-   */
-  environment: appConfig.env,
+  websiteUrl: process.env.NEXT_PUBLIC_APP_URL ?? "https://cash-vio.com",
 } as const;
 
 /**
@@ -181,22 +80,9 @@ export function validateEnvironment(): void {
       console.log("  - API URL:", apiConfig.baseUrl);
       console.log("  - Environment:", appConfig.env);
       console.log("  - Routing: Subdomain-based");
-      console.log("  - Analytics:", features.enableAnalytics);
     }
   } catch (error) {
     console.error("❌ Environment validation failed:", error);
     throw error;
   }
-}
-
-// Export a function to get all config (useful for debugging)
-export function getAllConfig() {
-  return {
-    api: apiConfig,
-    app: appConfig,
-    features,
-    cache: cacheConfig,
-    analytics: analyticsConfig,
-    errorReporting: errorReportingConfig,
-  };
 }

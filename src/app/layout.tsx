@@ -14,7 +14,6 @@ import { AnalyticsProvider } from "@/lib/analytics";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { setApiLocale } from "@/lib/api/types";
 import { buildBrandStyle } from "@/lib/utils";
-import { QueryProvider } from "@/providers/query-provider";
 import { StoreProvider } from "@/providers/store-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { VisitorProvider } from "@/providers/visitor-provider";
@@ -216,10 +215,7 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <NextIntlClientProvider messages={messages} locale={locale}>
-          <StoreProvider
-            store={store ?? null}
-            subdomain={storeSubdomain ?? null}
-          >
+          <StoreProvider store={store ?? null}>
             <LocaleInitializer />
             <ThemeProvider
               attribute="class"
@@ -228,47 +224,43 @@ export default async function RootLayout({
               disableTransitionOnChange
             >
               <VisitorProvider initialVisitorId={visitorId}>
-                <QueryProvider>
-                  {store && !isStoreFrontActive ? (
-                    <StoreErrorComponent
-                      error={{
-                        type: StoreErrorType.INACTIVE,
-                        message: "Store is currently inactive",
-                        subdomain: storeSubdomain ?? undefined,
-                      }}
+                {store && !isStoreFrontActive ? (
+                  <StoreErrorComponent
+                    error={{
+                      type: StoreErrorType.INACTIVE,
+                      message: "Store is currently inactive",
+                      subdomain: storeSubdomain ?? undefined,
+                    }}
+                  />
+                ) : store ? (
+                  <div className="flex min-h-screen flex-col">
+                    {/* Initialize cart store with store info - renders nothing */}
+                    <CartInitializer currency={store.currency} />
+                    <VisitorTracker storeId={store.id} />
+                    {/* Analytics: GTM + Facebook Pixel + TikTok Pixel (per-tenant configuration) */}
+                    <AnalyticsProvider
+                      gtmId={store.storeFront?.webEvents?.gtmId}
+                      facebookPixelId={
+                        store.storeFront?.webEvents?.facebookPixelId
+                      }
+                      tiktokPixelId={store.storeFront?.webEvents?.tiktokPixelId}
                     />
-                  ) : store ? (
-                    <div className="flex min-h-screen flex-col">
-                      {/* Initialize cart store with store info - renders nothing */}
-                      <CartInitializer currency={store.currency} />
-                      <VisitorTracker storeId={store.id} />
-                      {/* Analytics: GTM + Facebook Pixel + TikTok Pixel (per-tenant configuration) */}
-                      <AnalyticsProvider
-                        gtmId={store.storeFront?.webEvents?.gtmId}
-                        facebookPixelId={
-                          store.storeFront?.webEvents?.facebookPixelId
-                        }
-                        tiktokPixelId={
-                          store.storeFront?.webEvents?.tiktokPixelId
-                        }
-                      />
-                      <StoreHeader store={store} />
-                      <main className="flex-1">{children}</main>
-                      {/* Footer - hidden on mobile, shown on desktop */}
-                      <div className="hidden md:block">
-                        <StoreFooter store={store} />
-                      </div>
-                      {/* Mobile Bottom Navigation - only on mobile */}
-                      <MobileBottomNav
-                        socialMedia={store.storeFront?.socialMedia}
-                        storeName={store.name}
-                        storeId={store.id}
-                      />
+                    <StoreHeader store={store} />
+                    <main className="flex-1">{children}</main>
+                    {/* Footer - hidden on mobile, shown on desktop */}
+                    <div className="hidden md:block">
+                      <StoreFooter store={store} />
                     </div>
-                  ) : (
-                    children
-                  )}
-                </QueryProvider>
+                    {/* Mobile Bottom Navigation - only on mobile */}
+                    <MobileBottomNav
+                      socialMedia={store.storeFront?.socialMedia}
+                      storeName={store.name}
+                      storeId={store.id}
+                    />
+                  </div>
+                ) : (
+                  children
+                )}
               </VisitorProvider>
             </ThemeProvider>
           </StoreProvider>
