@@ -4,6 +4,7 @@ import {
   Facebook,
   Globe,
   Instagram,
+  Mail,
   MessageCircle,
   Music2,
   Phone,
@@ -127,6 +128,15 @@ export async function StoreFooter({ store }: StoreFooterProps) {
                     aria-label={t("contact.whatsapp")}
                   >
                     <MessageCircle className="h-5 w-5" />
+                  </a>
+                )}
+                {socialMedia.contactEmail && (
+                  <a
+                    href={`mailto:${socialMedia.contactEmail}`}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={t("contact.email")}
+                  >
+                    <Mail className="h-5 w-5" />
                   </a>
                 )}
                 {socialMedia.facebook && (

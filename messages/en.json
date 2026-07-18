@@ -37,6 +37,7 @@
     "title": "Contact Us",
     "phone": "Phone",
     "whatsapp": "WhatsApp",
+    "email": "Email",
     "website": "Website",
     "tapToOpen": "Tap to open",
     "reachUs": "Get in touch with {storeName}"

@@ -7,6 +7,7 @@ import {
     Facebook,
     Globe,
     Instagram,
+    Mail,
     MessageCircle,
     Music2,
     Phone,
@@ -29,7 +30,7 @@ interface ContactItem {
   label: string;
   value: string | null;
   href?: string;
-  isPhone?: boolean;
+  isDirectContact?: boolean;
 }
 
 export function MobileContactSheet({ 
@@ -48,7 +49,7 @@ export function MobileContactSheet({
       label: t('contact.phone'),
       value: socialMedia.contactPhone,
       href: socialMedia.contactPhone ? `tel:${socialMedia.contactPhone}` : undefined,
-      isPhone: true,
+      isDirectContact: true,
     },
     {
       // WhatsApp is the dominant support channel in the target market
@@ -56,6 +57,15 @@ export function MobileContactSheet({
       label: t('contact.whatsapp'),
       value: whatsAppLink ? socialMedia.contactPhone : null,
       href: whatsAppLink ?? undefined,
+    },
+    {
+      icon: Mail,
+      label: t('contact.email'),
+      value: socialMedia.contactEmail,
+      href: socialMedia.contactEmail
+        ? `mailto:${socialMedia.contactEmail}`
+        : undefined,
+      isDirectContact: true,
     },
     {
       icon: Facebook,
@@ -133,8 +143,8 @@ export function MobileContactSheet({
                   <a
                     key={index}
                     href={item.href}
-                    target={item.isPhone ? undefined : '_blank'}
-                    rel={item.isPhone ? undefined : 'noopener noreferrer'}
+                    target={item.isDirectContact ? undefined : '_blank'}
+                    rel={item.isDirectContact ? undefined : 'noopener noreferrer'}
                     className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl active:scale-[0.98] active:bg-muted transition-all"
                   >
                     <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary shrink-0">
@@ -143,7 +153,7 @@ export function MobileContactSheet({
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{item.label}</p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {item.isPhone ? item.value : t('contact.tapToOpen')}
+                        {item.isDirectContact ? item.value : t('contact.tapToOpen')}
                       </p>
                     </div>
                     <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />

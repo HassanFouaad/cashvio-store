@@ -39,6 +39,7 @@ export interface StoreFrontSocialMediaDto {
   youtube: string | null;
   website: string | null;
   contactPhone: string | null;
+  contactEmail: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
