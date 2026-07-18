@@ -5,6 +5,7 @@ import {
   getOrderSuccessRecap,
   type OrderSuccessRecap,
 } from "@/features/checkout/utils/order-success-recap";
+import { buildPoweredByUrl } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { Check, CheckCircle, Copy, Home, PackageSearch } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -22,6 +23,7 @@ const TOKEN_MAX_AGE_MS = 30 * 60 * 1000;
  */
 function OrderSuccessContent() {
   const t = useTranslations("orderSuccess");
+  const tFooter = useTranslations("footer");
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -187,6 +189,28 @@ function OrderSuccessContent() {
             </Button>
           </Link>
         </div>
+
+        {/* Powered by Cashvio — platform attribution + acquisition CTA */}
+        <p className="text-center text-xs text-muted-foreground/70 pt-2">
+          {tFooter("poweredBy")}{" "}
+          <a
+            href={buildPoweredByUrl("order_success")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold hover:text-foreground transition-colors"
+          >
+            Cashvio
+          </a>
+          {" · "}
+          <a
+            href={buildPoweredByUrl("order_success")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground transition-colors"
+          >
+            {tFooter("poweredByCta")}
+          </a>
+        </p>
       </div>
     </div>
   );

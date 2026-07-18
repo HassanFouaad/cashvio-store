@@ -230,6 +230,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           locale={locale}
           storeId={store.id}
           reviews={reviewsData}
+          productUrl={`https://${hostname}/products/${id}`}
         />
       </div>
     </div>

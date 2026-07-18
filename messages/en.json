@@ -107,6 +107,13 @@
       "taxIncluded": "Tax included",
       "available": "available",
       "sku": "SKU",
+      "share": {
+        "label": "Share",
+        "whatsapp": "Share on WhatsApp",
+        "facebook": "Share on Facebook",
+        "copyLink": "Copy link",
+        "copied": "Link copied"
+      },
       "sortBy": {
         "label": "Sort by",
         "newest": "Newest",
@@ -225,6 +232,7 @@
     "connectWithUs": "Connect With Us",
     "copyright": "© {year} {storeName}. All rights reserved.",
     "poweredBy": "Powered by",
+    "poweredByCta": "Create your free online store",
     "information": "Information",
     "noPagesAvailable": "No information pages available"
   },

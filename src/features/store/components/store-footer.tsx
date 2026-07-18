@@ -1,5 +1,4 @@
-import { appConfig } from "@/config/env.config";
-import { buildWhatsAppLink } from "@/lib/utils";
+import { buildPoweredByUrl, buildWhatsAppLink } from "@/lib/utils";
 import {
   Facebook,
   Globe,
@@ -209,12 +208,21 @@ export async function StoreFooter({ store }: StoreFooterProps) {
           <p className="text-[10px] sm:text-xs text-muted-foreground/70">
             {t("footer.poweredBy")}{" "}
             <a
-              href={appConfig.websiteUrl}
+              href={buildPoweredByUrl("storefront_footer")}
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-muted-foreground hover:text-foreground transition-colors"
             >
               Cashvio
+            </a>
+            {" · "}
+            <a
+              href={buildPoweredByUrl("storefront_footer")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("footer.poweredByCta")}
             </a>
           </p>
         </div>

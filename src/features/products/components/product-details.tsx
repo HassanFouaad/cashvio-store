@@ -10,6 +10,7 @@ import Link from "next/link";
 import { AddToCartSection } from "./add-to-cart-section";
 import { ProductImageGallery } from "./product-image-gallery";
 import { ProductReviews } from "./product-reviews";
+import { ProductShareButtons } from "./product-share-buttons";
 
 interface ProductDetailsProps {
   product: PublicProductDto;
@@ -17,6 +18,7 @@ interface ProductDetailsProps {
   locale: string;
   storeId: string;
   reviews: PaginatedReviewsResponse | null;
+  productUrl: string;
 }
 
 /**
@@ -31,6 +33,7 @@ export async function ProductDetails({
   locale,
   storeId,
   reviews,
+  productUrl,
 }: ProductDetailsProps) {
   const t = await getTranslations("store.products");
 
@@ -96,6 +99,14 @@ export async function ProductDetails({
               />
             )}
 
+            {/* Divider */}
+            <hr className="border-border" />
+
+            {/* Share - WhatsApp / Facebook / copy link */}
+            <ProductShareButtons
+              productName={product.name}
+              productUrl={productUrl}
+            />
           </div>
         </div>
       </div>

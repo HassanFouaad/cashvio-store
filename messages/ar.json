@@ -107,6 +107,13 @@
       "taxIncluded": "شامل الضريبة",
       "available": "متاح",
       "sku": "رمز المنتج",
+      "share": {
+        "label": "مشاركة",
+        "whatsapp": "مشاركة عبر واتساب",
+        "facebook": "مشاركة عبر فيسبوك",
+        "copyLink": "نسخ الرابط",
+        "copied": "تم نسخ الرابط"
+      },
       "sortBy": {
         "label": "ترتيب حسب",
         "newest": "الأحدث",
@@ -225,6 +232,7 @@
     "connectWithUs": "تواصل معنا",
     "copyright": "© {year} {storeName}. جميع الحقوق محفوظة.",
     "poweredBy": "مدعوم من",
+    "poweredByCta": "أنشئ متجرك الإلكتروني مجاناً",
     "information": "المعلومات",
     "noPagesAvailable": "لا توجد صفحات معلومات متاحة"
   },

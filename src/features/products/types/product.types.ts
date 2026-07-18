@@ -7,7 +7,6 @@ import { PaginationMeta } from "@/lib/api/types";
 export enum ProductStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
-  ARCHIVED = 'ARCHIVED',
 }
 
 export enum ProductSortBy {

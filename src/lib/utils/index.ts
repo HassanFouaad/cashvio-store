@@ -22,3 +22,6 @@ export { buildBrandStyle } from './brand-style';
 
 // WhatsApp deep link
 export { buildWhatsAppLink } from './whatsapp';
+
+// "Powered by Cashvio" attribution URL
+export { buildPoweredByUrl } from './powered-by';
