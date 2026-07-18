@@ -4,13 +4,16 @@ import { getProductsWithErrorHandling } from "@/features/products/api/get-produc
 import { ProductsFilterBar } from "@/features/products/components/products-filter-bar";
 import { ProductsGrid } from "@/features/products/components/products-grid";
 import { ProductSortBy } from "@/features/products/types/product.types";
-import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { TrackViewItemList } from "@/lib/analytics/track-event";
+import { resolveRequestStore } from "@/lib/api/resolve-request-store";
+import { serializeJsonLd } from "@/lib/utils";
 import { validatePaginationAndRedirect } from "@/lib/utils/pagination-redirect";
 import { parsePage } from "@/lib/utils/query-params";
+import { buildLanguageAlternates } from "@/lib/utils/seo";
 import { ChevronLeft } from "lucide-react";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -47,6 +50,13 @@ export async function generateMetadata({
     store.tenantId,
   );
 
+  // Prefer the merchant-authored category description (stripped of HTML)
+  // over the generic template — better snippets, no duplicate boilerplate
+  const categoryDescription = category?.description
+    ?.replace(/<[^>]*>/g, "")
+    .trim()
+    .slice(0, 160);
+
   return {
     title: category
       ? t("titleWithStore", {
@@ -54,14 +64,19 @@ export async function generateMetadata({
           storeName: store.name,
         })
       : t("title"),
-    description: category
-      ? t("descriptionWithStore", {
-          categoryName: category.name,
-          storeName: store.name,
-        })
-      : t("description"),
+    description:
+      categoryDescription ||
+      (category
+        ? t("descriptionWithStore", {
+            categoryName: category.name,
+            storeName: store.name,
+          })
+        : t("description")),
     // One canonical for all filter/sort/page permutations
-    alternates: { canonical: `/categories/${resolvedParams.id}` },
+    alternates: {
+      canonical: `/categories/${resolvedParams.id}`,
+      languages: buildLanguageAlternates(`/categories/${resolvedParams.id}`),
+    },
   };
 }
 
@@ -130,8 +145,76 @@ export default async function CategoryDetailPage({
     quantity: 1,
   }));
 
+  // JSON-LD structured data — CollectionPage with the page's products
+  // plus a breadcrumb trail (mirrors the product page pattern)
+  const headersList = await headers();
+  const hostname = headersList.get("host") || "";
+  const categoryUrl = `https://${hostname}/categories/${category.id}`;
+  const strippedDescription = category.description
+    ?.replace(/<[^>]*>/g, "")
+    .trim()
+    .slice(0, 500);
+
+  const collectionJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: category.name,
+    ...(strippedDescription ? { description: strippedDescription } : {}),
+    url: categoryUrl,
+    ...(category.imageUrl ? { image: category.imageUrl } : {}),
+    ...(productsData && productsData.items.length > 0
+      ? {
+          mainEntity: {
+            "@type": "ItemList",
+            numberOfItems: productsData.pagination.totalItems,
+            itemListElement: productsData.items.map((product, index) => ({
+              "@type": "ListItem",
+              position:
+                (requestedPage - 1) * productsData.pagination.limit + index + 1,
+              name: product.name,
+              url: `https://${hostname}/products/${product.id}`,
+            })),
+          },
+        }
+      : {}),
+  };
+
+  const breadcrumbJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: store.name,
+        item: `https://${hostname}/`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: t("store.categories.pageTitle"),
+        item: `https://${hostname}/categories`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: category.name,
+        item: categoryUrl,
+      },
+    ],
+  };
+
   return (
     <div className="w-full max-w-full overflow-x-hidden">
+      {/* JSON-LD structured data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(collectionJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
+      />
       <TrackViewItemList
         listId={`category-${category.id}`}
         listName={category.name}

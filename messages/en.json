@@ -63,6 +63,9 @@
       "imageThumbnails": "Image thumbnails",
       "imageOf": "Image {index} of {total}"
     },
+    "recentlyViewed": {
+      "title": "Recently viewed"
+    },
     "categories": {
       "title": "Shop by Collection",
       "viewAll": "View All",
@@ -296,7 +299,9 @@
     "dismiss": "Dismiss",
     "decreaseQuantity": "Decrease quantity",
     "increaseQuantity": "Increase quantity",
-    "moreItems": "+{count} more"
+    "moreItems": "+{count} more",
+    "minimumOrderNudge": "Add {amount} more to place your order",
+    "minimumOrderProgress": "This store has a {minimum} minimum order"
   },
   "checkout": {
     "pageTitle": "Checkout",

@@ -63,6 +63,9 @@
       "imageThumbnails": "الصور المصغرة",
       "imageOf": "صورة {index} من {total}"
     },
+    "recentlyViewed": {
+      "title": "شاهدتها مؤخراً"
+    },
     "categories": {
       "title": "تسوق حسب المجموعة",
       "viewAll": "عرض الكل",
@@ -296,7 +299,9 @@
     "dismiss": "إغلاق",
     "decreaseQuantity": "تقليل الكمية",
     "increaseQuantity": "زيادة الكمية",
-    "moreItems": "+{count} أخرى"
+    "moreItems": "+{count} أخرى",
+    "minimumOrderNudge": "أضف {amount} إضافية لتتمكن من إتمام طلبك",
+    "minimumOrderProgress": "الحد الأدنى للطلب في هذا المتجر هو {minimum}"
   },
   "checkout": {
     "pageTitle": "إتمام الطلب",

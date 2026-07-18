@@ -3,6 +3,7 @@ import { CategoriesSection } from "@/features/categories/components/categories-s
 import { getProductsWithErrorHandling } from "@/features/products/api/get-products";
 import { getSpecialProductsWithErrorHandling } from "@/features/products/api/get-special-products";
 import { ProductsSection } from "@/features/products/components/products-section";
+import { RecentlyViewedSection } from "@/features/products/components/recently-viewed-section";
 import { SpecialProductsSection } from "@/features/products/components/special-products-section";
 import { StoreEmptyState } from "@/features/store/components/store-empty-state";
 import { StoreErrorComponent } from "@/features/store/components/store-error";
@@ -10,13 +11,15 @@ import { StoreHero } from "@/features/store/components/store-hero";
 import { StoreErrorType } from "@/features/store/types/store.types";
 import { TrackViewItemList } from "@/lib/analytics/track-event";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
-import { serializeJsonLd } from "@/lib/utils";
+import { buildLanguageAlternates, serializeJsonLd } from "@/lib/utils";
 import { Metadata } from "next";
 import { headers } from "next/headers";
 
 export function generateMetadata(): Metadata {
   // Canonical for the home page — resolved against metadataBase (layout)
-  return { alternates: { canonical: "/" } };
+  return {
+    alternates: { canonical: "/", languages: buildLanguageAlternates("/") },
+  };
 }
 
 export default async function HomePage() {
@@ -150,6 +153,9 @@ export default async function HomePage() {
         products={specialProducts || []}
         currency={store.currency}
       />
+
+      {/* Recently viewed (client-side history, hidden for new visitors) */}
+      <RecentlyViewedSection currency={store.currency} />
 
       {/* Categories Section */}
       <CategoriesSection categories={categories} />

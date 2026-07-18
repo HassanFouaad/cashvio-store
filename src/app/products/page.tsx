@@ -3,10 +3,11 @@ import { getProductsWithErrorHandling } from "@/features/products/api/get-produc
 import { ProductsFilterBar } from "@/features/products/components/products-filter-bar";
 import { ProductsGrid } from "@/features/products/components/products-grid";
 import { ProductSortBy } from "@/features/products/types/product.types";
-import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { TrackViewItemList } from "@/lib/analytics/track-event";
+import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { validatePaginationAndRedirect } from "@/lib/utils/pagination-redirect";
 import { parsePage } from "@/lib/utils/query-params";
+import { buildLanguageAlternates } from "@/lib/utils/seo";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -41,7 +42,10 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t("titleWithStore", { storeName: store.name }),
     description: t("descriptionWithStore", { storeName: store.name }),
     // One canonical for all filter/sort/page permutations
-    alternates: { canonical: "/products" },
+    alternates: {
+      canonical: "/products",
+      languages: buildLanguageAlternates("/products"),
+    },
   };
 }
 

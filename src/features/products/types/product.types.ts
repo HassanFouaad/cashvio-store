@@ -46,6 +46,10 @@ export interface PublicProductDto {
   inventoryTrackable: boolean;
   images?: PublicProductImageDto[];
   variants?: PublicProductVariantDto[];
+  /** Average rating from displayed reviews (1 decimal), null when none */
+  averageRating?: number | null;
+  /** Number of displayed reviews */
+  reviewCount?: number;
 }
 
 export interface PaginatedProductsResponse {

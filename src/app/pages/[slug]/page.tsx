@@ -1,6 +1,7 @@
 import { SafeHtmlRenderer } from "@/components/ui/safe-html-renderer";
 import { getStaticPageBySlug } from "@/features/store/api/get-static-pages";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
+import { buildLanguageAlternates } from "@/lib/utils/seo";
 import { ChevronLeft } from "lucide-react";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -43,6 +44,10 @@ export async function generateMetadata({
     return {
       title: `${page.title} | ${store.name}`,
       description: page.content.substring(0, 160).replace(/<[^>]*>/g, ""), // Strip HTML for description
+      alternates: {
+        canonical: `/pages/${slug}`,
+        languages: buildLanguageAlternates(`/pages/${slug}`),
+      },
     };
   } catch {
     return {

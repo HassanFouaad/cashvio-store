@@ -1,6 +1,7 @@
+import { LOCALE_OVERRIDE_HEADER } from '@/lib/constants';
 import { CookieName, getAllLocales, isValidLocale, Locale } from '@/types/enums';
 import { getRequestConfig } from 'next-intl/server';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 export const locales = getAllLocales();
 // MUST match middleware DEFAULT_LOCALE — a request that bypasses the
@@ -11,14 +12,21 @@ export const defaultLocale = Locale.ARABIC;
 export type LocaleType = Locale;
 
 export default getRequestConfig(async () => {
-  // Get locale from cookie (set by middleware with auto-detection)
+  // 1. ?lang= override forwarded by the middleware (hreflang URLs) —
+  //    must win over the cookie so the CURRENT request renders correctly
+  const headersList = await headers();
+  const overrideValue = headersList.get(LOCALE_OVERRIDE_HEADER);
+
+  // 2. Locale cookie (set by middleware with auto-detection)
   const cookieStore = await cookies();
   const cookieValue = cookieStore.get(CookieName.LOCALE)?.value;
-  
-  // Validate and use locale, fallback to default if invalid
-  const locale = cookieValue && isValidLocale(cookieValue) 
-    ? cookieValue 
-    : defaultLocale;
+
+  const locale =
+    overrideValue && isValidLocale(overrideValue)
+      ? overrideValue
+      : cookieValue && isValidLocale(cookieValue)
+        ? cookieValue
+        : defaultLocale;
 
   return {
     locale,

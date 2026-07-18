@@ -17,6 +17,9 @@ export { cn } from './cn';
 // JSON-LD safe serialization
 export { serializeJsonLd } from './json-ld';
 
+// hreflang alternates for bilingual pages
+export { buildLanguageAlternates } from './seo';
+
 // Tenant brand color CSS
 export { buildBrandStyle } from './brand-style';
 

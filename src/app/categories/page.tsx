@@ -4,6 +4,7 @@ import { CategoriesGrid } from "@/features/categories/components/categories-grid
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { validatePaginationAndRedirect } from "@/lib/utils/pagination-redirect";
 import { parsePage } from "@/lib/utils/query-params";
+import { buildLanguageAlternates } from "@/lib/utils/seo";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -29,7 +30,10 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t("titleWithStore", { storeName: store.name }),
     description: t("descriptionWithStore", { storeName: store.name }),
     // One canonical for all search/page permutations
-    alternates: { canonical: "/categories" },
+    alternates: {
+      canonical: "/categories",
+      languages: buildLanguageAlternates("/categories"),
+    },
   };
 }
 

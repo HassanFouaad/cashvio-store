@@ -1,3 +1,4 @@
+import { StarRatingDisplay } from "@/features/products/components/star-rating";
 import { PublicProductDto } from "@/features/products/types/product.types";
 import {
   formatProductPrice,
@@ -31,6 +32,8 @@ export function ProductCard({
   const primaryImage = getPrimaryImage(product);
   const inStock = isProductInStock(product);
   const priceDisplay = formatProductPrice(product, currency, locale);
+  const reviewCount = product.reviewCount ?? 0;
+  const hasRating = reviewCount > 0 && product.averageRating != null;
 
   return (
     <Link
@@ -67,10 +70,22 @@ export function ProductCard({
           {product.name}
         </h3>
 
+        {/* Aggregate review stars — displayed reviews only */}
+        {hasRating && (
+          <div className="flex items-center gap-1">
+            <StarRatingDisplay
+              rating={Math.round(product.averageRating ?? 0)}
+              size="sm"
+            />
+            <span className="text-xs text-muted-foreground">
+              ({reviewCount})
+            </span>
+          </div>
+        )}
+
         {priceDisplay && (
           <p className="text-sm font-bold text-foreground">{priceDisplay}</p>
         )}
-
       </div>
     </Link>
   );

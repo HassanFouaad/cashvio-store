@@ -17,13 +17,20 @@ import {
 interface CartSummaryProps {
   currency: string;
   locale: string;
+  /** Store's minimum order value (0 = no minimum, nudge hidden) */
+  minimumOrderValue?: number;
 }
 
 /**
  * Cart summary component
- * Displays subtotal, item count, validation warnings, and checkout button
+ * Displays subtotal, item count, validation warnings, minimum-order
+ * progress nudge, and checkout button
  */
-export function CartSummary({ currency, locale }: CartSummaryProps) {
+export function CartSummary({
+  currency,
+  locale,
+  minimumOrderValue = 0,
+}: CartSummaryProps) {
   const t = useTranslations("cart");
   const { cart, isInitialized, fetchCart } = useCartStore();
   const isSyncing = useIsCartSyncing();
@@ -47,6 +54,17 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
   const itemCount = cart?.itemCount ?? 0;
   const subtotal = cart?.subtotal ?? 0;
   const hasPendingChanges = pendingChangesCount > 0;
+
+  // Minimum-order nudge: only when a minimum is configured and the cart
+  // has items but hasn't reached it yet. Checkout preview re-validates
+  // server-side — this is a UX nudge, not the enforcement point.
+  const isBelowMinimum =
+    minimumOrderValue > 0 && itemCount > 0 && subtotal < minimumOrderValue;
+  const remainingToMinimum = Math.max(minimumOrderValue - subtotal, 0);
+  const minimumProgress =
+    minimumOrderValue > 0
+      ? Math.min(Math.round((subtotal / minimumOrderValue) * 100), 100)
+      : 100;
 
   const handleRefreshCart = async () => {
     await fetchCart();
@@ -105,6 +123,37 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
         </div>
       )}
 
+      {/* Minimum order progress nudge */}
+      {isBelowMinimum && (
+        <div className="p-3 rounded-lg border border-amber-300/60 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10 space-y-2">
+          <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+            {t("minimumOrderNudge", {
+              amount: formatCurrency(remainingToMinimum, currency, locale),
+            })}
+          </p>
+          <div
+            className="h-2 w-full rounded-full bg-amber-200/60 dark:bg-amber-500/20 overflow-hidden"
+            role="progressbar"
+            aria-valuenow={minimumProgress}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={t("minimumOrderProgress", {
+              minimum: formatCurrency(minimumOrderValue, currency, locale),
+            })}
+          >
+            <div
+              className="h-full rounded-full bg-amber-500 transition-all duration-300"
+              style={{ width: `${minimumProgress}%` }}
+            />
+          </div>
+          <p className="text-xs text-amber-700 dark:text-amber-400">
+            {t("minimumOrderProgress", {
+              minimum: formatCurrency(minimumOrderValue, currency, locale),
+            })}
+          </p>
+        </div>
+      )}
+
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">{t("subtotal")}</span>
@@ -140,7 +189,7 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
             t("reviewChanges")
           )}
         </Button>
-      ) : canCheckout ? (
+      ) : canCheckout && !isBelowMinimum ? (
         <Link href="/checkout" className="w-full">
           <Button className="w-full">
             {hasPendingChanges ? (

@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStoreSubdomain } from "./features/store/utils/store-resolver";
 import {
-  VISITOR_COOKIE_MAX_AGE_SECONDS,
-  VISITOR_ID_COOKIE_NAME,
+    LANG_QUERY_PARAM,
+    LOCALE_OVERRIDE_HEADER,
+    VISITOR_COOKIE_MAX_AGE_SECONDS,
+    VISITOR_ID_COOKIE_NAME,
 } from "./lib/constants";
 import { CookieName, isValidLocale, Locale } from "./types/enums";
 
@@ -72,10 +74,19 @@ function handleLocaleAndVisitor(request: NextRequest) {
   let detectedLocale: Locale = DEFAULT_LOCALE;
   let visitorId = "";
 
+  // ?lang=en|ar forces the language for THIS request and persists it.
+  // Powers hreflang alternate URLs and language-specific shared links.
+  const langParam = request.nextUrl.searchParams.get(LANG_QUERY_PARAM);
+  const langOverride =
+    langParam && isValidLocale(langParam) ? langParam : null;
+
   // Check locale cookie
   const localeCookie = request.cookies.get(CookieName.LOCALE)?.value;
 
-  if (!localeCookie || !isValidLocale(localeCookie)) {
+  if (langOverride) {
+    detectedLocale = langOverride;
+    needsLocaleCookie = langOverride !== localeCookie;
+  } else if (!localeCookie || !isValidLocale(localeCookie)) {
     needsLocaleCookie = true;
 
     // Auto-detect locale from Accept-Language header
@@ -112,13 +123,21 @@ function handleLocaleAndVisitor(request: NextRequest) {
     visitorId = generateVisitorId();
   }
 
-  // If no cookies need to be set, just pass through
-  if (!needsLocaleCookie && !needsVisitorCookie) {
+  // If no cookies need to be set and no language override, pass through
+  if (!needsLocaleCookie && !needsVisitorCookie && !langOverride) {
     return NextResponse.next();
   }
 
-  // Set required cookies
-  const response = NextResponse.next();
+  // Forward the language override to the CURRENT render via a request
+  // header — the response cookie only affects subsequent requests.
+  let response: NextResponse;
+  if (langOverride) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set(LOCALE_OVERRIDE_HEADER, langOverride);
+    response = NextResponse.next({ request: { headers: requestHeaders } });
+  } else {
+    response = NextResponse.next();
+  }
 
   if (needsLocaleCookie) {
     response.cookies.set(CookieName.LOCALE, detectedLocale, {

@@ -22,6 +22,20 @@ export const VISITOR_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 2;
 export const STORE_ID_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
 /**
+ * Query parameter that forces a language for the request (?lang=en|ar).
+ * Powers hreflang alternates — crawlers and shared links can address each
+ * language directly while regular visitors stay cookie-based.
+ */
+export const LANG_QUERY_PARAM = "lang";
+
+/**
+ * Internal request header set by the middleware when ?lang= is present so
+ * the CURRENT render uses the requested language (the cookie only affects
+ * subsequent requests).
+ */
+export const LOCALE_OVERRIDE_HEADER = "x-sf-locale";
+
+/**
  * Subdomains reserved for platform infrastructure — never map to a store.
  * Mirrors the backend and tenant portal RESERVED_SUBDOMAINS constants.
  */

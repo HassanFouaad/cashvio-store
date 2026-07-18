@@ -18,6 +18,8 @@ export const endpoints = {
     getFulfillmentMethods: (storeId: string) => `/public/stores/${storeId}/fulfillment-methods`,
     getDeliveryZones: (storeId: string) => `/public/stores/${storeId}/delivery-zones`,
     getStorefrontPaymentMethods: (storeId: string) => `/public/stores/${storeId}/storefront-payment-methods`,
+    getOrderPaymentSettings: (storeId: string) =>
+      `/public/stores/${storeId}/order-payment-settings`,
     getReceiptUploadUrl: (storeId: string) =>
       `/public/stores/${storeId}/receipt-upload-url`,
     staticPages: {

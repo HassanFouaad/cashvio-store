@@ -1,7 +1,8 @@
+import { getMinimumOrderValue } from "@/features/cart/api/get-order-payment-settings";
 import { CartList } from "@/features/cart/components/cart-list";
 import { CartSummary } from "@/features/cart/components/cart-summary";
-import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { TrackViewCartEvent } from "@/lib/analytics/track-cart-events";
+import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -34,6 +35,7 @@ export default async function CartPage() {
 
   const t = await getTranslations("cart");
   const locale = await getLocale();
+  const minimumOrderValue = await getMinimumOrderValue(store.id);
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
@@ -66,7 +68,11 @@ export default async function CartPage() {
             {/* Cart Summary - Right Column */}
             <div className="lg:col-span-1">
               <div className="lg:sticky lg:top-24">
-                <CartSummary currency={store.currency} locale={locale} />
+                <CartSummary
+                  currency={store.currency}
+                  locale={locale}
+                  minimumOrderValue={minimumOrderValue}
+                />
               </div>
             </div>
           </div>

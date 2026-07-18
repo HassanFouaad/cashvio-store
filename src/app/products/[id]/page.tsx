@@ -1,9 +1,10 @@
 import { getProductReviewsWithErrorHandling } from "@/features/products/api/get-product-reviews";
 import { getProductByIdWithErrorHandling } from "@/features/products/api/get-products";
 import { ProductDetails } from "@/features/products/components/product-details";
+import { RecentlyViewedSection } from "@/features/products/components/recently-viewed-section";
 import { TrackViewItem } from "@/lib/analytics/track-event";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
-import { serializeJsonLd } from "@/lib/utils";
+import { buildLanguageAlternates, serializeJsonLd } from "@/lib/utils";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
@@ -75,6 +76,7 @@ export async function generateMetadata({
     },
     alternates: {
       canonical: `https://${hostname}/products/${id}`,
+      languages: buildLanguageAlternates(`/products/${id}`),
     },
   };
 }
@@ -113,7 +115,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
     10,
   );
   const reviews = reviewsData?.items ?? [];
-  const totalReviewCount = reviewsData?.pagination?.totalItems ?? reviews.length;
+  const totalReviewCount =
+    reviewsData?.pagination?.totalItems ?? reviews.length;
 
   // Build JSON-LD structured data for SEO (Schema.org Product)
   const primaryImage =
@@ -123,11 +126,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const minPrice = Math.min(...prices);
   const maxPrice = Math.max(...prices);
 
-  // Build aggregateRating and individual reviews for rich snippets
-  const hasReviews = reviews.length > 0;
-  const averageRating = hasReviews
-    ? reviews.reduce((sum, r) => sum + r.stars, 0) / reviews.length
-    : 0;
+  // Build aggregateRating and individual reviews for rich snippets.
+  // Prefer the API's aggregate (ALL displayed reviews, one grouped query)
+  // over recomputing from the first page of reviews.
+  const hasReviews = (product.reviewCount ?? 0) > 0 || reviews.length > 0;
+  const averageRating =
+    product.averageRating ??
+    (reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + r.stars, 0) / reviews.length
+      : 0);
+  const reviewCountForSnippet = product.reviewCount ?? totalReviewCount;
 
   const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -158,7 +166,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             ratingValue: Math.round(averageRating * 10) / 10,
             bestRating: 5,
             worstRating: 1,
-            reviewCount: totalReviewCount,
+            reviewCount: reviewCountForSnippet,
           },
           review: reviews.map((r) => ({
             "@type": "Review",
@@ -209,7 +217,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
+          dangerouslySetInnerHTML={{
+            __html: serializeJsonLd(breadcrumbJsonLd),
+          }}
         />
         <TrackViewItem
           currency={store.currency}
@@ -231,6 +241,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
           storeId={store.id}
           reviews={reviewsData}
           productUrl={`https://${hostname}/products/${id}`}
+        />
+
+        {/* Recently viewed strip (client-side history, excludes this product) */}
+        <RecentlyViewedSection
+          currency={store.currency}
+          current={{
+            id: product.id,
+            name: product.name,
+            imageUrl: primaryImage?.thumbnailUrl || primaryImage?.imageUrl,
+            price: defaultVariant?.sellingPrice,
+          }}
         />
       </div>
     </div>
