@@ -1,6 +1,7 @@
 import { LocaleInitializer } from "@/components/locale-initializer";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { VisitorTracker } from "@/components/visitor-tracker";
+import { WhatsAppFab } from "@/components/whatsapp-fab";
 import { appConfig, validateEnvironment } from "@/config/env.config";
 import { CartInitializer } from "@/features/cart/components";
 import { StoreAnnouncementBar } from "@/features/store/components/store-announcement-bar";
@@ -266,6 +267,8 @@ export default async function RootLayout({
                             store.storeFront?.footerTextAr) ?? undefined
                       }
                     />
+                    {/* Persistent WhatsApp chat button (merchant-controlled) */}
+                    <WhatsAppFab socialMedia={store.storeFront?.socialMedia} />
                   </div>
                 ) : (
                   children

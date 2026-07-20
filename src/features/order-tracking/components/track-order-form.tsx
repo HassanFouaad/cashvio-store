@@ -4,11 +4,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { FulfillmentMethod } from "@/features/checkout/types/checkout.types";
+import { getOrderSuccessRecap } from "@/features/checkout/utils/order-success-recap";
+import { StoreFrontSocialMediaDto } from "@/features/store/types/store.types";
 import { formatCurrency } from "@/lib/utils/formatters";
-import { Check, Loader2, PackageSearch, XCircle } from "lucide-react";
+import { buildStoreWhatsAppLink } from "@/lib/utils/whatsapp";
+import {
+  Check,
+  Loader2,
+  MessageCircle,
+  PackageSearch,
+  Phone,
+  XCircle,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { FormEvent, useCallback, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { trackOrder } from "../api";
 import {
   FulfillmentStatus,
@@ -18,6 +28,7 @@ import {
 interface TrackOrderFormProps {
   locale: string;
   defaultPhoneCountry?: string;
+  socialMedia?: StoreFrontSocialMediaDto | null;
 }
 
 /** Fulfillment steps shown in the progress indicator, per method */
@@ -39,6 +50,7 @@ const PICKUP_STEPS: FulfillmentStatus[] = [
 export function TrackOrderForm({
   locale,
   defaultPhoneCountry,
+  socialMedia,
 }: TrackOrderFormProps) {
   const t = useTranslations("orderTracking");
   const searchParams = useSearchParams();
@@ -52,6 +64,25 @@ export function TrackOrderForm({
   const [notFound, setNotFound] = useState(false);
   const [result, setResult] = useState<PublicOrderTrackingDto | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const hasPrefilledPhone = useRef(false);
+
+  // Arriving from order-success: the checkout recap already holds the
+  // verified phone — prefill it instead of asking again seconds later.
+  // Runs after mount (sessionStorage is client-only) to keep SSR markup stable.
+  useEffect(() => {
+    if (hasPrefilledPhone.current) return;
+    hasPrefilledPhone.current = true;
+
+    const orderNumberParam = searchParams.get("orderNumber");
+    if (!orderNumberParam) return;
+
+    const recap = getOrderSuccessRecap(orderNumberParam);
+    if (recap?.phone) {
+      setPhone(recap.phone);
+      // The phone was validated at checkout before the order was placed
+      setIsPhoneValid(true);
+    }
+  }, [searchParams]);
 
   const handlePhoneChange = useCallback((value: string, isValid: boolean) => {
     setPhone(value);
@@ -85,13 +116,40 @@ export function TrackOrderForm({
 
   const isCancelled =
     result?.fulfillmentStatus === FulfillmentStatus.CANCELLED;
-  const steps =
-    result?.fulfillmentMethod === FulfillmentMethod.DELIVERY
-      ? DELIVERY_STEPS
-      : PICKUP_STEPS;
+  const isDelivery = result?.fulfillmentMethod === FulfillmentMethod.DELIVERY;
+  const steps = isDelivery ? DELIVERY_STEPS : PICKUP_STEPS;
   const currentStepIndex = result
     ? Math.max(0, steps.indexOf(result.fulfillmentStatus))
     : 0;
+
+  // "What happens next" copy for the current status (READY differs by method)
+  const expectationKey = result
+    ? result.fulfillmentStatus === FulfillmentStatus.READY
+      ? isDelivery
+        ? "readyDelivery"
+        : "readyPickup"
+      : result.fulfillmentStatus.toLowerCase()
+    : null;
+
+  // Contact the merchant about this order — WhatsApp honors the store's
+  // visibility toggle; calling uses the public contact phone
+  const contactOrderNumber = result?.orderNumber ?? orderNumber.trim();
+  const storeWhatsAppLink = buildStoreWhatsAppLink(socialMedia);
+  const whatsAppHref = storeWhatsAppLink
+    ? contactOrderNumber
+      ? `${storeWhatsAppLink}?text=${encodeURIComponent(
+          t("contactMerchant.whatsappMessage", {
+            orderNumber: contactOrderNumber,
+          }),
+        )}`
+      : storeWhatsAppLink
+    : null;
+  const contactPhoneHref = socialMedia?.contactPhone
+    ? `tel:${socialMedia.contactPhone.replace(/\s+/g, "")}`
+    : null;
+  const showContactMerchant = Boolean(
+    (result !== null || notFound) && (whatsAppHref || contactPhoneHref),
+  );
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -248,6 +306,13 @@ export function TrackOrderForm({
                 })}
               </ol>
             )}
+
+            {/* What to expect at the current status */}
+            {expectationKey && (
+              <p className="mt-4 text-sm text-muted-foreground">
+                {t(`statusExpectation.${expectationKey}`)}
+              </p>
+            )}
           </div>
 
           {/* Items */}
@@ -303,6 +368,41 @@ export function TrackOrderForm({
                 {formatCurrency(result.totalAmount, result.currency, locale)}
               </span>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Contact the merchant — after a result or a failed lookup */}
+      {showContactMerchant && (
+        <div className="p-4 sm:p-6 rounded-xl border border-border bg-muted/30 space-y-3">
+          <div>
+            <p className="text-sm font-semibold">{t("contactMerchant.title")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("contactMerchant.description")}
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            {whatsAppHref && (
+              <a
+                href={whatsAppHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1"
+              >
+                <Button variant="outline" className="w-full gap-2">
+                  <MessageCircle className="h-4 w-4" />
+                  {t("contactMerchant.whatsapp")}
+                </Button>
+              </a>
+            )}
+            {contactPhoneHref && (
+              <a href={contactPhoneHref} className="flex-1">
+                <Button variant="outline" className="w-full gap-2">
+                  <Phone className="h-4 w-4" />
+                  {t("contactMerchant.call")}
+                </Button>
+              </a>
+            )}
           </div>
         </div>
       )}

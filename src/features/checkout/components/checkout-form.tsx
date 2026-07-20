@@ -774,6 +774,9 @@ export function CheckoutForm({
             variant: item.variant.name,
             quantity: item.quantity,
           })),
+          // Tracking verifies by checkout phone — keep it so the track
+          // page can prefill instead of asking again seconds later
+          phone: customerPhone || undefined,
         }),
       );
 

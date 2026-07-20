@@ -40,7 +40,8 @@
     "email": "Email",
     "website": "Website",
     "tapToOpen": "Tap to open",
-    "reachUs": "Get in touch with {storeName}"
+    "reachUs": "Get in touch with {storeName}",
+    "whatsappFab": "Chat with us on WhatsApp"
   },
   "store": {
     "welcome": "Welcome to {storeName}",
@@ -411,6 +412,22 @@
       "delivering": "On its way",
       "completed": "Delivered",
       "cancelled": "This order has been cancelled"
+    },
+    "statusExpectation": {
+      "pending": "The store has received your order and will start preparing it soon.",
+      "preparing": "The store is preparing your order right now.",
+      "readyPickup": "Your order is ready — you can pick it up from the store.",
+      "readyDelivery": "Your order is packed and will be handed to the courier shortly.",
+      "delivering": "Your order is with the courier and on its way to you.",
+      "completed": "Your order has been fulfilled. Thanks for shopping with us!",
+      "cancelled": "If you didn't expect this or have questions, the store can help."
+    },
+    "contactMerchant": {
+      "title": "Need help with your order?",
+      "description": "The store can answer questions about your order status, delivery, or changes.",
+      "whatsapp": "WhatsApp the store",
+      "call": "Call the store",
+      "whatsappMessage": "Hi! I have a question about my order {orderNumber}."
     },
     "discount": "Discount",
     "deliveryFees": "Delivery Fees",

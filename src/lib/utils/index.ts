@@ -24,7 +24,11 @@ export { buildLanguageAlternates } from './seo';
 export { buildBrandStyle } from './brand-style';
 
 // WhatsApp deep link
-export { buildWhatsAppLink } from './whatsapp';
+export {
+  buildStoreWhatsAppLink,
+  buildWhatsAppLink,
+  resolveWhatsAppNumber,
+} from './whatsapp';
 
 // "Powered by Cashvio" attribution URL
 export { buildPoweredByUrl } from './powered-by';

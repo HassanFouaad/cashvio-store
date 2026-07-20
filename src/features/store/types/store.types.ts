@@ -40,6 +40,10 @@ export interface StoreFrontSocialMediaDto {
   website: string | null;
   contactPhone: string | null;
   contactEmail: string | null;
+  /** Dedicated WhatsApp number — server falls back to contactPhone when unset */
+  whatsappNumber: string | null;
+  /** Merchant toggle for WhatsApp chat button/links on the storefront */
+  showWhatsappButton: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

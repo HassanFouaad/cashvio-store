@@ -55,6 +55,7 @@ export default async function TrackOrderPage() {
             <TrackOrderForm
               locale={locale}
               defaultPhoneCountry={store.country?.code?.toLowerCase()}
+              socialMedia={store.storeFront?.socialMedia}
             />
           </Suspense>
         </div>

@@ -1,4 +1,4 @@
-import { buildPoweredByUrl, buildWhatsAppLink } from "@/lib/utils";
+import { buildPoweredByUrl, buildStoreWhatsAppLink } from "@/lib/utils";
 import {
   Facebook,
   Globe,
@@ -22,7 +22,7 @@ export async function StoreFooter({ store }: StoreFooterProps) {
   const t = await getTranslations();
   const locale = await getLocale();
   const socialMedia = store.storeFront?.socialMedia;
-  const whatsAppLink = buildWhatsAppLink(socialMedia?.contactPhone);
+  const whatsAppLink = buildStoreWhatsAppLink(socialMedia);
   // Use a stable year value to avoid hydration mismatches
   const currentYear = new Date().getUTCFullYear();
 

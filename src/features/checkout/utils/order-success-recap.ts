@@ -29,6 +29,8 @@ export interface OrderSuccessRecap {
   moreItemsCount: number;
   fulfillmentMethod?: FulfillmentMethod;
   pickupLocation?: StorePickupLocation;
+  /** Checkout phone — lets the track page prefill the verification field */
+  phone?: string;
 }
 
 export function saveOrderSuccessRecap(recap: OrderSuccessRecap): void {
@@ -63,6 +65,7 @@ export function buildOrderSuccessRecap(params: {
   items: Array<{ name: string; variant: string; quantity: number }>;
   fulfillmentMethod?: FulfillmentMethod;
   pickupLocation?: StorePickupLocation;
+  phone?: string;
 }): OrderSuccessRecap {
   return {
     orderNumber: params.orderNumber,
@@ -72,5 +75,6 @@ export function buildOrderSuccessRecap(params: {
     moreItemsCount: Math.max(0, params.items.length - MAX_RECAP_ITEMS),
     fulfillmentMethod: params.fulfillmentMethod,
     pickupLocation: params.pickupLocation,
+    phone: params.phone,
   };
 }

@@ -66,6 +66,7 @@ export function MobileBottomNav({ socialMedia, storeName, storeId, footerText }:
   // Check if store has any contact info
   const hasContactInfo = socialMedia && (
     socialMedia.contactPhone ||
+    socialMedia.whatsappNumber ||
     socialMedia.contactEmail ||
     socialMedia.facebook ||
     socialMedia.instagram ||
