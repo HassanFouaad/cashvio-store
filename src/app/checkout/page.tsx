@@ -11,11 +11,40 @@ import {
   PublicDeliveryZonesResponseDto,
   PublicStorefrontPaymentMethodDto,
 } from "@/features/checkout/types/checkout.types";
+import type { StorePickupLocation } from "@/features/checkout/utils/pickup-location";
 import { TrackBeginCheckoutEvent } from "@/lib/analytics/track-cart-events";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
+
+function buildPickupLocation(
+  store: NonNullable<Awaited<ReturnType<typeof resolveRequestStore>>["store"]>,
+  locale: string,
+): StorePickupLocation {
+  const cityName =
+    store.city?.name ||
+    (locale === "ar"
+      ? store.city?.nameAr || store.city?.nameEn
+      : store.city?.nameEn) ||
+    null;
+  const countryName =
+    store.country?.name ||
+    (locale === "ar"
+      ? store.country?.nameAr || store.country?.nameEn
+      : store.country?.nameEn) ||
+    null;
+
+  return {
+    storeName: store.name,
+    addressLine1: store.addressLine1,
+    addressLine2: store.addressLine2,
+    postalCode: store.postalCode,
+    cityName,
+    countryName,
+    contactPhone: store.storeFront?.socialMedia?.contactPhone ?? null,
+  };
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("metadata.checkout");
@@ -130,6 +159,7 @@ export default async function CheckoutPage() {
             fallbackCountries={fallbackCountries}
             storefrontPaymentMethods={storefrontPaymentMethods}
             defaultPhoneCountry={store.country?.code?.toLowerCase()}
+            pickupLocation={buildPickupLocation(store, locale)}
           />
         </div>
       </section>

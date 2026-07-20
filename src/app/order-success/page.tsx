@@ -1,6 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { PickupLocationCard } from "@/features/checkout/components/pickup-location-card";
+import { FulfillmentMethod } from "@/features/checkout/types/checkout.types";
 import {
   getOrderSuccessRecap,
   type OrderSuccessRecap,
@@ -45,7 +47,10 @@ function OrderSuccessContent() {
       const token = sessionStorage.getItem(TOKEN_KEY);
       const tokenTime = token ? parseInt(token, 10) : NaN;
 
-      if (Number.isNaN(tokenTime) || Date.now() - tokenTime > TOKEN_MAX_AGE_MS) {
+      if (
+        Number.isNaN(tokenTime) ||
+        Date.now() - tokenTime > TOKEN_MAX_AGE_MS
+      ) {
         sessionStorage.removeItem(TOKEN_KEY);
         router.replace("/");
         return;
@@ -133,6 +138,15 @@ function OrderSuccessContent() {
           </div>
         )}
 
+        {/* Pickup location reminder for pickup orders */}
+        {recap?.fulfillmentMethod === FulfillmentMethod.PICKUP &&
+          recap.pickupLocation && (
+            <PickupLocationCard
+              location={recap.pickupLocation}
+              variant="success"
+            />
+          )}
+
         {/* Order recap (stored locally at checkout — survives refresh) */}
         {recap && recap.items.length > 0 && (
           <div className="rounded-xl border border-border overflow-hidden">
@@ -148,7 +162,10 @@ function OrderSuccessContent() {
                   <span className="truncate">
                     {item.name}
                     {item.variant && item.variant !== item.name && (
-                      <span className="text-muted-foreground"> — {item.variant}</span>
+                      <span className="text-muted-foreground">
+                        {" "}
+                        — {item.variant}
+                      </span>
                     )}
                   </span>
                   <span className="text-muted-foreground shrink-0">

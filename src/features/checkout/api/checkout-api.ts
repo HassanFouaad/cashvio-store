@@ -265,6 +265,8 @@ export function groupDeliveryZonesByCountry(
       entry.cities.push({
         id: zone.cityId,
         name: zone.city.name,
+        feeType: zone.feeType,
+        feeValue: zone.feeValue,
       });
     }
   }

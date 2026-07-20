@@ -81,7 +81,20 @@ export interface CountryDto {
   nameAr: string | null;
   nameFr: string | null;
   code: string;
-  name?: string
+  name?: string;
+}
+
+/**
+ * City DTO - matches backend CityDto
+ */
+export interface CityDto {
+  id: number;
+  nameEn: string;
+  nameAr: string | null;
+  nameFr: string | null;
+  code: string;
+  countryId: number;
+  name?: string;
 }
 
 export interface PublicStoreDto {
@@ -90,8 +103,13 @@ export interface PublicStoreDto {
   subdomain: string;
   name: string;
   currency: string;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  postalCode?: string | null;
   countryId?: number | null;
   country?: CountryDto | null;
+  cityId?: number | null;
+  city?: CityDto | null;
   storeFront?: StoreFrontDto | null;
 }
 

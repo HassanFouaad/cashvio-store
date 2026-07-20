@@ -6,7 +6,6 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { computeCartValidation, useCartStore } from "@/features/cart/store";
-import { getOrCreateVisitorId } from "@/lib/visitor/visitor-id";
 import {
   createOrder,
   getCitiesByCountry,
@@ -15,6 +14,7 @@ import {
   previewOrder,
   uploadReceiptToPresignedUrl,
 } from "@/features/checkout/api/checkout-api";
+import { PickupLocationCard } from "@/features/checkout/components/pickup-location-card";
 import {
   CommonCityDto,
   CommonCountryDto,
@@ -30,12 +30,15 @@ import {
   PublicFulfillmentMethodDto,
   PublicStorefrontPaymentMethodDto,
 } from "@/features/checkout/types/checkout.types";
+import { formatDeliveryZoneCityOptionLabel } from "@/features/checkout/utils/delivery-zone-fee-label";
 import {
   buildOrderSuccessRecap,
   saveOrderSuccessRecap,
 } from "@/features/checkout/utils/order-success-recap";
+import type { StorePickupLocation } from "@/features/checkout/utils/pickup-location";
 import { analytics } from "@/lib/analytics";
 import { formatCurrency } from "@/lib/utils/formatters";
+import { getOrCreateVisitorId } from "@/lib/visitor/visitor-id";
 import {
   AlertCircle,
   AlertTriangle,
@@ -78,6 +81,8 @@ interface CheckoutFormProps {
   storefrontPaymentMethods: PublicStorefrontPaymentMethodDto[];
   /** ISO2 country code from the store's configuration (e.g. "eg") */
   defaultPhoneCountry?: string;
+  /** Store pickup address shown when PICKUP is selected */
+  pickupLocation: StorePickupLocation;
 }
 
 const PAYMENT_METHOD_ICONS: Record<PaymentMethod, typeof CreditCard> = {
@@ -113,6 +118,7 @@ export function CheckoutForm({
   fallbackCountries,
   storefrontPaymentMethods,
   defaultPhoneCountry,
+  pickupLocation,
 }: CheckoutFormProps) {
   const t = useTranslations("checkout");
   const tCart = useTranslations("cart");
@@ -758,6 +764,11 @@ export function CheckoutForm({
           orderNumber: result.orderNumber,
           totalAmount: result.totalAmount ?? preview?.totalAmount ?? 0,
           currency,
+          fulfillmentMethod: selectedMethod,
+          pickupLocation:
+            selectedMethod === FulfillmentMethod.PICKUP
+              ? pickupLocation
+              : undefined,
           items: items.map((item) => ({
             name: item.productName || item.variant.name,
             variant: item.variant.name,
@@ -892,6 +903,8 @@ export function CheckoutForm({
             {sortedFulfillmentMethods.map((fm) => {
               const Icon = FULFILLMENT_ICONS[fm.fulfillmentMethod];
               const isSelected = selectedMethod === fm.fulfillmentMethod;
+              const isPickup =
+                fm.fulfillmentMethod === FulfillmentMethod.PICKUP;
 
               return (
                 <button
@@ -908,11 +921,21 @@ export function CheckoutForm({
                   <span className="text-sm font-medium">
                     {t(`methods.${fm.fulfillmentMethod.toLowerCase()}`)}
                   </span>
+                  {isPickup && (
+                    <span className="mt-1 text-xs text-muted-foreground">
+                      {t("free")}
+                    </span>
+                  )}
                 </button>
               );
             })}
           </div>
         </div>
+
+        {/* Pickup location (only when Pickup is selected) */}
+        {selectedMethod === FulfillmentMethod.PICKUP && (
+          <PickupLocationCard location={pickupLocation} />
+        )}
 
         {/* Delivery Address Selection (only for Delivery) */}
         {selectedMethod === FulfillmentMethod.DELIVERY && (
@@ -1054,12 +1077,18 @@ export function CheckoutForm({
                   </label>
                   {currentCountry ? (
                     currentCountry.cities.length === 1 ? (
-                      // Single city - show as disabled input
+                      // Single city - show as disabled input with fee
                       <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm">
-                        {currentCountry.cities[0].name}
+                        {formatDeliveryZoneCityOptionLabel(
+                          currentCountry.cities[0].name,
+                          currentCountry.cities[0].feeType,
+                          currentCountry.cities[0].feeValue,
+                          currency,
+                          t("free"),
+                        )}
                       </div>
                     ) : (
-                      // Multiple cities - show select
+                      // Multiple cities - show select with fee in each option
                       <Select
                         value={selectedCityId?.toString() || ""}
                         onChange={handleCityChange}
@@ -1067,7 +1096,13 @@ export function CheckoutForm({
                         options={currentCountry.cities.map(
                           (city: GroupedDeliveryZoneCityDto) => ({
                             value: city.id.toString(),
-                            label: city.name,
+                            label: formatDeliveryZoneCityOptionLabel(
+                              city.name,
+                              city.feeType,
+                              city.feeValue,
+                              currency,
+                              t("free"),
+                            ),
                           }),
                         )}
                         className="w-full"

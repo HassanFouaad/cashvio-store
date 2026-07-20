@@ -38,9 +38,30 @@ export async function StoreFooter({ store }: StoreFooterProps) {
             <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3 break-words">
               {store.name}
             </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
-              {store.country?.name && `${store.country.name}`}
-            </p>
+            {(store.addressLine1 ||
+              store.addressLine2 ||
+              store.city?.name ||
+              store.country?.name) && (
+              <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 space-y-0.5">
+                {store.addressLine1 && (
+                  <span className="block break-words">
+                    {store.addressLine1}
+                  </span>
+                )}
+                {store.addressLine2 && (
+                  <span className="block break-words">
+                    {store.addressLine2}
+                  </span>
+                )}
+                {(store.city?.name || store.country?.name) && (
+                  <span className="block break-words">
+                    {[store.city?.name, store.country?.name]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </span>
+                )}
+              </p>
+            )}
             {socialMedia?.contactPhone && (
               <div className="flex items-center gap-2 text-xs sm:text-sm">
                 <Phone className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />

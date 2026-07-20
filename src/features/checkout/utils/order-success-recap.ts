@@ -7,6 +7,9 @@
  * (refresh-safe within the tab's session).
  */
 
+import type { FulfillmentMethod } from "@/features/checkout/types/checkout.types";
+import type { StorePickupLocation } from "@/features/checkout/utils/pickup-location";
+
 const RECAP_KEY = "order-success-recap";
 
 /** Max line items stored in the recap — the rest is summarized as a count */
@@ -24,6 +27,8 @@ export interface OrderSuccessRecap {
   currency: string;
   items: OrderSuccessRecapItem[];
   moreItemsCount: number;
+  fulfillmentMethod?: FulfillmentMethod;
+  pickupLocation?: StorePickupLocation;
 }
 
 export function saveOrderSuccessRecap(recap: OrderSuccessRecap): void {
@@ -56,6 +61,8 @@ export function buildOrderSuccessRecap(params: {
   totalAmount: number;
   currency: string;
   items: Array<{ name: string; variant: string; quantity: number }>;
+  fulfillmentMethod?: FulfillmentMethod;
+  pickupLocation?: StorePickupLocation;
 }): OrderSuccessRecap {
   return {
     orderNumber: params.orderNumber,
@@ -63,5 +70,7 @@ export function buildOrderSuccessRecap(params: {
     currency: params.currency,
     items: params.items.slice(0, MAX_RECAP_ITEMS),
     moreItemsCount: Math.max(0, params.items.length - MAX_RECAP_ITEMS),
+    fulfillmentMethod: params.fulfillmentMethod,
+    pickupLocation: params.pickupLocation,
   };
 }

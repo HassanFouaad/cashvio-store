@@ -165,6 +165,14 @@ export interface PublicDeliveryZoneCityInfoDto {
 }
 
 /**
+ * Delivery zone fee type — matches backend DeliveryZoneFeeType
+ */
+export enum DeliveryZoneFeeType {
+  FIXED = 'fixed',
+  PERCENTAGE = 'percentage',
+}
+
+/**
  * Public delivery zone item (flat structure from API)
  */
 export interface PublicDeliveryZoneItemDto {
@@ -173,6 +181,8 @@ export interface PublicDeliveryZoneItemDto {
   country: PublicDeliveryZoneCountryInfoDto;
   cityId: number;
   city: PublicDeliveryZoneCityInfoDto;
+  feeType: DeliveryZoneFeeType;
+  feeValue: number;
 }
 
 /**
@@ -188,6 +198,8 @@ export interface PublicDeliveryZonesResponseDto {
 export interface GroupedDeliveryZoneCityDto {
   id: number;
   name: string;
+  feeType: DeliveryZoneFeeType;
+  feeValue: number;
 }
 
 /**
