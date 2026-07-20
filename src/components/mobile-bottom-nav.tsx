@@ -50,9 +50,11 @@ interface MobileBottomNavProps {
   socialMedia?: StoreFrontSocialMediaDto | null;
   storeName?: string;
   storeId: string;
+  /** Tenant-configured footer text (already locale-resolved) */
+  footerText?: string;
 }
 
-export function MobileBottomNav({ socialMedia, storeName, storeId }: MobileBottomNavProps) {
+export function MobileBottomNav({ socialMedia, storeName, storeId, footerText }: MobileBottomNavProps) {
   const t = useTranslations('common');
   const pathname = usePathname();
   const [isContactOpen, setIsContactOpen] = useState(false);
@@ -187,6 +189,7 @@ export function MobileBottomNav({ socialMedia, storeName, storeId }: MobileBotto
         onClose={() => setIsFooterOpen(false)}
         storeId={storeId}
         storeName={storeName || ''}
+        footerText={footerText}
       />
     </>
   );

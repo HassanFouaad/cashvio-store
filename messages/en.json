@@ -301,7 +301,11 @@
     "increaseQuantity": "Increase quantity",
     "moreItems": "+{count} more",
     "minimumOrderNudge": "Add {amount} more to place your order",
-    "minimumOrderProgress": "This store has a {minimum} minimum order"
+    "minimumOrderProgress": "This store has a {minimum} minimum order",
+    "freeDeliveryNudge": "Add {amount} more for free delivery",
+    "freeDeliveryReached": "Your order qualifies for free delivery!",
+    "freeDeliveryProgress": "Free delivery on orders over {threshold}",
+    "shippingFree": "Free"
   },
   "checkout": {
     "pageTitle": "Checkout",
@@ -360,6 +364,7 @@
     "previewError": "Failed to calculate order totals. Please try again.",
     "orderError": "Failed to place order. Please try again.",
     "belowMinimumOrder": "The minimum order value for this store is {minimumOrderValue}. Please add more items to proceed.",
+    "freeDeliveryNudge": "Add {amount} more for free delivery",
     "couponLabel": "Promo code",
     "couponPlaceholder": "Promo code",
     "applyCoupon": "Apply",

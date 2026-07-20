@@ -15,6 +15,8 @@ interface MobileFooterSheetProps {
   onClose: () => void;
   storeId: string;
   storeName: string;
+  /** Tenant-configured footer text (already locale-resolved) */
+  footerText?: string;
 }
 
 export function MobileFooterSheet({
@@ -22,6 +24,7 @@ export function MobileFooterSheet({
   onClose,
   storeId,
   storeName,
+  footerText,
 }: MobileFooterSheetProps) {
   const t = useTranslations();
   const locale = useLocale();
@@ -118,6 +121,11 @@ export function MobileFooterSheet({
 
                 {/* Footer Info */}
                 <div className="mt-6 pt-4 border-t space-y-2">
+                  {footerText && (
+                    <p className="text-xs text-muted-foreground text-center break-words leading-relaxed whitespace-pre-line">
+                      {footerText}
+                    </p>
+                  )}
                   <p className="text-[10px] sm:text-xs text-muted-foreground text-center">
                     {t('footer.copyright', {
                       year: currentYear,
@@ -154,6 +162,11 @@ export function MobileFooterSheet({
                 <p className="text-sm text-muted-foreground text-center">
                   {t('footer.noPagesAvailable')}
                 </p>
+                {footerText && (
+                  <p className="mt-4 text-xs text-muted-foreground text-center break-words leading-relaxed whitespace-pre-line">
+                    {footerText}
+                  </p>
+                )}
               </div>
             )}
           </div>

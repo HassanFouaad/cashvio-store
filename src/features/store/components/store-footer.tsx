@@ -26,6 +26,13 @@ export async function StoreFooter({ store }: StoreFooterProps) {
   // Use a stable year value to avoid hydration mismatches
   const currentYear = new Date().getUTCFullYear();
 
+  // Tenant-configured footer text — per-language with cross-language fallback
+  const customFooterText = (
+    locale === "ar"
+      ? store.storeFront?.footerTextAr || store.storeFront?.footerTextEn
+      : store.storeFront?.footerTextEn || store.storeFront?.footerTextAr
+  )?.trim();
+
   // Fetch static pages for the store
   const staticPages = await getStaticPages(store.id, locale);
 
@@ -220,6 +227,11 @@ export async function StoreFooter({ store }: StoreFooterProps) {
         </div>
 
         <div className="mt-5 sm:mt-8 pt-5 sm:pt-8 border-t text-center w-full space-y-2">
+          {customFooterText && (
+            <p className="text-xs sm:text-sm text-muted-foreground break-words leading-relaxed whitespace-pre-line">
+              {customFooterText}
+            </p>
+          )}
           <p className="text-[10px] sm:text-xs text-muted-foreground break-words leading-relaxed">
             {t("footer.copyright", {
               year: currentYear,

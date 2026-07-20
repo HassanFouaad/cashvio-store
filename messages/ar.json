@@ -301,7 +301,11 @@
     "increaseQuantity": "زيادة الكمية",
     "moreItems": "+{count} أخرى",
     "minimumOrderNudge": "أضف {amount} إضافية لتتمكن من إتمام طلبك",
-    "minimumOrderProgress": "الحد الأدنى للطلب في هذا المتجر هو {minimum}"
+    "minimumOrderProgress": "الحد الأدنى للطلب في هذا المتجر هو {minimum}",
+    "freeDeliveryNudge": "أضف {amount} إضافية واحصل على شحن مجاني",
+    "freeDeliveryReached": "مبروك! طلبك مؤهل للشحن المجاني",
+    "freeDeliveryProgress": "شحن مجاني للطلبات فوق {threshold}",
+    "shippingFree": "مجاني"
   },
   "checkout": {
     "pageTitle": "إتمام الطلب",
@@ -360,6 +364,7 @@
     "previewError": "فشل في حساب إجمالي الطلب. يرجى المحاولة مرة أخرى.",
     "orderError": "فشل في تقديم الطلب. يرجى المحاولة مرة أخرى.",
     "belowMinimumOrder": "الحد الأدنى لقيمة الطلب لهذا المتجر هو {minimumOrderValue}. يرجى إضافة المزيد من العناصر للمتابعة.",
+    "freeDeliveryNudge": "أضف {amount} إضافية واحصل على شحن مجاني",
     "couponLabel": "كود الخصم",
     "couponPlaceholder": "كود الخصم",
     "applyCoupon": "تطبيق",

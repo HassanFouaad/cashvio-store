@@ -16,4 +16,14 @@ export interface StoreOrderPaymentSettingsDto {
   storeId: string;
   /** Minimum order value required for this store (0 = no minimum) */
   minimumOrderValue: number;
+  /** Order subtotal at which delivery becomes free (0 = disabled) */
+  freeDeliveryThreshold: number;
+}
+
+/**
+ * Order-related store settings consumed by cart/checkout UI nudges.
+ */
+export interface CartOrderSettings {
+  minimumOrderValue: number;
+  freeDeliveryThreshold: number;
 }

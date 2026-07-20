@@ -64,6 +64,10 @@ export interface StoreFrontDto {
   primaryTextColor: string | null;
   hideOutOfStock: boolean;
   status: StoreFrontStatus;
+  announcementTextEn?: string | null;
+  announcementTextAr?: string | null;
+  footerTextEn?: string | null;
+  footerTextAr?: string | null;
   socialMedia?: StoreFrontSocialMediaDto | null;
   seo?: StoreFrontSeoDto | null;
   heroImages?: StoreFrontHeroImageDto[];

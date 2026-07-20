@@ -19,17 +19,20 @@ interface CartSummaryProps {
   locale: string;
   /** Store's minimum order value (0 = no minimum, nudge hidden) */
   minimumOrderValue?: number;
+  /** Subtotal at which delivery becomes free (0 = disabled, nudge hidden) */
+  freeDeliveryThreshold?: number;
 }
 
 /**
  * Cart summary component
- * Displays subtotal, item count, validation warnings, minimum-order
- * progress nudge, and checkout button
+ * Displays subtotal, item count, validation warnings, minimum-order and
+ * free-delivery progress nudges, and checkout button
  */
 export function CartSummary({
   currency,
   locale,
   minimumOrderValue = 0,
+  freeDeliveryThreshold = 0,
 }: CartSummaryProps) {
   const t = useTranslations("cart");
   const { cart, isInitialized, fetchCart } = useCartStore();
@@ -64,6 +67,17 @@ export function CartSummary({
   const minimumProgress =
     minimumOrderValue > 0
       ? Math.min(Math.round((subtotal / minimumOrderValue) * 100), 100)
+      : 100;
+
+  // Free-delivery nudge: incentive (not a blocker) — checkout computes the
+  // actual fee waiver server-side, this only previews the progress
+  const hasFreeDeliveryThreshold = freeDeliveryThreshold > 0 && itemCount > 0;
+  const hasReachedFreeDelivery =
+    hasFreeDeliveryThreshold && subtotal >= freeDeliveryThreshold;
+  const remainingToFreeDelivery = Math.max(freeDeliveryThreshold - subtotal, 0);
+  const freeDeliveryProgress =
+    freeDeliveryThreshold > 0
+      ? Math.min(Math.round((subtotal / freeDeliveryThreshold) * 100), 100)
       : 100;
 
   const handleRefreshCart = async () => {
@@ -154,6 +168,56 @@ export function CartSummary({
         </div>
       )}
 
+      {/* Free-delivery progress nudge (incentive, never blocks checkout) */}
+      {hasFreeDeliveryThreshold &&
+        (hasReachedFreeDelivery ? (
+          <div className="p-3 rounded-lg border border-primary/30 bg-primary/5">
+            <p className="text-sm font-medium text-primary">
+              {t("freeDeliveryReached")}
+            </p>
+          </div>
+        ) : (
+          <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 space-y-2">
+            <p className="text-sm font-medium text-primary">
+              {t("freeDeliveryNudge", {
+                amount: formatCurrency(
+                  remainingToFreeDelivery,
+                  currency,
+                  locale,
+                ),
+              })}
+            </p>
+            <div
+              className="h-2 w-full rounded-full bg-primary/15 overflow-hidden"
+              role="progressbar"
+              aria-valuenow={freeDeliveryProgress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={t("freeDeliveryProgress", {
+                threshold: formatCurrency(
+                  freeDeliveryThreshold,
+                  currency,
+                  locale,
+                ),
+              })}
+            >
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-300"
+                style={{ width: `${freeDeliveryProgress}%` }}
+              />
+            </div>
+            <p className="text-xs text-primary/80">
+              {t("freeDeliveryProgress", {
+                threshold: formatCurrency(
+                  freeDeliveryThreshold,
+                  currency,
+                  locale,
+                ),
+              })}
+            </p>
+          </div>
+        ))}
+
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">{t("subtotal")}</span>
@@ -163,7 +227,9 @@ export function CartSummary({
         </div>
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>{t("shipping")}</span>
-          <span className="italic">{t("calculatedAtCheckout")}</span>
+          <span className="italic">
+            {hasReachedFreeDelivery ? t("shippingFree") : t("calculatedAtCheckout")}
+          </span>
         </div>
         <hr className="border-border" />
         <div className="flex items-center justify-between font-bold text-base pt-1">

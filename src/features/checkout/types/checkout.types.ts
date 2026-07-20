@@ -117,6 +117,10 @@ export interface OrderPreviewResponse {
   minimumOrderValue?: number;
   /** Whether the order total is below the configured minimum order value */
   isBelowMinimumOrder?: boolean;
+  /** Order subtotal at which delivery becomes free (0 = disabled) */
+  freeDeliveryThreshold?: number;
+  /** Whether delivery fees were waived because the threshold was reached */
+  isFreeDeliveryApplied?: boolean;
   /** Coupon validation feedback (present when a coupon code was submitted) */
   couponValidation?: OrderPreviewCouponValidation;
   /** Applied coupon discount (present when the coupon is valid) */

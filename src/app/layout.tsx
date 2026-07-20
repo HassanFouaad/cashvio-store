@@ -3,6 +3,7 @@ import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { VisitorTracker } from "@/components/visitor-tracker";
 import { appConfig, validateEnvironment } from "@/config/env.config";
 import { CartInitializer } from "@/features/cart/components";
+import { StoreAnnouncementBar } from "@/features/store/components/store-announcement-bar";
 import { StoreErrorComponent } from "@/features/store/components/store-error";
 import { StoreFooter } from "@/features/store/components/store-footer";
 import { StoreHeader } from "@/features/store/components/store-header";
@@ -245,6 +246,7 @@ export default async function RootLayout({
                       }
                       tiktokPixelId={store.storeFront?.webEvents?.tiktokPixelId}
                     />
+                    <StoreAnnouncementBar store={store} />
                     <StoreHeader store={store} />
                     <main className="flex-1">{children}</main>
                     {/* Footer - hidden on mobile, shown on desktop */}
@@ -256,6 +258,13 @@ export default async function RootLayout({
                       socialMedia={store.storeFront?.socialMedia}
                       storeName={store.name}
                       storeId={store.id}
+                      footerText={
+                        (locale === Locale.ARABIC
+                          ? store.storeFront?.footerTextAr ||
+                            store.storeFront?.footerTextEn
+                          : store.storeFront?.footerTextEn ||
+                            store.storeFront?.footerTextAr) ?? undefined
+                      }
                     />
                   </div>
                 ) : (

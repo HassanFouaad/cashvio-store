@@ -1470,8 +1470,18 @@ export function CheckoutForm({
                       </div>
                     )}
 
-                    {/* Delivery Fees */}
-                    {preview.deliveryFees > 0 && (
+                    {/* Delivery Fees — shows "Free" when the free-delivery
+                        threshold waived the fee */}
+                    {preview.isFreeDeliveryApplied ? (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {t("deliveryFees")}
+                        </span>
+                        <span className="font-medium text-green-600 dark:text-green-500">
+                          {t("free")}
+                        </span>
+                      </div>
+                    ) : preview.deliveryFees > 0 ? (
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">
                           {t("deliveryFees")}
@@ -1484,7 +1494,30 @@ export function CheckoutForm({
                           )}
                         </span>
                       </div>
-                    )}
+                    ) : null}
+
+                    {/* Free-delivery nudge — DELIVERY orders close to the
+                        threshold (server recomputes on every preview) */}
+                    {selectedMethod === FulfillmentMethod.DELIVERY &&
+                      !preview.isFreeDeliveryApplied &&
+                      (preview.freeDeliveryThreshold ?? 0) > 0 &&
+                      preview.deliveryFees > 0 && (
+                        <p className="text-xs text-primary">
+                          {t("freeDeliveryNudge", {
+                            amount: formatCurrency(
+                              Math.max(
+                                (preview.freeDeliveryThreshold ?? 0) -
+                                  (preview.subtotal -
+                                    preview.totalDiscount +
+                                    preview.totalTax),
+                                0,
+                              ),
+                              currency,
+                              locale,
+                            ),
+                          })}
+                        </p>
+                      )}
 
                     {/* Tax */}
                     {preview.totalTax > 0 && (

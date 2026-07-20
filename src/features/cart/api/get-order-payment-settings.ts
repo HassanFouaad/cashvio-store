@@ -1,7 +1,10 @@
 import { apiClient } from "@/lib/api/client";
 import { endpoints } from "@/lib/api/config";
 import { unstable_cache } from "next/cache";
-import { StoreOrderPaymentSettingsDto } from "../types/cart.types";
+import {
+  CartOrderSettings,
+  StoreOrderPaymentSettingsDto,
+} from "../types/cart.types";
 
 /**
  * Minimum-order settings change rarely — a short shared cache removes one
@@ -22,15 +25,20 @@ const fetchOrderPaymentSettingsCached = unstable_cache(
 );
 
 /**
- * Fetch the store's minimum order value (server-side).
- * Returns 0 when no settings exist or the request fails — the cart nudge
- * simply doesn't render, and checkout preview stays the enforcement point.
+ * Fetch the order settings the cart UI nudges need (server-side).
+ * Zeros disable the corresponding nudge (also on fetch failure); checkout
+ * preview stays the enforcement point.
  */
-export async function getMinimumOrderValue(storeId: string): Promise<number> {
+export async function getCartOrderSettings(
+  storeId: string,
+): Promise<CartOrderSettings> {
   try {
     const settings = await fetchOrderPaymentSettingsCached(storeId);
-    return settings?.minimumOrderValue ?? 0;
+    return {
+      minimumOrderValue: settings?.minimumOrderValue ?? 0,
+      freeDeliveryThreshold: settings?.freeDeliveryThreshold ?? 0,
+    };
   } catch {
-    return 0;
+    return { minimumOrderValue: 0, freeDeliveryThreshold: 0 };
   }
 }
