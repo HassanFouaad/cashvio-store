@@ -430,6 +430,8 @@
       "whatsappMessage": "مرحباً! لدي استفسار بخصوص طلبي رقم {orderNumber}."
     },
     "discount": "خصم",
+    "tax": "الضريبة",
+    "serviceFees": "رسوم الخدمة",
     "deliveryFees": "رسوم التوصيل",
     "total": "الإجمالي"
   }

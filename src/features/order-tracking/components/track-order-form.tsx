@@ -352,6 +352,24 @@ export function TrackOrderForm({
                 </span>
               </div>
             )}
+            {result.totalTax > 0 && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t("tax")}</span>
+                <span className="font-medium">
+                  {formatCurrency(result.totalTax, result.currency, locale)}
+                </span>
+              </div>
+            )}
+            {result.serviceFees > 0 && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  {t("serviceFees")}
+                </span>
+                <span className="font-medium">
+                  {formatCurrency(result.serviceFees, result.currency, locale)}
+                </span>
+              </div>
+            )}
             {result.deliveryFees > 0 && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">

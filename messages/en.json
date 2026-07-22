@@ -430,6 +430,8 @@
       "whatsappMessage": "Hi! I have a question about my order {orderNumber}."
     },
     "discount": "Discount",
+    "tax": "Tax",
+    "serviceFees": "Service Fees",
     "deliveryFees": "Delivery Fees",
     "total": "Total"
   }
