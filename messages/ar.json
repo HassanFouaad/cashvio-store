@@ -67,6 +67,9 @@
     "recentlyViewed": {
       "title": "شاهدتها مؤخراً"
     },
+    "relatedProducts": {
+      "title": "قد يعجبك أيضاً"
+    },
     "categories": {
       "title": "تسوق حسب المجموعة",
       "viewAll": "عرض الكل",
@@ -221,7 +224,8 @@
     "productDetail": {
       "title": "المنتج غير موجود",
       "titleWithStore": "{productName} - {storeName}",
-      "descriptionWithStore": "اشتر {productName} من {storeName}"
+      "descriptionWithStore": "اشتر {productName} من {storeName}",
+      "descriptionWithPrice": "اشتر {productName} من {storeName} بسعر {price}"
     },
     "track": {
       "title": "تتبع الطلب",
@@ -383,6 +387,7 @@
     "saveNumberHint": "احتفظ بهذا الرقم — ستحتاجه لتتبع طلبك.",
     "pickupLocation": "مكان الاستلام",
     "pickupLocationFallback": "تواصل مع المتجر لمعرفة عنوان الاستلام وكيفية الوصول.",
+    "tableNumber": "رقم الطاولة",
     "recapTitle": "ملخص الطلب",
     "moreItems": "+ {count} منتجات أخرى",
     "total": "الإجمالي",
@@ -418,10 +423,12 @@
       "preparing": "يقوم المتجر بتحضير طلبك الآن.",
       "readyPickup": "طلبك جاهز — يمكنك استلامه من المتجر.",
       "readyDelivery": "تم تجهيز طلبك وسيتم تسليمه للمندوب قريباً.",
+      "readyDineIn": "طلبك جاهز وسيتم إحضاره إلى طاولتك.",
       "delivering": "طلبك مع المندوب وفي الطريق إليك.",
       "completed": "تم تنفيذ طلبك. شكراً لتسوقك معنا!",
       "cancelled": "إذا لم تتوقع ذلك أو لديك أي استفسار، يمكن للمتجر مساعدتك."
     },
+    "tableNumber": "رقم الطاولة",
     "contactMerchant": {
       "title": "تحتاج مساعدة بخصوص طلبك؟",
       "description": "يمكن للمتجر الإجابة عن استفساراتك حول حالة الطلب أو التوصيل أو التعديلات.",

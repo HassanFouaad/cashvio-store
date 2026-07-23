@@ -67,6 +67,9 @@
     "recentlyViewed": {
       "title": "Recently viewed"
     },
+    "relatedProducts": {
+      "title": "You may also like"
+    },
     "categories": {
       "title": "Shop by Collection",
       "viewAll": "View All",
@@ -221,7 +224,8 @@
     "productDetail": {
       "title": "Product Not Found",
       "titleWithStore": "{productName} - {storeName}",
-      "descriptionWithStore": "Buy {productName} at {storeName}"
+      "descriptionWithStore": "Buy {productName} at {storeName}",
+      "descriptionWithPrice": "Buy {productName} at {storeName} for {price}"
     },
     "track": {
       "title": "Track Order",
@@ -383,6 +387,7 @@
     "saveNumberHint": "Keep this number — you'll need it to track your order.",
     "pickupLocation": "Pickup location",
     "pickupLocationFallback": "Contact the store for the pickup address and directions.",
+    "tableNumber": "Table number",
     "recapTitle": "Order Summary",
     "moreItems": "+ {count} more items",
     "total": "Total",
@@ -418,10 +423,12 @@
       "preparing": "The store is preparing your order right now.",
       "readyPickup": "Your order is ready — you can pick it up from the store.",
       "readyDelivery": "Your order is packed and will be handed to the courier shortly.",
+      "readyDineIn": "Your order is ready and will be brought to your table.",
       "delivering": "Your order is with the courier and on its way to you.",
       "completed": "Your order has been fulfilled. Thanks for shopping with us!",
       "cancelled": "If you didn't expect this or have questions, the store can help."
     },
+    "tableNumber": "Table number",
     "contactMerchant": {
       "title": "Need help with your order?",
       "description": "The store can answer questions about your order status, delivery, or changes.",

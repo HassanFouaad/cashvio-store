@@ -9,7 +9,7 @@ import {
 } from "@/features/checkout/utils/order-success-recap";
 import { buildPoweredByUrl } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils/formatters";
-import { Check, CheckCircle, Copy, Home, PackageSearch } from "lucide-react";
+import { Check, CheckCircle, Copy, Home, PackageSearch, UtensilsCrossed } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -145,6 +145,24 @@ function OrderSuccessContent() {
               location={recap.pickupLocation}
               variant="success"
             />
+          )}
+
+        {/* Table number reminder for dine-in orders */}
+        {recap?.fulfillmentMethod === FulfillmentMethod.DINE_IN &&
+          recap.tableNumber && (
+            <div
+              className="p-4 bg-muted/50 rounded-xl border border-border space-y-1"
+              aria-label={t("tableNumber")}
+            >
+              <div className="flex items-center gap-2">
+                <UtensilsCrossed
+                  className="h-5 w-5 text-primary shrink-0"
+                  aria-hidden
+                />
+                <p className="text-sm font-semibold">{t("tableNumber")}</p>
+              </div>
+              <p className="text-lg font-bold ps-7">{recap.tableNumber}</p>
+            </div>
           )}
 
         {/* Order recap (stored locally at checkout — survives refresh) */}

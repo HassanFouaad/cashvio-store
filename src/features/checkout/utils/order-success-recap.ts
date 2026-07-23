@@ -29,6 +29,8 @@ export interface OrderSuccessRecap {
   moreItemsCount: number;
   fulfillmentMethod?: FulfillmentMethod;
   pickupLocation?: StorePickupLocation;
+  /** Table / seat label for DINE_IN orders */
+  tableNumber?: string;
   /** Checkout phone — lets the track page prefill the verification field */
   phone?: string;
 }
@@ -65,6 +67,7 @@ export function buildOrderSuccessRecap(params: {
   items: Array<{ name: string; variant: string; quantity: number }>;
   fulfillmentMethod?: FulfillmentMethod;
   pickupLocation?: StorePickupLocation;
+  tableNumber?: string;
   phone?: string;
 }): OrderSuccessRecap {
   return {
@@ -75,6 +78,7 @@ export function buildOrderSuccessRecap(params: {
     moreItemsCount: Math.max(0, params.items.length - MAX_RECAP_ITEMS),
     fulfillmentMethod: params.fulfillmentMethod,
     pickupLocation: params.pickupLocation,
+    tableNumber: params.tableNumber,
     phone: params.phone,
   };
 }

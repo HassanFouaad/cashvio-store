@@ -14,6 +14,8 @@ import {
 import type { StorePickupLocation } from "@/features/checkout/utils/pickup-location";
 import { TrackBeginCheckoutEvent } from "@/lib/analytics/track-cart-events";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
+import { COUPON_QUERY_PARAM } from "@/lib/constants";
+import { normalizeCouponCode } from "@/lib/coupon-deep-link";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
@@ -65,7 +67,11 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function CheckoutPage() {
+interface CheckoutPageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
   // Resolve store and set API context
   const { store, subdomain } = await resolveRequestStore();
 
@@ -75,6 +81,11 @@ export default async function CheckoutPage() {
 
   const t = await getTranslations("checkout");
   const locale = await getLocale();
+  const resolvedSearchParams = await searchParams;
+  const rawCoupon = resolvedSearchParams[COUPON_QUERY_PARAM];
+  const initialCouponCode = normalizeCouponCode(
+    Array.isArray(rawCoupon) ? rawCoupon[0] : rawCoupon,
+  );
 
   // Fetch checkout config in parallel. Delivery zones are fetched
   // speculatively (only wasted when the store doesn't offer delivery,
@@ -160,6 +171,7 @@ export default async function CheckoutPage() {
             storefrontPaymentMethods={storefrontPaymentMethods}
             defaultPhoneCountry={store.country?.code?.toLowerCase()}
             pickupLocation={buildPickupLocation(store, locale)}
+            initialCouponCode={initialCouponCode}
           />
         </div>
       </section>

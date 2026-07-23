@@ -59,6 +59,8 @@ export interface CreateOrderPreviewRequest {
   customerPhone?: string;
   notes?: string;
   deliveryAddress?: OrderPreviewDeliveryAddress;
+  /** Optional table / seat label for DINE_IN (usually set by staff later) */
+  tableNumber?: string;
   /** Coupon code to validate and apply */
   couponCode?: string;
   /** Visitor ID — enables per-customer coupon limits for guests */
@@ -267,6 +269,8 @@ export interface CreateOrderRequest {
   customerPhone?: string;
   notes?: string;
   deliveryAddress?: OrderPreviewDeliveryAddress;
+  /** Optional table / seat label for DINE_IN (usually set by staff later) */
+  tableNumber?: string;
   visitorId: string;
   /** Payment method selected by the customer at checkout */
   paymentMethod?: PaymentMethod;

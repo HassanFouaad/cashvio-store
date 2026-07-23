@@ -29,6 +29,19 @@ export const STORE_ID_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 export const LANG_QUERY_PARAM = "lang";
 
 /**
+ * Promo deep-link query param (`?coupon=CODE`). Captured on any page and
+ * auto-applied when the shopper reaches checkout.
+ */
+export const COUPON_QUERY_PARAM = "coupon";
+
+/** sessionStorage key for a pending coupon captured from the URL */
+export const PENDING_COUPON_STORAGE_KEY = "sf_pending_coupon";
+
+/** Open Graph / social share image dimensions (WhatsApp, Facebook) */
+export const OG_IMAGE_WIDTH = 1200;
+export const OG_IMAGE_HEIGHT = 630;
+
+/**
  * Internal request header set by the middleware when ?lang= is present so
  * the CURRENT render uses the requested language (the cookie only affects
  * subsequent requests).

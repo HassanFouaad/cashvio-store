@@ -37,6 +37,12 @@ import {
 } from "@/features/checkout/utils/order-success-recap";
 import type { StorePickupLocation } from "@/features/checkout/utils/pickup-location";
 import { analytics } from "@/lib/analytics";
+import {
+  clearPendingCoupon,
+  consumePendingCoupon,
+  normalizeCouponCode,
+  persistPendingCoupon,
+} from "@/lib/coupon-deep-link";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { getOrCreateVisitorId } from "@/lib/visitor/visitor-id";
 import {
@@ -83,6 +89,11 @@ interface CheckoutFormProps {
   defaultPhoneCountry?: string;
   /** Store pickup address shown when PICKUP is selected */
   pickupLocation: StorePickupLocation;
+  /**
+   * Coupon from `?coupon=` on the checkout URL. Applied once on mount;
+   * falls back to a code captured earlier via sessionStorage.
+   */
+  initialCouponCode?: string | null;
 }
 
 const PAYMENT_METHOD_ICONS: Record<PaymentMethod, typeof CreditCard> = {
@@ -101,12 +112,14 @@ const FULFILLMENT_ICONS = {
 const FULFILLMENT_PRIORITY: FulfillmentMethod[] = [
   FulfillmentMethod.DELIVERY,
   FulfillmentMethod.PICKUP,
+  FulfillmentMethod.DINE_IN,
 ];
 
-// Fulfillment methods allowed for storefront orders (only PICKUP and DELIVERY)
+// Fulfillment methods allowed for storefront orders
 const ALLOWED_STOREFRONT_METHODS: FulfillmentMethod[] = [
   FulfillmentMethod.DELIVERY,
   FulfillmentMethod.PICKUP,
+  FulfillmentMethod.DINE_IN,
 ];
 
 export function CheckoutForm({
@@ -119,6 +132,7 @@ export function CheckoutForm({
   storefrontPaymentMethods,
   defaultPhoneCountry,
   pickupLocation,
+  initialCouponCode = null,
 }: CheckoutFormProps) {
   const t = useTranslations("checkout");
   const tCart = useTranslations("cart");
@@ -151,7 +165,7 @@ export function CheckoutForm({
   // never overwrite a newer one (user changes city quickly, totals race).
   const previewSeqRef = useRef(0);
 
-  // Filter to allowed methods (PICKUP, DELIVERY only) and sort with Delivery first
+  // Filter to allowed methods and sort with Delivery first
   const sortedFulfillmentMethods = useMemo(() => {
     return [...fulfillmentMethods]
       .filter((m) => ALLOWED_STOREFRONT_METHODS.includes(m.fulfillmentMethod))
@@ -261,6 +275,7 @@ export function CheckoutForm({
   const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(
     null,
   );
+  const hasAppliedDeepLinkCouponRef = useRef(false);
 
   // Validate cart on mount - refetch to ensure latest stock info
   useEffect(() => {
@@ -270,6 +285,40 @@ export function CheckoutForm({
       fetchCart();
     }
   }, [isInitialized, fetchCart]);
+
+  // Auto-apply `?coupon=` (checkout URL or earlier landing-page capture).
+  // Wait until the cart is ready with items — an empty-cart redirect would
+  // otherwise consume the code and lose it before the shopper returns.
+  useEffect(() => {
+    if (hasAppliedDeepLinkCouponRef.current) {
+      return;
+    }
+    if (!isInitialized || isSyncing) {
+      return;
+    }
+
+    const fromUrl = normalizeCouponCode(initialCouponCode);
+
+    if (items.length === 0) {
+      // Keep the deep-link alive across the empty-cart redirect to /cart
+      if (fromUrl) {
+        persistPendingCoupon(fromUrl);
+      }
+      return;
+    }
+
+    hasAppliedDeepLinkCouponRef.current = true;
+    const fromStorage = consumePendingCoupon();
+    const code = fromUrl ?? fromStorage;
+    if (!code) {
+      return;
+    }
+
+    // Re-persist so a stock-issue redirect to /cart does not lose the code
+    persistPendingCoupon(code);
+    setCouponInput(code);
+    setAppliedCouponCode(code);
+  }, [initialCouponCode, isInitialized, isSyncing, items.length]);
 
   // Redirect to cart if empty or has stock issues (after validation)
   useEffect(() => {
@@ -782,6 +831,7 @@ export function CheckoutForm({
 
       // Clear cart on frontend
       await clearCart();
+      clearPendingCoupon();
 
       // Set a session token to allow access to the order success page
       try {
@@ -817,6 +867,7 @@ export function CheckoutForm({
     t,
     selectedPaymentMethod,
     receiptFileKey,
+    pickupLocation,
   ]);
 
   // Form submit — validates and surfaces inline messages instead of

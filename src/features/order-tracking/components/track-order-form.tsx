@@ -117,6 +117,7 @@ export function TrackOrderForm({
   const isCancelled =
     result?.fulfillmentStatus === FulfillmentStatus.CANCELLED;
   const isDelivery = result?.fulfillmentMethod === FulfillmentMethod.DELIVERY;
+  const isDineIn = result?.fulfillmentMethod === FulfillmentMethod.DINE_IN;
   const steps = isDelivery ? DELIVERY_STEPS : PICKUP_STEPS;
   const currentStepIndex = result
     ? Math.max(0, steps.indexOf(result.fulfillmentStatus))
@@ -127,9 +128,17 @@ export function TrackOrderForm({
     ? result.fulfillmentStatus === FulfillmentStatus.READY
       ? isDelivery
         ? "readyDelivery"
-        : "readyPickup"
+        : isDineIn
+          ? "readyDineIn"
+          : "readyPickup"
       : result.fulfillmentStatus.toLowerCase()
     : null;
+
+  // Table number from the checkout recap (same session) when tracking a dine-in order
+  const dineInTableNumber =
+    result?.fulfillmentMethod === FulfillmentMethod.DINE_IN
+      ? getOrderSuccessRecap(result.orderNumber)?.tableNumber
+      : undefined;
 
   // Contact the merchant about this order — WhatsApp honors the store's
   // visibility toggle; calling uses the public contact phone
@@ -311,6 +320,13 @@ export function TrackOrderForm({
             {expectationKey && (
               <p className="mt-4 text-sm text-muted-foreground">
                 {t(`statusExpectation.${expectationKey}`)}
+              </p>
+            )}
+
+            {dineInTableNumber && (
+              <p className="mt-3 text-sm">
+                <span className="text-muted-foreground">{t("tableNumber")}: </span>
+                <span className="font-semibold">{dineInTableNumber}</span>
               </p>
             )}
           </div>

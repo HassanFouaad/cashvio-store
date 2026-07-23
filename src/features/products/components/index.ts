@@ -11,4 +11,5 @@ export { ProductsFilterBar } from './products-filter-bar';
 export { ProductsGrid } from './products-grid';
 export { ProductsSection } from './products-section';
 export { RecentlyViewedSection } from './recently-viewed-section';
+export { RelatedProductsSection } from './related-products-section';
 

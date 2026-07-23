@@ -27,7 +27,7 @@ export function ProductShareButtons({
   const [copied, setCopied] = useState(false);
 
   const whatsappHref = `https://wa.me/?text=${encodeURIComponent(
-    `${productName} — ${productUrl}`,
+    `${productName}: ${productUrl}`,
   )}`;
   const facebookHref = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
     productUrl,

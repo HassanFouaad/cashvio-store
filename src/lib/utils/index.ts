@@ -20,6 +20,9 @@ export { serializeJsonLd } from './json-ld';
 // hreflang alternates for bilingual pages
 export { buildLanguageAlternates } from './seo';
 
+// Absolute URLs for Open Graph / social crawlers
+export { toAbsoluteUrl } from './to-absolute-url';
+
 // Tenant brand color CSS
 export { buildBrandStyle } from './brand-style';
 

@@ -1,3 +1,4 @@
+import { CouponDeepLinkCapture } from "@/components/coupon-deep-link-capture";
 import { LocaleInitializer } from "@/components/locale-initializer";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { VisitorTracker } from "@/components/visitor-tracker";
@@ -15,7 +16,8 @@ import {
 import { AnalyticsProvider } from "@/lib/analytics";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { setApiLocale } from "@/lib/api/types";
-import { buildBrandStyle } from "@/lib/utils";
+import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/lib/constants";
+import { buildBrandStyle, toAbsoluteUrl } from "@/lib/utils";
 import { StoreProvider } from "@/providers/store-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { VisitorProvider } from "@/providers/visitor-provider";
@@ -31,6 +33,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { Cairo, Inter } from "next/font/google";
 import { cookies, headers } from "next/headers";
+import { Suspense } from "react";
 import "./globals.css";
 
 // Validate environment on startup
@@ -98,12 +101,16 @@ export async function generateMetadata(): Promise<Metadata> {
   // Favicon fallback chain: tenant favicon > store logo > default
   const faviconUrl = seo?.favIcon || store.storeFront.logoUrl || "/favicon.svg";
 
+  const hostname = (await headers()).get("host") || subdomain;
   // OG image: use hero image if available, otherwise favicon/logo
-  const ogImage =
+  const rawOgImage =
     store.storeFront.heroImages?.[0]?.imageUrl ||
     seo?.favIcon ||
     store.storeFront.logoUrl ||
     undefined;
+  const ogImage = rawOgImage
+    ? toAbsoluteUrl(rawOgImage, hostname)
+    : undefined;
 
   const metadata: Metadata = {
     title: {
@@ -129,7 +136,12 @@ export async function generateMetadata(): Promise<Metadata> {
       ...(ogImage
         ? {
             images: [
-              { url: ogImage, width: 1200, height: 630, alt: storeName },
+              {
+                url: ogImage,
+                width: OG_IMAGE_WIDTH,
+                height: OG_IMAGE_HEIGHT,
+                alt: storeName,
+              },
             ],
           }
         : {}),
@@ -141,7 +153,7 @@ export async function generateMetadata(): Promise<Metadata> {
       ...(ogImage ? { images: [ogImage] } : {}),
     },
     metadataBase: subdomain
-      ? new URL(`https://${(await headers()).get("host") || subdomain}`)
+      ? new URL(`https://${hostname}`)
       : new URL(appConfig.baseUrl),
   };
 
@@ -239,6 +251,10 @@ export default async function RootLayout({
                     {/* Initialize cart store with store info - renders nothing */}
                     <CartInitializer currency={store.currency} />
                     <VisitorTracker storeId={store.id} />
+                    {/* Capture ?coupon= from any page for checkout auto-apply */}
+                    <Suspense fallback={null}>
+                      <CouponDeepLinkCapture />
+                    </Suspense>
                     {/* Analytics: GTM + Facebook Pixel + TikTok Pixel (per-tenant configuration) */}
                     <AnalyticsProvider
                       gtmId={store.storeFront?.webEvents?.gtmId}

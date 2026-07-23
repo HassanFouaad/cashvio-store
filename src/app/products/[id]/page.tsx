@@ -2,9 +2,16 @@ import { getProductReviewsWithErrorHandling } from "@/features/products/api/get-
 import { getProductByIdWithErrorHandling } from "@/features/products/api/get-products";
 import { ProductDetails } from "@/features/products/components/product-details";
 import { RecentlyViewedSection } from "@/features/products/components/recently-viewed-section";
+import { RelatedProductsSection } from "@/features/products/components/related-products-section";
 import { TrackViewItem } from "@/lib/analytics/track-event";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
-import { buildLanguageAlternates, serializeJsonLd } from "@/lib/utils";
+import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/lib/constants";
+import {
+  buildLanguageAlternates,
+  serializeJsonLd,
+  toAbsoluteUrl,
+} from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils/formatters";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
@@ -44,35 +51,64 @@ export async function generateMetadata({
 
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
+  const locale = await getLocale();
+
+  const prices = product.variants?.map((v) => v.sellingPrice) ?? [];
+  const minPrice = prices.length > 0 ? Math.min(...prices) : null;
+  const priceLabel =
+    minPrice != null
+      ? formatCurrency(minPrice, store.currency, locale)
+      : null;
+
+  const plainDescription =
+    product.description?.replace(/<[^>]*>/g, "").trim().slice(0, 120) || "";
+  const priceDescription = priceLabel
+    ? t("descriptionWithPrice", {
+        productName: product.name,
+        storeName: store.name,
+        price: priceLabel,
+      })
+    : t("descriptionWithStore", {
+        productName: product.name,
+        storeName: store.name,
+      });
+  // Lead with price for share CTR; keep a short product blurb when present
+  const ogDescription = plainDescription
+    ? `${priceDescription}. ${plainDescription}`.slice(0, 200)
+    : priceDescription;
+
+  const ogImageUrl = primaryImage
+    ? toAbsoluteUrl(primaryImage.imageUrl, hostname)
+    : undefined;
 
   return {
     title: t("titleWithStore", {
       productName: product.name,
       storeName: store.name,
     }),
-    description:
-      product.description?.replace(/<[^>]*>/g, "").slice(0, 160) ||
-      t("descriptionWithStore", {
-        productName: product.name,
-        storeName: store.name,
-      }),
+    description: ogDescription,
     openGraph: {
       title: `${product.name} | ${store.name}`,
-      description:
-        product.description?.replace(/<[^>]*>/g, "").slice(0, 160) ||
-        t("descriptionWithStore", {
-          productName: product.name,
-          storeName: store.name,
-        }),
+      description: ogDescription,
       type: "website",
-      ...(primaryImage
-        ? { images: [{ url: primaryImage.imageUrl, alt: product.name }] }
+      ...(ogImageUrl
+        ? {
+            images: [
+              {
+                url: ogImageUrl,
+                width: OG_IMAGE_WIDTH,
+                height: OG_IMAGE_HEIGHT,
+                alt: product.name,
+              },
+            ],
+          }
         : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: `${product.name} | ${store.name}`,
-      ...(primaryImage ? { images: [primaryImage.imageUrl] } : {}),
+      description: ogDescription,
+      ...(ogImageUrl ? { images: [ogImageUrl] } : {}),
     },
     alternates: {
       canonical: `https://${hostname}/products/${id}`,
@@ -242,6 +278,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
           reviews={reviewsData}
           productUrl={`https://${hostname}/products/${id}`}
         />
+
+        {product.categoryId && (
+          <RelatedProductsSection
+            storeId={store.id}
+            tenantId={store.tenantId}
+            categoryId={product.categoryId}
+            currentProductId={product.id}
+            currency={store.currency}
+          />
+        )}
 
         {/* Recently viewed strip (client-side history, excludes this product) */}
         <RecentlyViewedSection
