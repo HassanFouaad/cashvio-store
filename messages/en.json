@@ -57,7 +57,9 @@
       "promotionLabel": "{storeName} promotion",
       "previousImage": "Previous image",
       "nextImage": "Next image",
-      "goToImage": "Go to image {index}"
+      "goToImage": "Go to image {index}",
+      "tagline": "Discover our latest products and offers",
+      "shopNow": "Shop now"
     },
     "gallery": {
       "imageSelector": "Image selector",

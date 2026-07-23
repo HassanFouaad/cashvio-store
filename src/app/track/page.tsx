@@ -33,9 +33,9 @@ export default async function TrackOrderPage() {
   const locale = await getLocale();
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden">
+    <div className="sf-order-shell w-full max-w-full overflow-x-hidden">
       {/* Page Header */}
-      <section className="w-full max-w-full bg-muted/30 py-6 sm:py-8 md:py-12">
+      <section className="sf-order-header w-full max-w-full bg-muted/30 py-6 sm:py-8 md:py-12">
         <div className="container">
           <div className="max-w-3xl mx-auto text-center space-y-2">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">

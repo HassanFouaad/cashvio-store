@@ -5,6 +5,7 @@ import {
   RELATED_PRODUCTS_LIMIT,
 } from "@/features/products/constants/related-products";
 import { ProductCardTranslations } from "@/features/products/utils";
+import { resolveRequestTheme } from "@/lib/theme";
 import { LayoutGrid } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -30,6 +31,7 @@ export async function RelatedProductsSection({
   const t = await getTranslations("store.relatedProducts");
   const tProducts = await getTranslations("store.products");
   const locale = await getLocale();
+  const resolvedTheme = await resolveRequestTheme();
 
   const { products } = await getProductsWithErrorHandling({
     storeId,
@@ -68,6 +70,7 @@ export async function RelatedProductsSection({
             currency={currency}
             locale={locale}
             translations={productTranslations}
+            variant={resolvedTheme.layout.productCard}
           />
         ))}
       </div>

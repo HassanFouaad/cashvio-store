@@ -165,7 +165,7 @@ export function TrackOrderForm({
       {/* Lookup form */}
       <form
         onSubmit={handleSubmit}
-        className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4"
+        className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4"
         aria-label={t("formAriaLabel")}
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -227,7 +227,7 @@ export function TrackOrderForm({
 
       {/* Not found */}
       {notFound && (
-        <div className="flex items-start gap-3 p-4 rounded-xl border border-border">
+        <div className="sf-panel flex items-start gap-3 p-4 rounded-xl border border-border">
           <PackageSearch className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
           <div className="space-y-1">
             <p className="text-sm font-medium">{t("notFoundTitle")}</p>
@@ -240,7 +240,7 @@ export function TrackOrderForm({
 
       {/* Result */}
       {result && (
-        <div className="rounded-xl border border-border overflow-hidden">
+        <div className="sf-panel rounded-xl border border-border overflow-hidden">
           {/* Header */}
           <div className="p-4 sm:p-6 bg-muted/50 flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -408,7 +408,7 @@ export function TrackOrderForm({
 
       {/* Contact the merchant — after a result or a failed lookup */}
       {showContactMerchant && (
-        <div className="p-4 sm:p-6 rounded-xl border border-border bg-muted/30 space-y-3">
+        <div className="sf-panel p-4 sm:p-6 rounded-xl border border-border bg-muted/30 space-y-3">
           <div>
             <p className="text-sm font-semibold">{t("contactMerchant.title")}</p>
             <p className="text-sm text-muted-foreground">

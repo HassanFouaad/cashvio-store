@@ -84,7 +84,7 @@ function OrderSuccessContent() {
   }
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center px-4 py-12 sm:py-20">
+    <div className="sf-order-shell min-h-[60vh] flex items-center justify-center px-4 py-12 sm:py-20">
       <div className="w-full max-w-md space-y-6">
         {/* Confirmation heading */}
         <div className="text-center space-y-3">
@@ -103,7 +103,7 @@ function OrderSuccessContent() {
 
         {/* Order number card */}
         {orderNumber && (
-          <div className="p-4 bg-muted/50 rounded-xl border border-border">
+          <div className="sf-panel p-4 bg-muted/50 rounded-xl border border-border">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
@@ -151,7 +151,7 @@ function OrderSuccessContent() {
         {recap?.fulfillmentMethod === FulfillmentMethod.DINE_IN &&
           recap.tableNumber && (
             <div
-              className="p-4 bg-muted/50 rounded-xl border border-border space-y-1"
+              className="sf-panel p-4 bg-muted/50 rounded-xl border border-border space-y-1"
               aria-label={t("tableNumber")}
             >
               <div className="flex items-center gap-2">
@@ -167,7 +167,7 @@ function OrderSuccessContent() {
 
         {/* Order recap (stored locally at checkout — survives refresh) */}
         {recap && recap.items.length > 0 && (
-          <div className="rounded-xl border border-border overflow-hidden">
+          <div className="sf-panel rounded-xl border border-border overflow-hidden">
             <div className="px-4 py-3 bg-muted/50 border-b border-border">
               <p className="text-sm font-semibold">{t("recapTitle")}</p>
             </div>

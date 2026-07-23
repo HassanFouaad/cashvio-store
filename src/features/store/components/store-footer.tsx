@@ -1,265 +1,31 @@
-import { buildPoweredByUrl, buildStoreWhatsAppLink } from "@/lib/utils";
+import { resolveRequestTheme } from "@/lib/theme";
 import {
-  Facebook,
-  Globe,
-  Instagram,
-  Mail,
-  MessageCircle,
-  Music2,
-  Phone,
-  Youtube,
-} from "lucide-react";
-import { getLocale, getTranslations } from "next-intl/server";
-import Link from "next/link";
-import { getStaticPages } from "../api/get-static-pages";
-import { PublicStoreDto } from "../types/store.types";
+  PublicStoreDto,
+  StoreFrontThemeFooterVariant,
+} from "../types/store.types";
+import { FooterCentered } from "./footer/footer-centered";
+import { FooterClassic } from "./footer/footer-classic";
+import { FooterMinimal } from "./footer/footer-minimal";
 
 interface StoreFooterProps {
   store: PublicStoreDto;
 }
 
+/**
+ * Theme-aware footer dispatcher (server component — resolves the request
+ * theme itself). Defaults to CLASSIC so stores without a theme render
+ * exactly as before.
+ */
 export async function StoreFooter({ store }: StoreFooterProps) {
-  const t = await getTranslations();
-  const locale = await getLocale();
-  const socialMedia = store.storeFront?.socialMedia;
-  const whatsAppLink = buildStoreWhatsAppLink(socialMedia);
-  // Use a stable year value to avoid hydration mismatches
-  const currentYear = new Date().getUTCFullYear();
+  const resolvedTheme = await resolveRequestTheme();
 
-  // Tenant-configured footer text — per-language with cross-language fallback
-  const customFooterText = (
-    locale === "ar"
-      ? store.storeFront?.footerTextAr || store.storeFront?.footerTextEn
-      : store.storeFront?.footerTextEn || store.storeFront?.footerTextAr
-  )?.trim();
-
-  // Fetch static pages for the store
-  const staticPages = await getStaticPages(store.id, locale);
-
-  return (
-    <footer className="w-full max-w-full border-t bg-muted/50 overflow-hidden py-6 sm:py-10">
-      <div className="container">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 w-full">
-          {/* Store Info */}
-          <div className="w-full">
-            <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3 break-words">
-              {store.name}
-            </h3>
-            {(store.addressLine1 ||
-              store.addressLine2 ||
-              store.city?.name ||
-              store.country?.name) && (
-              <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 space-y-0.5">
-                {store.addressLine1 && (
-                  <span className="block break-words">
-                    {store.addressLine1}
-                  </span>
-                )}
-                {store.addressLine2 && (
-                  <span className="block break-words">
-                    {store.addressLine2}
-                  </span>
-                )}
-                {(store.city?.name || store.country?.name) && (
-                  <span className="block break-words">
-                    {[store.city?.name, store.country?.name]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </span>
-                )}
-              </p>
-            )}
-            {socialMedia?.contactPhone && (
-              <div className="flex items-center gap-2 text-xs sm:text-sm">
-                <Phone className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-                <span className="break-all">{socialMedia.contactPhone}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Quick Links */}
-          <div className="w-full">
-            <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3">
-              {t("footer.quickLinks")}
-            </h3>
-            <ul className="space-y-1.5 sm:space-y-2">
-              <li>
-                <Link
-                  href="/"
-                  className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {t("common.home")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/categories"
-                  className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {t("common.collections")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/products"
-                  className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {t("common.products")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/track"
-                  className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {t("common.trackOrder")}
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Policy Pages / Static Pages */}
-          {staticPages.length > 0 && (
-            <div className="w-full">
-              <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3">
-                {t("footer.policies")}
-              </h3>
-              <ul className="space-y-1.5 sm:space-y-2">
-                {staticPages.map((page) => (
-                  <li key={page.id}>
-                    <Link
-                      href={`/pages/${page.slug}`}
-                      className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {page.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Social Media */}
-          {socialMedia && (
-            <div className="w-full sm:col-span-2 md:col-span-1">
-              <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3">
-                {t("footer.connectWithUs")}
-              </h3>
-              <div className="flex gap-3 sm:gap-4">
-                {whatsAppLink && (
-                  <a
-                    href={whatsAppLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label={t("contact.whatsapp")}
-                  >
-                    <MessageCircle className="h-5 w-5" />
-                  </a>
-                )}
-                {socialMedia.contactEmail && (
-                  <a
-                    href={`mailto:${socialMedia.contactEmail}`}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label={t("contact.email")}
-                  >
-                    <Mail className="h-5 w-5" />
-                  </a>
-                )}
-                {socialMedia.facebook && (
-                  <a
-                    href={socialMedia.facebook}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label="Facebook"
-                  >
-                    <Facebook className="h-5 w-5" />
-                  </a>
-                )}
-                {socialMedia.instagram && (
-                  <a
-                    href={socialMedia.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label="Instagram"
-                  >
-                    <Instagram className="h-5 w-5" />
-                  </a>
-                )}
-                {socialMedia.tiktok && (
-                  <a
-                    href={socialMedia.tiktok}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label="TikTok"
-                  >
-                    <Music2 className="h-5 w-5" />
-                  </a>
-                )}
-                {socialMedia.youtube && (
-                  <a
-                    href={socialMedia.youtube}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label="YouTube"
-                  >
-                    <Youtube className="h-5 w-5" />
-                  </a>
-                )}
-                {socialMedia.website && (
-                  <a
-                    href={socialMedia.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label="Website"
-                  >
-                    <Globe className="h-5 w-5" />
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="mt-5 sm:mt-8 pt-5 sm:pt-8 border-t text-center w-full space-y-2">
-          {customFooterText && (
-            <p className="text-xs sm:text-sm text-muted-foreground break-words leading-relaxed whitespace-pre-line">
-              {customFooterText}
-            </p>
-          )}
-          <p className="text-[10px] sm:text-xs text-muted-foreground break-words leading-relaxed">
-            {t("footer.copyright", {
-              year: currentYear,
-              storeName: store.name,
-            })}
-          </p>
-          <p className="text-[10px] sm:text-xs text-muted-foreground/70">
-            {t("footer.poweredBy")}{" "}
-            <a
-              href={buildPoweredByUrl("storefront_footer")}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Cashvio
-            </a>
-            {" · "}
-            <a
-              href={buildPoweredByUrl("storefront_footer")}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline underline-offset-2 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t("footer.poweredByCta")}
-            </a>
-          </p>
-        </div>
-      </div>
-    </footer>
-  );
+  switch (resolvedTheme.layout.footer) {
+    case StoreFrontThemeFooterVariant.CENTERED:
+      return <FooterCentered store={store} />;
+    case StoreFrontThemeFooterVariant.MINIMAL:
+      return <FooterMinimal store={store} />;
+    case StoreFrontThemeFooterVariant.CLASSIC:
+    default:
+      return <FooterClassic store={store} />;
+  }
 }

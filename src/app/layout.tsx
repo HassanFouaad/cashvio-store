@@ -17,13 +17,22 @@ import { AnalyticsProvider } from "@/lib/analytics";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { setApiLocale } from "@/lib/api/types";
 import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/lib/constants";
-import { buildBrandStyle, toAbsoluteUrl } from "@/lib/utils";
+import {
+  buildThemeStyle,
+  getThemeFontClassNames,
+  resolveRequestTheme,
+} from "@/lib/theme";
+import { toAbsoluteUrl } from "@/lib/utils";
 import { StoreProvider } from "@/providers/store-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { VisitorProvider } from "@/providers/visitor-provider";
 import {
+  StoreFrontThemeButtonVariant,
+  StoreFrontThemeIconStyle,
+  StoreFrontThemeOrderPagesVariant,
+} from "@/features/store/types/store.types";
+import {
   getDirectionForLocale,
-  getFontFamilyForLocale,
   isValidLocale,
   Locale,
   Theme,
@@ -31,7 +40,6 @@ import {
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
-import { Cairo, Inter } from "next/font/google";
 import { cookies, headers } from "next/headers";
 import { Suspense } from "react";
 import "./globals.css";
@@ -44,22 +52,6 @@ if (appConfig.isDevelopment) {
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-  preload: true,
-  adjustFontFallback: true,
-});
-
-const cairo = Cairo({
-  subsets: ["arabic", "latin"],
-  variable: "--font-cairo",
-  display: "swap",
-  preload: true,
-  adjustFontFallback: true,
-});
 
 export async function generateMetadata(): Promise<Metadata> {
   // Resolve store and set API context (critical for X-Store-Id header)
@@ -181,7 +173,6 @@ export default async function RootLayout({
   setApiLocale(locale);
 
   const direction = getDirectionForLocale(locale);
-  const fontFamily = getFontFamilyForLocale(locale);
 
   // Resolve store and set API context (cached — shares result with generateMetadata)
   const { store, subdomain: storeSubdomain } = await resolveRequestStore();
@@ -191,11 +182,11 @@ export default async function RootLayout({
   const isStoreFrontActive =
     !!store?.storeFront && store.storeFront.status === StoreFrontStatus.ACTIVE;
 
-  // Tenant brand colors — validated hex only, applied to theme tokens
-  const brandStyle = buildBrandStyle(
-    store?.storeFront?.primaryColor,
-    store?.storeFront?.primaryTextColor,
-  );
+  // Theme engine: assigned theme + merchant customizations + validated
+  // preview overrides, emitted as CSS-variable overrides (null = default)
+  const resolvedTheme = await resolveRequestTheme();
+  const themeStyle = buildThemeStyle(resolvedTheme);
+  const themeFonts = getThemeFontClassNames(resolvedTheme.fontPreset, locale);
 
   // Get visitor ID from cookie (set by middleware)
   const cookieStore = await cookies();
@@ -213,19 +204,40 @@ export default async function RootLayout({
     : null;
 
   return (
-    <html lang={locale} dir={direction} suppressHydrationWarning>
+    <html
+      lang={locale}
+      dir={direction}
+      suppressHydrationWarning
+      data-sf-buttons={
+        resolvedTheme.layout.buttonStyle ===
+        StoreFrontThemeButtonVariant.OUTLINE
+          ? StoreFrontThemeButtonVariant.OUTLINE
+          : undefined
+      }
+      data-sf-icons={
+        resolvedTheme.layout.iconStyle !== StoreFrontThemeIconStyle.OUTLINE
+          ? resolvedTheme.layout.iconStyle
+          : undefined
+      }
+      data-sf-order-pages={
+        resolvedTheme.layout.orderPages ===
+        StoreFrontThemeOrderPagesVariant.FLAT
+          ? StoreFrontThemeOrderPagesVariant.FLAT
+          : undefined
+      }
+    >
       <head>
         {/* Set store ID cookie BEFORE React hydrates */}
         {storeIdScript && (
           <script dangerouslySetInnerHTML={{ __html: storeIdScript }} />
         )}
-        {/* Tenant brand colors (hex-validated in buildBrandStyle) */}
-        {brandStyle && (
-          <style dangerouslySetInnerHTML={{ __html: brandStyle }} />
+        {/* Theme engine CSS variables (values validated in the theme lib) */}
+        {themeStyle && (
+          <style dangerouslySetInnerHTML={{ __html: themeStyle }} />
         )}
       </head>
       <body
-        className={`${inter.variable} ${cairo.variable} ${fontFamily} antialiased`}
+        className={`${themeFonts.variables} ${themeFonts.family} antialiased`}
         suppressHydrationWarning
       >
         <NextIntlClientProvider messages={messages} locale={locale}>
@@ -264,7 +276,10 @@ export default async function RootLayout({
                       tiktokPixelId={store.storeFront?.webEvents?.tiktokPixelId}
                     />
                     <StoreAnnouncementBar store={store} />
-                    <StoreHeader store={store} />
+                    <StoreHeader
+                      store={store}
+                      variant={resolvedTheme.layout.header}
+                    />
                     <main className="flex-1">{children}</main>
                     {/* Footer - hidden on mobile, shown on desktop */}
                     <div className="hidden md:block">
@@ -272,6 +287,7 @@ export default async function RootLayout({
                     </div>
                     {/* Mobile Bottom Navigation - only on mobile */}
                     <MobileBottomNav
+                      variant={resolvedTheme.layout.mobileNav}
                       socialMedia={store.storeFront?.socialMedia}
                       storeName={store.name}
                       storeId={store.id}

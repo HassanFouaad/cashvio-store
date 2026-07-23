@@ -64,10 +64,3 @@ export const isValidLocale = (value: string): value is Locale => {
 export const getDirectionForLocale = (locale: Locale): Direction => {
   return locale === Locale.ARABIC ? Direction.RTL : Direction.LTR;
 };
-
-/**
- * Helper function to get font family for a locale
- */
-export const getFontFamilyForLocale = (locale: Locale): FontFamily => {
-  return locale === Locale.ARABIC ? FontFamily.CAIRO : FontFamily.INTER;
-};

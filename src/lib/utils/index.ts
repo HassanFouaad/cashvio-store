@@ -23,9 +23,6 @@ export { buildLanguageAlternates } from './seo';
 // Absolute URLs for Open Graph / social crawlers
 export { toAbsoluteUrl } from './to-absolute-url';
 
-// Tenant brand color CSS
-export { buildBrandStyle } from './brand-style';
-
 // WhatsApp deep link
 export {
   buildStoreWhatsAppLink,

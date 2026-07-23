@@ -7,6 +7,168 @@ export enum StoreFrontStatus {
   INACTIVE = 'INACTIVE',
 }
 
+/**
+ * Merchant-selectable font pairing (en + ar capable).
+ * DEFAULT inherits the pairing defined by the assigned theme.
+ */
+export enum StoreFrontFontPreset {
+  DEFAULT = 'DEFAULT',
+  CLASSIC = 'CLASSIC',
+  MODERN = 'MODERN',
+  TECHNICAL = 'TECHNICAL',
+  ELEGANT = 'ELEGANT',
+  FRIENDLY = 'FRIENDLY',
+  CLEAN = 'CLEAN',
+}
+
+/**
+ * Corner radius scale. DEFAULT inherits the radius defined by the theme.
+ */
+export enum StoreFrontRadiusPreset {
+  DEFAULT = 'DEFAULT',
+  SHARP = 'SHARP',
+  SOFT = 'SOFT',
+  ROUNDED = 'ROUNDED',
+  PILL = 'PILL',
+}
+
+/** Structural layout of the storefront header */
+export enum StoreFrontThemeHeaderVariant {
+  CLASSIC = 'CLASSIC',
+  CENTERED = 'CENTERED',
+  MINIMAL = 'MINIMAL',
+}
+
+/** Structural layout of the homepage hero */
+export enum StoreFrontThemeHeroVariant {
+  CAROUSEL = 'CAROUSEL',
+  SPLIT = 'SPLIT',
+  FULL_BLEED = 'FULL_BLEED',
+}
+
+/** Structural layout of product cards */
+export enum StoreFrontThemeProductCardVariant {
+  STANDARD = 'STANDARD',
+  OVERLAY = 'OVERLAY',
+  MINIMAL = 'MINIMAL',
+}
+
+/** Structural layout of the storefront footer */
+export enum StoreFrontThemeFooterVariant {
+  CLASSIC = 'CLASSIC',
+  CENTERED = 'CENTERED',
+  MINIMAL = 'MINIMAL',
+}
+
+/** Visual style of primary action buttons */
+export enum StoreFrontThemeButtonVariant {
+  SOLID = 'SOLID',
+  OUTLINE = 'OUTLINE',
+}
+
+/** Stroke personality of storefront icons */
+export enum StoreFrontThemeIconStyle {
+  OUTLINE = 'OUTLINE',
+  LIGHT = 'LIGHT',
+  BOLD = 'BOLD',
+}
+
+/** Structural layout of the product detail page */
+export enum StoreFrontThemeProductPageVariant {
+  CLASSIC = 'CLASSIC',
+  GALLERY = 'GALLERY',
+  STACKED = 'STACKED',
+}
+
+/** Chrome of the checkout / order tracking / order success pages */
+export enum StoreFrontThemeOrderPagesVariant {
+  CARD = 'CARD',
+  FLAT = 'FLAT',
+}
+
+/** Structural style of the mobile bottom navigation */
+export enum StoreFrontThemeMobileNavVariant {
+  LABELED = 'LABELED',
+  ICON_PILL = 'ICON_PILL',
+}
+
+/**
+ * A single mode's design-token map (6-digit hex values).
+ * Mirrors the CSS custom properties in globals.css one-to-one.
+ */
+export interface StoreFrontThemeTokenSet {
+  background: string;
+  foreground: string;
+  card: string;
+  cardForeground: string;
+  popover: string;
+  popoverForeground: string;
+  primary: string;
+  primaryForeground: string;
+  secondary: string;
+  secondaryForeground: string;
+  muted: string;
+  mutedForeground: string;
+  accent: string;
+  accentForeground: string;
+  destructive: string;
+  destructiveForeground: string;
+  border: string;
+  input: string;
+  ring: string;
+}
+
+/** Full theme token payload: explicit palettes for light and dark mode */
+export interface StoreFrontThemeTokens {
+  light: StoreFrontThemeTokenSet;
+  dark: StoreFrontThemeTokenSet;
+}
+
+/** Layout-variant map of a theme (structurally different pages) */
+export interface StoreFrontThemeLayout {
+  header: StoreFrontThemeHeaderVariant;
+  hero: StoreFrontThemeHeroVariant;
+  productCard: StoreFrontThemeProductCardVariant;
+  productPage: StoreFrontThemeProductPageVariant;
+  orderPages: StoreFrontThemeOrderPagesVariant;
+  footer: StoreFrontThemeFooterVariant;
+  mobileNav: StoreFrontThemeMobileNavVariant;
+  buttonStyle: StoreFrontThemeButtonVariant;
+  iconStyle: StoreFrontThemeIconStyle;
+}
+
+/** Color palette catalog entry — matches backend StoreFrontPaletteDto */
+export interface StoreFrontPaletteDto {
+  id: string;
+  key: string;
+  nameEn: string;
+  nameAr: string;
+  tokens: StoreFrontThemeTokens;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/** Theme catalog entry (structural design) — matches backend StoreFrontThemeDto */
+export interface StoreFrontThemeDto {
+  id: string;
+  key: string;
+  nameEn: string;
+  nameAr: string;
+  descriptionEn: string | null;
+  descriptionAr: string | null;
+  defaultPaletteId: string;
+  defaultPalette?: StoreFrontPaletteDto | null;
+  layout: StoreFrontThemeLayout;
+  fontPreset: StoreFrontFontPreset;
+  radiusPreset: StoreFrontRadiusPreset;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface StoreFrontSeoDto {
   id: string;
   storeFrontId: string;
@@ -64,8 +226,14 @@ export interface StoreFrontDto {
   storeId: string;
   tenantId: string;
   logoUrl: string | null;
-  primaryColor: string | null;
-  primaryTextColor: string | null;
+  themeId: string | null;
+  paletteId: string | null;
+  /** Merchant custom palette — mutually exclusive with paletteId */
+  customTokens?: StoreFrontThemeTokens | null;
+  fontPreset: StoreFrontFontPreset | null;
+  radiusPreset: StoreFrontRadiusPreset | null;
+  theme?: StoreFrontThemeDto | null;
+  palette?: StoreFrontPaletteDto | null;
   hideOutOfStock: boolean;
   status: StoreFrontStatus;
   announcementTextEn?: string | null;

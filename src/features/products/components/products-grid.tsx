@@ -4,6 +4,7 @@ import { ProductCard } from "@/features/products/components/product-card";
 import { PublicProductDto } from "@/features/products/types/product.types";
 import { ProductCardTranslations } from "@/features/products/utils";
 import { PaginationMeta } from "@/lib/api/types";
+import { resolveRequestTheme } from "@/lib/theme";
 import { normalizePagination } from "@/lib/utils/pagination";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -28,6 +29,7 @@ export async function ProductsGrid({
 }: ProductsGridProps) {
   const t = await getTranslations("store.products");
   const locale = await getLocale();
+  const resolvedTheme = await resolveRequestTheme();
 
   // Get translations for ProductCard
   const productTranslations: ProductCardTranslations = {
@@ -81,6 +83,7 @@ export async function ProductsGrid({
             currency={currency}
             locale={locale}
             translations={productTranslations}
+            variant={resolvedTheme.layout.productCard}
           />
         ))}
       </div>

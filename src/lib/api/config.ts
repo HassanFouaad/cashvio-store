@@ -28,6 +28,12 @@ export const endpoints = {
     },
     specialProducts: '/public/stores/special-products',
   },
+  storeFrontThemes: {
+    list: '/public/store-front-themes',
+  },
+  storeFrontPalettes: {
+    list: '/public/store-front-palettes',
+  },
   categories: {
     list: '/public/categories',
     getById: (id: string) => `/public/categories/${id}`,

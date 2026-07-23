@@ -57,7 +57,9 @@
       "promotionLabel": "عرض {storeName}",
       "previousImage": "الصورة السابقة",
       "nextImage": "الصورة التالية",
-      "goToImage": "الانتقال إلى الصورة {index}"
+      "goToImage": "الانتقال إلى الصورة {index}",
+      "tagline": "اكتشف أحدث منتجاتنا وعروضنا",
+      "shopNow": "تسوق الآن"
     },
     "gallery": {
       "imageSelector": "اختيار الصورة",

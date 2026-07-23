@@ -31,8 +31,8 @@ export function PickupLocationCard({
 
   const shellClass =
     variant === "success"
-      ? "p-4 bg-muted/50 rounded-xl border border-border space-y-3"
-      : "p-4 sm:p-6 bg-muted/50 rounded-xl space-y-3";
+      ? "sf-panel p-4 bg-muted/50 rounded-xl border border-border space-y-3"
+      : "sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-3";
 
   return (
     <div className={shellClass} aria-label={t("pickupLocation")}>

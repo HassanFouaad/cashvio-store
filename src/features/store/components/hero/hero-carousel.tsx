@@ -1,0 +1,175 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { StoreFrontHeroImageDto } from "../../types/store.types";
+
+interface HeroCarouselProps {
+  heroImages: StoreFrontHeroImageDto[];
+  storeName: string;
+}
+
+/**
+ * Determines if a URL is an internal path (starts with /).
+ * Internal links use Next.js Link for client-side navigation.
+ * External links open in a new tab.
+ */
+function isInternalUrl(url: string): boolean {
+  return url.startsWith("/");
+}
+
+/**
+ * CAROUSEL hero — auto-rotating banner slider. This is the storefront's
+ * original hero, byte-compatible for stores without a theme.
+ */
+export function HeroCarousel({ heroImages, storeName }: HeroCarouselProps) {
+  const t = useTranslations("store.hero");
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Sort images by display order
+  const sortedImages = [...heroImages].sort(
+    (a, b) => a.displayOrder - b.displayOrder,
+  );
+
+  useEffect(() => {
+    if (sortedImages.length <= 1 || isPaused) return;
+
+    // Respect users who prefer reduced motion — no auto-rotation
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % sortedImages.length);
+    }, 5000); // Change image every 5 seconds
+
+    return () => clearInterval(timer);
+  }, [sortedImages.length, isPaused]);
+
+  const goToPrevious = () => {
+    setCurrentIndex((prev) =>
+      prev === 0 ? sortedImages.length - 1 : prev - 1,
+    );
+  };
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % sortedImages.length);
+  };
+
+  if (sortedImages.length === 0) {
+    return null;
+  }
+
+  return (
+    <div
+      className="relative w-full max-w-full h-[250px] sm:h-[350px] md:h-[450px] overflow-hidden group bg-background"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={() => setIsPaused(true)}
+      onTouchEnd={() => setIsPaused(false)}
+    >
+      {/* Images */}
+      {sortedImages.map((image, index) => {
+        const imageContent = (
+          <Image
+            key={image.id}
+            src={image.imageUrl}
+            alt={t("imageAlt", { storeName, index: index + 1 })}
+            fill
+            sizes="100vw"
+            className="object-contain"
+            priority={index === 0}
+            loading={index === 0 ? "eager" : "lazy"}
+            fetchPriority={index === 0 ? "high" : "low"}
+          />
+        );
+
+        const isActive = index === currentIndex;
+
+        return (
+          <div
+            key={image.id}
+            className={`absolute inset-0 transition-opacity duration-1000 ${
+              isActive ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
+            aria-hidden={!isActive}
+          >
+            {image.linkUrl ? (
+              isInternalUrl(image.linkUrl) ? (
+                <Link
+                  href={image.linkUrl}
+                  className="block absolute inset-0 cursor-pointer"
+                  aria-label={t("promotionLabel", { storeName })}
+                  tabIndex={isActive ? 0 : -1}
+                >
+                  {imageContent}
+                </Link>
+              ) : (
+                <a
+                  href={image.linkUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block absolute inset-0 cursor-pointer"
+                  aria-label={t("promotionLabel", { storeName })}
+                  tabIndex={isActive ? 0 : -1}
+                >
+                  {imageContent}
+                </a>
+              )
+            ) : (
+              imageContent
+            )}
+          </div>
+        );
+      })}
+
+      {/* Navigation Buttons */}
+      {sortedImages.length > 1 && (
+        <>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute start-2 sm:start-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 sm:h-10 sm:w-10 z-10"
+            onClick={goToPrevious}
+            aria-label={t("previousImage")}
+          >
+            <ChevronLeft className="h-4 w-4 sm:h-6 sm:w-6 rtl:rotate-180" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute end-2 sm:end-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 sm:h-10 sm:w-10 z-10"
+            onClick={goToNext}
+            aria-label={t("nextImage")}
+          >
+            <ChevronRight className="h-4 w-4 sm:h-6 sm:w-6 rtl:rotate-180" />
+          </Button>
+
+          {/* Dots Indicator */}
+          <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 z-10">
+            {sortedImages.map((_, index) => (
+              <button
+                key={index}
+                className={`h-1.5 sm:h-2 rounded-full transition-all ${
+                  index === currentIndex
+                    ? "w-6 sm:w-8 bg-white"
+                    : "w-1.5 sm:w-2 bg-white/50 hover:bg-white/75"
+                }`}
+                onClick={() => setCurrentIndex(index)}
+                aria-label={t("goToImage", { index: index + 1 })}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

@@ -1,5 +1,6 @@
 import { CategoryCard } from '@/features/categories/components/category-card';
 import { PublicCategoryDto } from '@/features/categories/types/category.types';
+import { getSectionHeadingStyle, resolveRequestTheme } from '@/lib/theme';
 import { ArrowRight } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
@@ -12,6 +13,8 @@ export async function CategoriesSection({
   categories,
 }: CategoriesSectionProps) {
   const t = await getTranslations('store');
+  const resolvedTheme = await resolveRequestTheme();
+  const headingStyle = getSectionHeadingStyle(resolvedTheme.layout.header);
 
   if (!categories || categories.length === 0) {
     return null;
@@ -20,11 +23,9 @@ export async function CategoriesSection({
   return (
     <section className="w-full max-w-full py-6 sm:py-8 md:py-12">
       <div className="container">
-        {/* Section Header */}
-        <div className="flex items-center justify-between mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">
-            {t('categories.title')}
-          </h2>
+        {/* Section Header - alignment follows the theme's header variant */}
+        <div className={headingStyle.wrapper}>
+          <h2 className={headingStyle.heading}>{t('categories.title')}</h2>
           <Link
             href="/categories"
             className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium text-primary hover:text-primary/80 transition-colors group"

@@ -11,6 +11,7 @@ import { StoreHero } from "@/features/store/components/store-hero";
 import { StoreErrorType } from "@/features/store/types/store.types";
 import { TrackViewItemList } from "@/lib/analytics/track-event";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
+import { resolveRequestTheme } from "@/lib/theme";
 import { buildLanguageAlternates, serializeJsonLd } from "@/lib/utils";
 import { Metadata } from "next";
 import { headers } from "next/headers";
@@ -48,6 +49,7 @@ export default async function HomePage() {
   }
 
   const heroImages = store.storeFront?.heroImages || [];
+  const resolvedTheme = await resolveRequestTheme();
 
   // Independent data — fetched in parallel to keep TTFB low
   const [
@@ -113,7 +115,11 @@ export default async function HomePage() {
         />
         {/* Hero Section (if has images) */}
         {heroImages.length > 0 && (
-          <StoreHero heroImages={heroImages} storeName={store.name} />
+          <StoreHero
+            heroImages={heroImages}
+            storeName={store.name}
+            variant={resolvedTheme.layout.hero}
+          />
         )}
 
         {/* Empty State */}
@@ -147,7 +153,11 @@ export default async function HomePage() {
       )}
 
       {/* Hero Section */}
-      <StoreHero heroImages={heroImages} storeName={store.name} />
+      <StoreHero
+        heroImages={heroImages}
+        storeName={store.name}
+        variant={resolvedTheme.layout.hero}
+      />
       {/* Special Products Section */}
       <SpecialProductsSection
         products={specialProducts || []}

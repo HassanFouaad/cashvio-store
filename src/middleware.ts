@@ -1,11 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+    StoreFrontFontPreset,
+    StoreFrontRadiusPreset,
+} from "./features/store/types/store.types";
 import { getStoreSubdomain } from "./features/store/utils/store-resolver";
 import {
     LANG_QUERY_PARAM,
     LOCALE_OVERRIDE_HEADER,
+    THEME_PREVIEW_CUSTOM_PARAM,
+    THEME_PREVIEW_FONT_PARAM,
+    THEME_PREVIEW_HEADER,
+    THEME_PREVIEW_PALETTE_PARAM,
+    THEME_PREVIEW_RADIUS_PARAM,
+    THEME_PREVIEW_THEME_PARAM,
     VISITOR_COOKIE_MAX_AGE_SECONDS,
     VISITOR_ID_COOKIE_NAME,
 } from "./lib/constants";
+import {
+    THEME_PREVIEW_CUSTOM_HEX_REGEX,
+    THEME_PREVIEW_UUID_REGEX,
+} from "./lib/theme/theme-constants";
 import { CookieName, isValidLocale, Locale } from "./types/enums";
 
 /**
@@ -67,6 +81,59 @@ export function middleware(request: NextRequest) {
   return handleLocaleAndVisitor(request);
 }
 
+/**
+ * Validate ?preview_theme / ?preview_palette / ?preview_font /
+ * ?preview_radius and pack them into a JSON header for the render (layouts
+ * cannot read query params). Strict allowlists: anything invalid is
+ * silently dropped — preview params are cosmetic-only and never trusted.
+ */
+function buildThemePreviewHeader(request: NextRequest): string | null {
+  const themeParam = request.nextUrl.searchParams.get(
+    THEME_PREVIEW_THEME_PARAM,
+  );
+  const paletteParam = request.nextUrl.searchParams.get(
+    THEME_PREVIEW_PALETTE_PARAM,
+  );
+  const customParam = request.nextUrl.searchParams.get(
+    THEME_PREVIEW_CUSTOM_PARAM,
+  );
+  const fontParam = request.nextUrl.searchParams.get(THEME_PREVIEW_FONT_PARAM);
+  const radiusParam = request.nextUrl.searchParams.get(
+    THEME_PREVIEW_RADIUS_PARAM,
+  );
+
+  const preview: { t?: string; p?: string; c?: string; f?: string; r?: string } =
+    {};
+
+  if (themeParam && THEME_PREVIEW_UUID_REGEX.test(themeParam)) {
+    preview.t = themeParam;
+  }
+  if (paletteParam && THEME_PREVIEW_UUID_REGEX.test(paletteParam)) {
+    preview.p = paletteParam;
+  }
+  if (customParam && THEME_PREVIEW_CUSTOM_HEX_REGEX.test(customParam)) {
+    preview.c = customParam;
+  }
+  if (
+    fontParam &&
+    Object.values(StoreFrontFontPreset).includes(
+      fontParam as StoreFrontFontPreset,
+    )
+  ) {
+    preview.f = fontParam;
+  }
+  if (
+    radiusParam &&
+    Object.values(StoreFrontRadiusPreset).includes(
+      radiusParam as StoreFrontRadiusPreset,
+    )
+  ) {
+    preview.r = radiusParam;
+  }
+
+  return Object.keys(preview).length > 0 ? JSON.stringify(preview) : null;
+}
+
 function handleLocaleAndVisitor(request: NextRequest) {
   // Track whether we need to set cookies
   let needsLocaleCookie = false;
@@ -79,6 +146,10 @@ function handleLocaleAndVisitor(request: NextRequest) {
   const langParam = request.nextUrl.searchParams.get(LANG_QUERY_PARAM);
   const langOverride =
     langParam && isValidLocale(langParam) ? langParam : null;
+
+  // Theme preview draft (portal editor iframe) — request-scoped only,
+  // never persisted in cookies.
+  const themePreviewHeader = buildThemePreviewHeader(request);
 
   // Check locale cookie
   const localeCookie = request.cookies.get(CookieName.LOCALE)?.value;
@@ -123,17 +194,27 @@ function handleLocaleAndVisitor(request: NextRequest) {
     visitorId = generateVisitorId();
   }
 
-  // If no cookies need to be set and no language override, pass through
-  if (!needsLocaleCookie && !needsVisitorCookie && !langOverride) {
+  // If nothing needs forwarding or persisting, pass through untouched
+  if (
+    !needsLocaleCookie &&
+    !needsVisitorCookie &&
+    !langOverride &&
+    !themePreviewHeader
+  ) {
     return NextResponse.next();
   }
 
-  // Forward the language override to the CURRENT render via a request
-  // header — the response cookie only affects subsequent requests.
+  // Forward per-request overrides (language, theme preview) to the CURRENT
+  // render via request headers — response cookies only affect later requests.
   let response: NextResponse;
-  if (langOverride) {
+  if (langOverride || themePreviewHeader) {
     const requestHeaders = new Headers(request.headers);
-    requestHeaders.set(LOCALE_OVERRIDE_HEADER, langOverride);
+    if (langOverride) {
+      requestHeaders.set(LOCALE_OVERRIDE_HEADER, langOverride);
+    }
+    if (themePreviewHeader) {
+      requestHeaders.set(THEME_PREVIEW_HEADER, themePreviewHeader);
+    }
     response = NextResponse.next({ request: { headers: requestHeaders } });
   } else {
     response = NextResponse.next();

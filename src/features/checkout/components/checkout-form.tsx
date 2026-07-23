@@ -157,11 +157,11 @@ export function CheckoutForm({
   // Track if we've done initial cart validation
   const hasValidatedRef = useRef(false);
 
-  // Idempotency key — stable for this checkout session. Failed attempts
+  // Idempotency key â€” stable for this checkout session. Failed attempts
   // retry with the same key so a timeout retry can never duplicate the order.
   const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
 
-  // Monotonic sequence for preview requests — a slow older response must
+  // Monotonic sequence for preview requests â€” a slow older response must
   // never overwrite a newer one (user changes city quickly, totals race).
   const previewSeqRef = useRef(0);
 
@@ -207,7 +207,7 @@ export function CheckoutForm({
     fallbackCountries !== null &&
     fallbackCountries.length > 0;
 
-  // Fallback countries — use locale-aware name resolution
+  // Fallback countries â€” use locale-aware name resolution
   const localizedFallbackCountries = useMemo(() => {
     if (!fallbackCountries) return [];
     return fallbackCountries
@@ -270,7 +270,7 @@ export function CheckoutForm({
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
 
-  // Coupon state — the input value and the code submitted for validation
+  // Coupon state â€” the input value and the code submitted for validation
   const [couponInput, setCouponInput] = useState("");
   const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(
     null,
@@ -287,7 +287,7 @@ export function CheckoutForm({
   }, [isInitialized, fetchCart]);
 
   // Auto-apply `?coupon=` (checkout URL or earlier landing-page capture).
-  // Wait until the cart is ready with items — an empty-cart redirect would
+  // Wait until the cart is ready with items â€” an empty-cart redirect would
   // otherwise consume the code and lose it before the shopper returns.
   useEffect(() => {
     if (hasAppliedDeepLinkCouponRef.current) {
@@ -729,7 +729,7 @@ export function CheckoutForm({
     receiptUploadProgress,
   ]);
 
-  // Hard blockers — not fixable by typing, so the button stays disabled.
+  // Hard blockers â€” not fixable by typing, so the button stays disabled.
   // Field-level issues (name/phone/address/receipt) keep the button ENABLED
   // and surface inline messages on submit instead of a silently dead button.
   const isSubmitBlocked = useMemo(() => {
@@ -791,7 +791,7 @@ export function CheckoutForm({
         analytics.trackPurchase({
           transaction_id: result.orderNumber,
           currency,
-          // Server-confirmed total — never the (possibly stale) preview
+          // Server-confirmed total â€” never the (possibly stale) preview
           value: result.totalAmount ?? preview?.totalAmount ?? 0,
           shipping: preview?.deliveryFees ?? 0,
           items: items.map((item) => ({
@@ -823,7 +823,7 @@ export function CheckoutForm({
             variant: item.variant.name,
             quantity: item.quantity,
           })),
-          // Tracking verifies by checkout phone — keep it so the track
+          // Tracking verifies by checkout phone â€” keep it so the track
           // page can prefill instead of asking again seconds later
           phone: customerPhone || undefined,
         }),
@@ -870,7 +870,7 @@ export function CheckoutForm({
     pickupLocation,
   ]);
 
-  // Form submit — validates and surfaces inline messages instead of
+  // Form submit â€” validates and surfaces inline messages instead of
   // silently blocking on a disabled button
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
@@ -951,7 +951,7 @@ export function CheckoutForm({
       {/* Checkout Form - Left Column */}
       <div className="lg:col-span-2 space-y-6">
         {/* Fulfillment Method Selection */}
-        <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+        <div className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
           <h2 className="text-lg font-semibold">{t("fulfillmentMethod")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {sortedFulfillmentMethods.map((fm) => {
@@ -993,7 +993,7 @@ export function CheckoutForm({
 
         {/* Delivery Address Selection (only for Delivery) */}
         {selectedMethod === FulfillmentMethod.DELIVERY && (
-          <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+          <div className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
             <div className="flex items-center gap-2">
               <MapPin className="h-5 w-5 text-primary" />
               <h2 className="text-lg font-semibold">{t("deliveryAddress")}</h2>
@@ -1195,7 +1195,7 @@ export function CheckoutForm({
               </div>
             ) : null}
 
-            {/* Inline validation — address incomplete */}
+            {/* Inline validation â€” address incomplete */}
             {showValidation && !isDeliveryAddressComplete && (
               <p
                 className="text-sm text-destructive"
@@ -1208,7 +1208,7 @@ export function CheckoutForm({
         )}
 
         {/* Payment Method Selection */}
-        <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+        <div className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
           <div className="flex items-center gap-2">
             <CreditCard className="h-5 w-5 text-primary" />
             <h2 className="text-lg font-semibold">{t("paymentMethod")}</h2>
@@ -1355,7 +1355,7 @@ export function CheckoutForm({
         </div>
 
         {/* Customer Information */}
-        <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+        <div className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
           <div className="flex items-center gap-2">
             <User className="h-5 w-5 text-primary" />
             <h2 className="text-lg font-semibold">{t("customerInfo")}</h2>
@@ -1435,7 +1435,7 @@ export function CheckoutForm({
       {/* Order Summary - Right Column */}
       <div className="lg:col-span-1">
         <div className="lg:sticky lg:top-24">
-          <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+          <div className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
             {/* Collapsible header on mobile */}
             <button
               type="button"
@@ -1462,7 +1462,7 @@ export function CheckoutForm({
               </div>
             </button>
 
-            {/* Summary content — always visible on desktop, collapsible on mobile */}
+            {/* Summary content â€” always visible on desktop, collapsible on mobile */}
             <div
               className={`space-y-4 ${mobileSummaryOpen ? "" : "hidden lg:block"}`}
             >
@@ -1524,7 +1524,7 @@ export function CheckoutForm({
                       </div>
                     )}
 
-                    {/* Delivery Fees — shows "Free" when the free-delivery
+                    {/* Delivery Fees â€” shows "Free" when the free-delivery
                         threshold waived the fee */}
                     {preview.isFreeDeliveryApplied ? (
                       <div className="flex justify-between text-sm">
@@ -1550,7 +1550,7 @@ export function CheckoutForm({
                       </div>
                     ) : null}
 
-                    {/* Free-delivery nudge — DELIVERY orders close to the
+                    {/* Free-delivery nudge â€” DELIVERY orders close to the
                         threshold (server recomputes on every preview) */}
                     {selectedMethod === FulfillmentMethod.DELIVERY &&
                       !preview.isFreeDeliveryApplied &&
@@ -1691,7 +1691,7 @@ export function CheckoutForm({
               </div>
             )}
 
-            {/* Place Order Button — submits the form so Enter works and
+            {/* Place Order Button â€” submits the form so Enter works and
                 field-level issues surface as inline messages */}
             <Button
               type="submit"
@@ -1744,7 +1744,7 @@ function CheckoutFormSkeleton() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
       {/* Left Column */}
       <div className="lg:col-span-2 space-y-6">
-        <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+        <div className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
           <Skeleton className="h-6 w-40" />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[1, 2, 3].map((i) => (
@@ -1752,7 +1752,7 @@ function CheckoutFormSkeleton() {
             ))}
           </div>
         </div>
-        <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+        <div className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
           <Skeleton className="h-6 w-44" />
           <div className="space-y-4">
             <Skeleton className="h-10 w-full" />
@@ -1764,7 +1764,7 @@ function CheckoutFormSkeleton() {
 
       {/* Right Column */}
       <div className="lg:col-span-1">
-        <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+        <div className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
           <Skeleton className="h-6 w-36" />
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
