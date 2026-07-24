@@ -54,14 +54,25 @@ function PaymentResultContent() {
 
   // Resolve the pending-payment context saved before the redirect
   useEffect(() => {
-    const pending = getPendingPayment();
+    let isCancelled = false;
 
-    if (!pending || (orderIdParam && pending.orderId !== orderIdParam)) {
-      setView("missing-context");
-      return;
-    }
+    const resolveContext = async () => {
+      const pending = getPendingPayment();
+      if (isCancelled) return;
 
-    setContext(pending);
+      if (!pending || (orderIdParam && pending.orderId !== orderIdParam)) {
+        setView("missing-context");
+        return;
+      }
+
+      setContext(pending);
+    };
+
+    void resolveContext();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [orderIdParam]);
 
   const goToSuccess = useCallback(
