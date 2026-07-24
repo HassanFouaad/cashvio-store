@@ -372,6 +372,8 @@
     "discount": "Discount",
     "serviceFees": "Service Fees",
     "deliveryFees": "Delivery Fees",
+    "paymentFee": "Online Payment Fee",
+    "paymentDiscount": "Online Payment Discount",
     "placeOrder": "Place Order",
     "placingOrder": "Placing Order...",
     "backToCart": "Back to Cart",
@@ -403,6 +405,21 @@
     "total": "Total",
     "trackOrder": "Track Order",
     "backToHome": "Back to Home"
+  },
+  "paymentResult": {
+    "checkingTitle": "Confirming your payment",
+    "checkingMessage": "One moment please. We are confirming your payment with the payment provider.",
+    "unconfirmedTitle": "Payment not confirmed yet",
+    "unconfirmedMessage": "We could not confirm your payment yet. If you completed the payment, it may take a few minutes to arrive. You can also try paying again.",
+    "unconfirmedNote": "Your order is saved. If you were charged, the payment will be matched to your order automatically once the provider confirms it.",
+    "orderNumber": "Order Number",
+    "amount": "Amount",
+    "retryPayment": "Retry Payment",
+    "retryError": "Could not start the payment. Please try again.",
+    "trackOrder": "Track Order",
+    "backToHome": "Back to Home",
+    "missingContextTitle": "Check your order status",
+    "missingContextMessage": "We could not identify your payment session on this device. Use order tracking with your order number and phone to check the payment status."
   },
   "orderTracking": {
     "pageTitle": "Track Your Order",

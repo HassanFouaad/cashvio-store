@@ -35,6 +35,7 @@ import {
   buildOrderSuccessRecap,
   saveOrderSuccessRecap,
 } from "@/features/checkout/utils/order-success-recap";
+import { savePendingPayment } from "@/features/checkout/utils/pending-payment";
 import type { StorePickupLocation } from "@/features/checkout/utils/pickup-location";
 import { analytics } from "@/lib/analytics";
 import {
@@ -613,6 +614,8 @@ export function CheckoutForm({
         deliveryAddress: previewDeliveryAddress,
         couponCode: appliedCouponCode ?? undefined,
         visitorId: appliedCouponCode ? getOrCreateVisitorId() : undefined,
+        // ONLINE adds the gateway payment fee/discount to the totals
+        paymentMethod: selectedPaymentMethod ?? undefined,
       });
 
       // Drop stale responses that resolved after a newer request started
@@ -632,6 +635,7 @@ export function CheckoutForm({
     isInitialized,
     items,
     selectedMethod,
+    selectedPaymentMethod,
     storeId,
     previewDeliveryAddress,
     appliedCouponCode,
@@ -845,6 +849,31 @@ export function CheckoutForm({
         sessionStorage.setItem("order-success-token", Date.now().toString());
       } catch {
         // sessionStorage may be unavailable in some browsers
+      }
+
+      if (selectedPaymentMethod === PaymentMethod.ONLINE) {
+        // The payment-result page needs orderNumber + phone to poll the
+        // track endpoint after the gateway redirects back with orderId only
+        savePendingPayment({
+          orderId: result.orderId,
+          orderNumber: result.orderNumber,
+          phone: customerPhone,
+          totalAmount: result.totalAmount ?? preview?.totalAmount ?? 0,
+          currency,
+        });
+
+        if (result.payment?.checkoutUrl) {
+          // Full redirect to the gateway-hosted checkout page
+          window.location.assign(result.payment.checkoutUrl);
+          return;
+        }
+
+        // Session could not be opened — the order is saved and payable;
+        // the result page offers "Retry payment"
+        router.push(
+          `/payment/result?orderId=${encodeURIComponent(result.orderId)}`,
+        );
+        return;
       }
 
       // Redirect to the Thank You page
@@ -1588,6 +1617,36 @@ export function CheckoutForm({
                         </span>
                         <span className="font-medium">
                           {formatCurrency(preview.totalTax, currency, locale)}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Online payment fee (surcharge) or discount */}
+                    {(preview.paymentFees ?? 0) > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {t("paymentFee")}
+                        </span>
+                        <span className="font-medium">
+                          {formatCurrency(
+                            preview.paymentFees,
+                            currency,
+                            locale,
+                          )}
+                        </span>
+                      </div>
+                    )}
+                    {(preview.paymentFees ?? 0) < 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {t("paymentDiscount")}
+                        </span>
+                        <span className="font-medium text-green-600 dark:text-green-500">
+                          {formatCurrency(
+                            preview.paymentFees,
+                            currency,
+                            locale,
+                          )}
                         </span>
                       </div>
                     )}

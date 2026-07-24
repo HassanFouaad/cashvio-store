@@ -68,16 +68,22 @@ export interface PublicOrderTrackingItemDto {
  * Public-safe order tracking response
  */
 export interface PublicOrderTrackingDto {
+  /** Order ID — used by payment retry flows */
+  orderId: string;
   orderNumber: string;
   status: OrderStatus;
   fulfillmentStatus: FulfillmentStatus;
   fulfillmentMethod: FulfillmentMethod;
   paymentStatus: PaymentStatus;
+  /** Payment method chosen at checkout */
+  paymentMethod?: string;
   orderDate: string;
   subtotal: number;
   totalDiscount: number;
   deliveryFees: number;
   serviceFees: number;
+  /** Signed gateway payment fee included in totalAmount */
+  paymentFees: number;
   totalTax: number;
   totalAmount: number;
   currency: string;

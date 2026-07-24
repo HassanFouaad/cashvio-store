@@ -6,6 +6,7 @@ import {
     CommonCountryDto,
     CreateOrderPreviewRequest,
     CreateOrderRequest,
+    CreatePaymentSessionRequest,
     GroupedDeliveryZoneCityDto,
     GroupedDeliveryZoneCountryDto,
     GroupedDeliveryZonesDto,
@@ -13,6 +14,7 @@ import {
     OrderPreviewResponse,
     PublicDeliveryZonesResponseDto,
     PublicFulfillmentMethodDto,
+    PublicPaymentSessionDto,
     PublicStorefrontPaymentMethodDto,
 } from '../types/checkout.types';
 
@@ -80,6 +82,30 @@ export async function createOrder(
       throw error;
     }
     throw new ApiException(500, 'Failed to create order');
+  }
+}
+
+/**
+ * Start or resume the gateway payment session for an ONLINE order —
+ * powers the "Pay now" / "Retry payment" flows.
+ * @param request The payment session request (store + order)
+ * @returns Session with the gateway-hosted checkout URL to redirect to
+ */
+export async function createPaymentSession(
+  request: CreatePaymentSessionRequest
+): Promise<PublicPaymentSessionDto> {
+  try {
+    const session = await apiClient.post<
+      PublicPaymentSessionDto,
+      CreatePaymentSessionRequest
+    >(endpoints.orders.paymentSession, request);
+    return session;
+  } catch (error) {
+    console.error('Failed to create payment session', error);
+    if (error instanceof ApiException) {
+      throw error;
+    }
+    throw new ApiException(500, 'Failed to create payment session');
   }
 }
 

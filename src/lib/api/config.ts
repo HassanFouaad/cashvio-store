@@ -47,6 +47,7 @@ export const endpoints = {
     preview: '/public/orders/preview',
     create: '/public/orders',
     track: '/public/orders/track',
+    paymentSession: '/public/payment-sessions',
   },
   visitors: {
     track: '/public/visitors/track',

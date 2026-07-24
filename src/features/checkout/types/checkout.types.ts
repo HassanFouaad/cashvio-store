@@ -67,6 +67,8 @@ export interface CreateOrderPreviewRequest {
   couponCode?: string;
   /** Visitor ID — enables per-customer coupon limits for guests */
   visitorId?: string;
+  /** Selected payment method — ONLINE adds the gateway fee to the totals */
+  paymentMethod?: PaymentMethod;
 }
 
 /**
@@ -115,6 +117,11 @@ export interface OrderPreviewResponse {
   totalTax: number;
   serviceFees: number;
   deliveryFees: number;
+  /**
+   * Signed gateway payment fee included in totalAmount when paying
+   * ONLINE (surcharge > 0, discount < 0, 0 when not applicable)
+   */
+  paymentFees: number;
   totalAmount: number;
   items: OrderPreviewItem[];
   /** Minimum order value configured for the store (0 means no minimum) */
@@ -287,6 +294,29 @@ export interface CreateOrderRequest {
 }
 
 /**
+ * Gateway payment session for ONLINE orders — everything needed to
+ * redirect the customer to the gateway-hosted checkout page.
+ */
+export interface PublicPaymentSessionDto {
+  attemptId: string;
+  checkoutUrl: string;
+  amount: number;
+  currency: string;
+  /** Signed gateway fee included in the amount */
+  paymentFee: number;
+  expiresAt?: string;
+}
+
+/**
+ * Request to start/resume the online payment for an order
+ * (powers "Pay now" / "Retry payment")
+ */
+export interface CreatePaymentSessionRequest {
+  storeId: string;
+  orderId: string;
+}
+
+/**
  * Order creation response
  */
 export interface OrderCreatedResponse {
@@ -296,6 +326,12 @@ export interface OrderCreatedResponse {
   currency: string;
   fulfillmentMethod: FulfillmentMethod;
   createdAt: string;
+  /**
+   * Gateway checkout session for ONLINE orders — redirect the customer
+   * to checkoutUrl. Absent when the session could not be opened
+   * (retry via the payment-sessions endpoint).
+   */
+  payment?: PublicPaymentSessionDto;
 }
 
 /**
