@@ -6,6 +6,8 @@
  * - Debounced API calls to prevent overwhelming the backend
  * - Automatic cart refresh after modifications
  * - Error handling with rollback
+ * - Line identity = variant + modifier selection (same variant with a
+ *   different add-on set is its own line, addressed by line id)
  */
 
 import { analytics } from '@/lib/analytics';
@@ -17,14 +19,54 @@ import {
     removeFromCart as apiRemoveFromCart,
     updateCartItemQuantity as apiUpdateQuantity,
 } from '../api/cart.service';
-import { ApiCart, ApiCartItem } from '../api/cart.types';
+import { ApiCart, ApiCartItem, ApiCartItemModifier } from '../api/cart.types';
 import { getOrCreateVisitorId } from '@/lib/visitor/visitor-id';
 
 // Debounce delay in ms
 const DEBOUNCE_DELAY = 300;
 
-// Map to track pending operations per variant
+// Map to track pending operations per cart line
 const pendingOperations = new Map<string, NodeJS.Timeout>();
+
+/** Stable identity of a modifier selection: sorted unique ids joined */
+export function getModifierSignature(modifierIds?: string[] | null): string {
+  if (!modifierIds || modifierIds.length === 0) return '';
+  return [...new Set(modifierIds)].sort().join('|');
+}
+
+/** Selection key used before a server line id exists (adds) */
+export function getSelectionKey(variantId: string, modifierIds?: string[]): string {
+  return `${variantId}::${getModifierSignature(modifierIds)}`;
+}
+
+/** Modifier ids stored on a cart line */
+function getLineModifierIds(item: ApiCartItem): string[] {
+  return (item.modifiers ?? []).map((modifier) => modifier.modifierId);
+}
+
+/** Effective unit price of a line: variant price + modifier deltas */
+export function getLineUnitPrice(item: ApiCartItem): number {
+  const modifiersTotal = (item.modifiers ?? []).reduce(
+    (sum, modifier) => sum + modifier.priceDelta,
+    0
+  );
+  return item.variant.sellingPrice + modifiersTotal;
+}
+
+/** Find the line matching a variant + exact modifier selection */
+function findLineBySelection(
+  cart: ApiCart | null,
+  variantId: string,
+  modifierIds?: string[]
+): ApiCartItem | undefined {
+  if (!cart) return undefined;
+  const signature = getModifierSignature(modifierIds);
+  return cart.items.find(
+    (item) =>
+      item.variant.id === variantId &&
+      getModifierSignature(getLineModifierIds(item)) === signature
+  );
+}
 
 interface CartStore {
   // State
@@ -40,13 +82,18 @@ interface CartStore {
   // Actions
   setCurrency: (currency: string) => void;
   fetchCart: () => Promise<void>;
-  addItem: (variantId: string, quantity: number, item?: Partial<ApiCartItem>) => void;
-  updateQuantity: (variantId: string, quantity: number) => void;
-  removeItem: (variantId: string) => void;
+  addItem: (
+    variantId: string,
+    quantity: number,
+    item?: Partial<ApiCartItem>,
+    modifierIds?: string[]
+  ) => void;
+  updateQuantity: (itemId: string, quantity: number) => void;
+  removeItem: (itemId: string) => void;
   clearCart: () => Promise<void>;
   clearError: () => void;
 
-  // Helpers
+  // Helpers (variant-aggregated across lines)
   isInCart: (variantId: string) => boolean;
   getItemQuantity: (variantId: string) => number;
 }
@@ -65,37 +112,61 @@ function calculateCartTotals(items: ApiCartItem[]): { itemCount: number; subtota
 }
 
 /**
- * Apply optimistic update to cart
+ * Apply an optimistic quantity change to one line (by line id)
  */
-function applyOptimisticUpdate(
+function applyOptimisticLineUpdate(
   cart: ApiCart | null,
-  variantId: string,
-  quantity: number,
-  item?: Partial<ApiCartItem>
+  itemId: string,
+  quantity: number
 ): ApiCart | null {
   if (!cart) return null;
 
-  const existingItemIndex = cart.items.findIndex(i => i.variant.id === variantId);
+  const newItems =
+    quantity === 0
+      ? cart.items.filter((i) => i.id !== itemId)
+      : cart.items.map((i) =>
+          i.id === itemId
+            ? { ...i, quantity, lineTotal: getLineUnitPrice(i) * quantity }
+            : i
+        );
+
+  const { itemCount, subtotal } = calculateCartTotals(newItems);
+  return { ...cart, items: newItems, itemCount, subtotal };
+}
+
+/**
+ * Apply an optimistic add: merge into the matching selection line or append
+ * a temp line until the server assigns a real id
+ */
+function applyOptimisticAdd(
+  cart: ApiCart | null,
+  variantId: string,
+  quantity: number,
+  item?: Partial<ApiCartItem>,
+  modifierIds?: string[]
+): ApiCart | null {
+  if (!cart) return null;
+
+  const existing = findLineBySelection(cart, variantId, modifierIds);
   let newItems: ApiCartItem[];
 
-  if (quantity === 0) {
-    newItems = cart.items.filter(i => i.variant.id !== variantId);
-  } else if (existingItemIndex >= 0) {
-    newItems = cart.items.map((i, index) => {
-      if (index === existingItemIndex) {
-        return { ...i, quantity, lineTotal: i.variant.sellingPrice * quantity };
-      }
-      return i;
-    });
+  if (existing) {
+    newItems = cart.items.map((i) =>
+      i.id === existing.id
+        ? { ...i, quantity, lineTotal: getLineUnitPrice(i) * quantity }
+        : i
+    );
   } else if (item?.variant) {
     const newItem: ApiCartItem = {
-      id: `temp-${variantId}`,
+      id: `temp-${getSelectionKey(variantId, modifierIds)}`,
       quantity,
-      lineTotal: (item.variant.sellingPrice ?? 0) * quantity,
+      lineTotal: 0,
       variant: item.variant,
       productName: item.productName,
       imageUrl: item.imageUrl,
+      modifiers: item.modifiers,
     };
+    newItem.lineTotal = getLineUnitPrice(newItem) * quantity;
     newItems = [...cart.items, newItem];
   } else {
     return cart;
@@ -135,14 +206,24 @@ export const useCartStore = create<CartStore>((set, get) => ({
     }
   },
 
-  addItem: (variantId: string, quantity: number, item?: Partial<ApiCartItem>) => {
+  addItem: (
+    variantId: string,
+    quantity: number,
+    item?: Partial<ApiCartItem>,
+    modifierIds?: string[]
+  ) => {
     const { cart, pendingChanges } = get();
-    const currentQuantity = get().getItemQuantity(variantId);
-    const newQuantity = currentQuantity + quantity;
+    const selectionKey = getSelectionKey(variantId, modifierIds);
+    const existingLine = findLineBySelection(cart, variantId, modifierIds);
+    const newQuantity = (existingLine?.quantity ?? 0) + quantity;
 
     // Track add_to_cart analytics event
     try {
-      const price = item?.variant?.sellingPrice ?? 0;
+      const modifiersTotal = (item?.modifiers ?? []).reduce(
+        (sum: number, modifier: ApiCartItemModifier) => sum + modifier.priceDelta,
+        0
+      );
+      const price = (item?.variant?.sellingPrice ?? 0) + modifiersTotal;
       analytics.trackAddToCart({
         currency: get().currency,
         value: price * quantity,
@@ -157,20 +238,20 @@ export const useCartStore = create<CartStore>((set, get) => ({
     } catch { /* analytics should never break cart */ }
 
     const newPendingChanges = new Map(pendingChanges);
-    newPendingChanges.set(variantId, newQuantity);
-    const newCart = applyOptimisticUpdate(cart, variantId, newQuantity, item);
+    newPendingChanges.set(selectionKey, newQuantity);
+    const newCart = applyOptimisticAdd(cart, variantId, newQuantity, item, modifierIds);
     set({ pendingChanges: newPendingChanges, cart: newCart, error: null });
 
-    const existingTimeout = pendingOperations.get(variantId);
+    const existingTimeout = pendingOperations.get(selectionKey);
     if (existingTimeout) clearTimeout(existingTimeout);
 
     const timeoutId = setTimeout(async () => {
       try {
         const visitorId = getOrCreateVisitorId();
-        await apiAddToCart(visitorId, variantId, newQuantity);
+        await apiAddToCart(visitorId, variantId, newQuantity, modifierIds);
         
         const updatedPending = new Map(get().pendingChanges);
-        updatedPending.delete(variantId);
+        updatedPending.delete(selectionKey);
         set({ pendingChanges: updatedPending });
         
         set({ isSyncing: true });
@@ -178,7 +259,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
         set({ cart: freshCart, isSyncing: false });
       } catch {
         const rollbackPending = new Map(get().pendingChanges);
-        rollbackPending.delete(variantId);
+        rollbackPending.delete(selectionKey);
         set({ pendingChanges: rollbackPending, error: 'Failed to add item', isSyncing: true });
         
         try {
@@ -188,30 +269,30 @@ export const useCartStore = create<CartStore>((set, get) => ({
         } catch { /* silent */ }
         set({ isSyncing: false });
       }
-      pendingOperations.delete(variantId);
+      pendingOperations.delete(selectionKey);
     }, DEBOUNCE_DELAY);
 
-    pendingOperations.set(variantId, timeoutId);
+    pendingOperations.set(selectionKey, timeoutId);
   },
 
-  updateQuantity: (variantId: string, quantity: number) => {
+  updateQuantity: (itemId: string, quantity: number) => {
     const { cart, pendingChanges } = get();
 
     const newPendingChanges = new Map(pendingChanges);
-    newPendingChanges.set(variantId, quantity);
-    const newCart = applyOptimisticUpdate(cart, variantId, quantity);
+    newPendingChanges.set(itemId, quantity);
+    const newCart = applyOptimisticLineUpdate(cart, itemId, quantity);
     set({ pendingChanges: newPendingChanges, cart: newCart, error: null });
 
-    const existingTimeout = pendingOperations.get(variantId);
+    const existingTimeout = pendingOperations.get(itemId);
     if (existingTimeout) clearTimeout(existingTimeout);
 
     const timeoutId = setTimeout(async () => {
       try {
         const visitorId = getOrCreateVisitorId();
-        await apiUpdateQuantity(visitorId, variantId, quantity);
+        await apiUpdateQuantity(visitorId, itemId, quantity);
         
         const updatedPending = new Map(get().pendingChanges);
-        updatedPending.delete(variantId);
+        updatedPending.delete(itemId);
         set({ pendingChanges: updatedPending });
         
         set({ isSyncing: true });
@@ -219,7 +300,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
         set({ cart: freshCart, isSyncing: false });
       } catch {
         const rollbackPending = new Map(get().pendingChanges);
-        rollbackPending.delete(variantId);
+        rollbackPending.delete(itemId);
         set({ pendingChanges: rollbackPending, error: 'Failed to update quantity', isSyncing: true });
         
         try {
@@ -229,26 +310,26 @@ export const useCartStore = create<CartStore>((set, get) => ({
         } catch { /* silent */ }
         set({ isSyncing: false });
       }
-      pendingOperations.delete(variantId);
+      pendingOperations.delete(itemId);
     }, DEBOUNCE_DELAY);
 
-    pendingOperations.set(variantId, timeoutId);
+    pendingOperations.set(itemId, timeoutId);
   },
 
-  removeItem: (variantId: string) => {
+  removeItem: (itemId: string) => {
     const { cart, pendingChanges } = get();
 
     // Track remove_from_cart analytics event
     try {
-      const existingItem = cart?.items.find(i => i.variant.id === variantId);
+      const existingItem = cart?.items.find(i => i.id === itemId);
       if (existingItem) {
         analytics.trackRemoveFromCart({
           currency: get().currency,
           value: existingItem.lineTotal,
           items: [{
-            item_id: variantId,
+            item_id: existingItem.variant.id,
             item_name: existingItem.productName || '',
-            price: existingItem.variant.sellingPrice,
+            price: getLineUnitPrice(existingItem),
             quantity: existingItem.quantity,
             item_variant: existingItem.variant.name,
           }],
@@ -257,20 +338,20 @@ export const useCartStore = create<CartStore>((set, get) => ({
     } catch { /* analytics should never break cart */ }
 
     const newPendingChanges = new Map(pendingChanges);
-    newPendingChanges.set(variantId, 0);
-    const newCart = applyOptimisticUpdate(cart, variantId, 0);
+    newPendingChanges.set(itemId, 0);
+    const newCart = applyOptimisticLineUpdate(cart, itemId, 0);
     set({ pendingChanges: newPendingChanges, cart: newCart, error: null });
 
-    const existingTimeout = pendingOperations.get(variantId);
+    const existingTimeout = pendingOperations.get(itemId);
     if (existingTimeout) clearTimeout(existingTimeout);
 
     const timeoutId = setTimeout(async () => {
       try {
         const visitorId = getOrCreateVisitorId();
-        await apiRemoveFromCart(visitorId, variantId);
+        await apiRemoveFromCart(visitorId, itemId);
         
         const updatedPending = new Map(get().pendingChanges);
-        updatedPending.delete(variantId);
+        updatedPending.delete(itemId);
         set({ pendingChanges: updatedPending });
         
         set({ isSyncing: true });
@@ -278,7 +359,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
         set({ cart: freshCart, isSyncing: false });
       } catch {
         const rollbackPending = new Map(get().pendingChanges);
-        rollbackPending.delete(variantId);
+        rollbackPending.delete(itemId);
         set({ pendingChanges: rollbackPending, error: 'Failed to remove item', isSyncing: true });
         
         try {
@@ -288,10 +369,10 @@ export const useCartStore = create<CartStore>((set, get) => ({
         } catch { /* silent */ }
         set({ isSyncing: false });
       }
-      pendingOperations.delete(variantId);
+      pendingOperations.delete(itemId);
     }, 100);
 
-    pendingOperations.set(variantId, timeoutId);
+    pendingOperations.set(itemId, timeoutId);
   },
 
   clearCart: async () => {
@@ -299,13 +380,13 @@ export const useCartStore = create<CartStore>((set, get) => ({
     if (!cart || cart.items.length === 0) return;
 
     const previousCart = cart;
-    const variantIds = cart.items.map(item => item.variant.id);
+    const itemIds = cart.items.map(item => item.id);
 
     set({ cart: { ...cart, items: [], itemCount: 0, subtotal: 0 }, error: null });
 
     try {
       const visitorId = getOrCreateVisitorId();
-      await apiClearCart(visitorId, variantIds);
+      await apiClearCart(visitorId, itemIds);
       
       set({ isSyncing: true });
       const freshCart = await apiGetCart(visitorId);
@@ -322,7 +403,12 @@ export const useCartStore = create<CartStore>((set, get) => ({
   },
 
   getItemQuantity: (variantId: string) => {
-    return get().cart?.items.find((item) => item.variant.id === variantId)?.quantity ?? 0;
+    return (
+      get().cart?.items.reduce(
+        (sum, item) => (item.variant.id === variantId ? sum + item.quantity : sum),
+        0
+      ) ?? 0
+    );
   },
 }));
 
@@ -345,9 +431,17 @@ export function useIsCartSyncing(): boolean {
   return useCartStore((state) => state.isSyncing);
 }
 
-/** Hook to check if a specific item has pending changes */
-export function useIsItemPending(variantId: string): boolean {
-  return useCartStore((state) => state.pendingChanges.has(variantId));
+/** Hook to check if a specific cart line has pending changes */
+export function useIsItemPending(item: ApiCartItem): boolean {
+  const selectionKey = getSelectionKey(
+    item.variant.id,
+    getLineModifierIds(item)
+  );
+  return useCartStore(
+    (state) =>
+      state.pendingChanges.has(item.id) ||
+      state.pendingChanges.has(selectionKey)
+  );
 }
 
 /** Hook to get pending changes count */
@@ -373,7 +467,9 @@ export interface CartValidationResult {
 
 /**
  * Compute cart validation - call this outside of render
- * Use with useMemo in components
+ * Use with useMemo in components.
+ * Stock limits apply to the combined quantity per variant — the same
+ * variant may sit on several lines with different modifier selections.
  */
 export function computeCartValidation(cart: ApiCart | null): CartValidationResult {
   if (!cart || cart.items.length === 0) {
@@ -388,30 +484,42 @@ export function computeCartValidation(cart: ApiCart | null): CartValidationResul
   const itemsWithIssues: CartValidationResult['itemsWithIssues'] = [];
   let hasOutOfStockItems = false;
 
+  const requestedByVariant = new Map<
+    string,
+    { item: ApiCartItem; quantity: number }
+  >();
   for (const item of cart.items) {
+    const existing = requestedByVariant.get(item.variant.id);
+    requestedByVariant.set(item.variant.id, {
+      item,
+      quantity: (existing?.quantity ?? 0) + item.quantity,
+    });
+  }
+
+  for (const { item, quantity } of requestedByVariant.values()) {
     if (!item.variant.inStock && item.variant.inventoryTrackable) {
       hasOutOfStockItems = true;
       itemsWithIssues.push({
         variantId: item.variant.id,
         productName: item.productName || item.variant.name,
-        requested: item.quantity,
+        requested: quantity,
         available: 0,
       });
-    } else if (item.quantity > item.variant.availableQuantity && item.variant.inventoryTrackable) {
+    } else if (quantity > item.variant.availableQuantity && item.variant.inventoryTrackable) {
       itemsWithIssues.push({
         variantId: item.variant.id,
         productName: item.productName || item.variant.name,
-        requested: item.quantity,
+        requested: quantity,
         available: item.variant.availableQuantity,
       });
     } else if (
       item.variant.maxQuantityPerOrder != null &&
-      item.quantity > item.variant.maxQuantityPerOrder
+      quantity > item.variant.maxQuantityPerOrder
     ) {
       itemsWithIssues.push({
         variantId: item.variant.id,
         productName: item.productName || item.variant.name,
-        requested: item.quantity,
+        requested: quantity,
         available: item.variant.maxQuantityPerOrder,
       });
     }
@@ -437,9 +545,5 @@ export function useCanCheckout(): boolean {
     return false;
   }
   
-  // Check for stock issues and max per order issues
-  return !cart.items.some(item => 
-    ((item.variant.inventoryTrackable) && (!item.variant.inStock || item.quantity > item.variant.availableQuantity)) ||
-    (item.variant.maxQuantityPerOrder != null && item.quantity > item.variant.maxQuantityPerOrder)
-  );
+  return computeCartValidation(cart).isValid;
 }

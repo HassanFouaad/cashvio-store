@@ -19,6 +19,8 @@ export interface OrderSuccessRecapItem {
   name: string;
   variant: string;
   quantity: number;
+  /** Selected add-on names (display only) */
+  modifiers?: string[];
 }
 
 export interface OrderSuccessRecap {
@@ -64,7 +66,12 @@ export function buildOrderSuccessRecap(params: {
   orderNumber: string;
   totalAmount: number;
   currency: string;
-  items: Array<{ name: string; variant: string; quantity: number }>;
+  items: Array<{
+    name: string;
+    variant: string;
+    quantity: number;
+    modifiers?: string[];
+  }>;
   fulfillmentMethod?: FulfillmentMethod;
   pickupLocation?: StorePickupLocation;
   tableNumber?: string;

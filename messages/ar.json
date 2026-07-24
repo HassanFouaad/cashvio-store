@@ -105,6 +105,14 @@
       "backToFirstPage": "العودة إلى الصفحة الأولى",
       "addToCart": "أضف إلى السلة",
       "selectVariant": "اختر النوع",
+      "modifiers": {
+        "optional": "اختياري",
+        "pickAtLeast": "اختر {count} على الأقل",
+        "upTo": "بحد أقصى {count}",
+        "free": "بدون تكلفة إضافية",
+        "includesAddOns": "شامل إضافات بقيمة {amount}",
+        "completeRequired": "أكمل الاختيارات المطلوبة بالأعلى لإضافة هذا الصنف"
+      },
       "inStock": "متوفر",
       "outOfStock": "غير متوفر",
       "leftInStock": "{count} متبقي في المخزون",

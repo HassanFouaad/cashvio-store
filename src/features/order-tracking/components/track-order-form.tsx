@@ -345,6 +345,14 @@ export function TrackOrderForm({
                       {item.variantName}
                     </p>
                   )}
+                  {(item.modifiers ?? []).map((modifier) => (
+                    <p
+                      key={modifier.modifierId}
+                      className="text-muted-foreground text-xs truncate"
+                    >
+                      + {modifier.name}
+                    </p>
+                  ))}
                 </div>
                 <div className="flex items-center gap-4 shrink-0">
                   <span className="text-muted-foreground">

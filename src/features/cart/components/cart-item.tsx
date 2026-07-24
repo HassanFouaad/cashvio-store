@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useMemo } from "react";
 import { ApiCartItem } from "../api/cart.types";
-import { useCartStore, useIsItemPending } from "../store";
+import { getLineUnitPrice, useCartStore, useIsItemPending } from "../store";
 
 interface CartItemProps {
   item: ApiCartItem;
@@ -18,14 +18,16 @@ interface CartItemProps {
 
 /**
  * Single cart item component
- * Displays product info, quantity controls, and remove button
- * Shows warnings when quantity exceeds available stock
+ * Displays product info, selected add-ons, quantity controls, and remove
+ * button. Shows warnings when quantity exceeds available stock.
  */
 export function CartItem({ item, currency, locale }: CartItemProps) {
   const t = useTranslations("cart");
   const { updateQuantity, removeItem } = useCartStore();
-  const isPending = useIsItemPending(item.variant.id);
+  const isPending = useIsItemPending(item);
   const { variant } = item;
+  const modifiers = item.modifiers ?? [];
+  const unitPrice = getLineUnitPrice(item);
 
   // Non-trackable inventory products are always considered unlimited stock
   const isUnlimitedStock = variant.inventoryTrackable === false;
@@ -64,18 +66,18 @@ export function CartItem({ item, currency, locale }: CartItemProps) {
     }
     // For unlimited stock, always allow increase
     if (isUnlimitedStock || item.quantity < variant.availableQuantity) {
-      updateQuantity(variant.id, item.quantity + 1);
+      updateQuantity(item.id, item.quantity + 1);
     }
   };
 
   const handleDecrease = () => {
     if (item.quantity > 1) {
-      updateQuantity(variant.id, item.quantity - 1);
+      updateQuantity(item.id, item.quantity - 1);
     }
   };
 
   const handleRemove = () => {
-    removeItem(variant.id);
+    removeItem(item.id);
   };
 
   const handleReduceToAvailable = () => {
@@ -84,9 +86,9 @@ export function CartItem({ item, currency, locale }: CartItemProps) {
       targetQty = Math.min(targetQty, maxPerOrder);
     }
     if (targetQty > 0) {
-      updateQuantity(variant.id, targetQty);
+      updateQuantity(item.id, targetQty);
     } else {
-      removeItem(variant.id);
+      removeItem(item.id);
     }
   };
 
@@ -140,8 +142,19 @@ export function CartItem({ item, currency, locale }: CartItemProps) {
             </p>
           )}
 
+          {modifiers.map((modifier) => (
+            <p
+              key={modifier.modifierId}
+              className="text-xs text-muted-foreground"
+            >
+              + {modifier.name}
+              {modifier.priceDelta > 0 &&
+                ` (${formatCurrency(modifier.priceDelta, currency, locale)})`}
+            </p>
+          ))}
+
           <p className="text-sm font-semibold">
-            {formatCurrency(variant.sellingPrice, currency, locale)}
+            {formatCurrency(unitPrice, currency, locale)}
           </p>
         </div>
 
@@ -241,7 +254,7 @@ export function CartItem({ item, currency, locale }: CartItemProps) {
               )}
               {formatCurrency(
                 quantityExceedsStock || quantityExceedsMaxPerOrder
-                  ? validQuantity * variant.sellingPrice
+                  ? validQuantity * unitPrice
                   : item.lineTotal,
                 currency,
                 locale,

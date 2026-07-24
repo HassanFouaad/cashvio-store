@@ -46,6 +46,8 @@ export interface PublicFulfillmentMethodDto {
 export interface PreviewOrderItemRequest {
   variantId: string;
   quantity: number;
+  /** Selected modifier IDs (server resolves names + price deltas) */
+  modifierIds?: string[];
 }
 
 /**
@@ -256,6 +258,8 @@ export interface OrderPreviewDeliveryAddress {
 export interface CreateOrderItemRequest {
   variantId: string;
   quantity: number;
+  /** Selected modifier IDs (server resolves names + price deltas) */
+  modifierIds?: string[];
 }
 
 /**

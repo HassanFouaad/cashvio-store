@@ -5,6 +5,16 @@
 import { PublicProductVariantDto } from '@/features/products/types/product.types';
 
 /**
+ * Selected modifier on a cart line (resolved live from the catalog)
+ */
+export interface ApiCartItemModifier {
+  modifierId: string;
+  groupName: string;
+  name: string;
+  priceDelta: number;
+}
+
+/**
  * Cart item from API response
  */
 export interface ApiCartItem {
@@ -14,6 +24,8 @@ export interface ApiCartItem {
   variant: PublicProductVariantDto;
   productName?: string;
   imageUrl?: string;
+  /** Selected modifiers — same variant with a different set is its own line */
+  modifiers?: ApiCartItemModifier[];
 }
 
 /**
@@ -28,12 +40,14 @@ export interface ApiCart {
 }
 
 /**
- * Request to modify cart item
+ * Request to modify cart item.
+ * Target a line either by itemId (update/remove) or by
+ * variantId + modifierIds (add / same-selection merge).
  */
 export interface ModifyCartItemRequest {
   visitorId: string;
-  variantId: string;
+  variantId?: string;
+  itemId?: string;
   quantity?: number;
+  modifierIds?: string[];
 }
-
-

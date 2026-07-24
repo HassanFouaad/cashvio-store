@@ -47,11 +47,21 @@ export interface TrackOrderRequest {
 /**
  * Public-safe order item for tracking display
  */
+/** Selected modifier snapshot on a tracked order item */
+export interface PublicOrderTrackingItemModifierDto {
+  modifierId: string;
+  modifierGroupId: string;
+  groupName: string;
+  name: string;
+  priceDelta: number;
+}
+
 export interface PublicOrderTrackingItemDto {
   productName: string;
   variantName: string;
   quantity: number;
   lineTotal: number;
+  modifiers?: PublicOrderTrackingItemModifierDto[] | null;
 }
 
 /**

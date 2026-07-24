@@ -1,5 +1,8 @@
 export {
   computeCartValidation,
+  getLineUnitPrice,
+  getModifierSignature,
+  getSelectionKey,
   useCanCheckout,
   useCartItemCount,
   useCartStore,

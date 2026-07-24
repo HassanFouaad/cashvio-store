@@ -1,7 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { ApiCartItemModifier } from "@/features/cart/api/cart.types";
 import { useCartStore } from "@/features/cart/store";
+import { ModifierGroupsPicker } from "@/features/products/components/modifier-groups-picker";
+import { useModifierSelection } from "@/features/products/hooks/use-modifier-selection";
 import {
   PublicProductDto,
   PublicProductVariantDto,
@@ -18,7 +21,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface AddToCartSectionProps {
   product: PublicProductDto;
@@ -41,6 +44,7 @@ export function AddToCartSection({
 }: AddToCartSectionProps) {
   const t = useTranslations("store.products");
   const tCart = useTranslations("cart");
+  const tModifiers = useTranslations("store.products.modifiers");
 
   // Local state — default to first in-stock variant, fallback to first variant
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
@@ -50,6 +54,22 @@ export function AddToCartSection({
     },
   );
   const [justAdded, setJustAdded] = useState(false);
+
+  // Modifier groups (add-ons) — products with groups always use the Add
+  // button flow: every add is one line keyed by its exact selection
+  const modifierGroups = useMemo(
+    () => product.modifierGroups ?? [],
+    [product.modifierGroups],
+  );
+  const hasModifiers = modifierGroups.length > 0;
+  const {
+    selectedIds: selectedModifierIdSet,
+    toggle: toggleModifier,
+    selectedCountByGroup,
+    modifiersTotal,
+    allMinimumsMet,
+    selectedModifierIds,
+  } = useModifierSelection(modifierGroups);
 
   // Sticky mobile CTA — shown only while the inline controls are scrolled
   // out of view, so customers never lose the buy action on long pages
@@ -96,11 +116,15 @@ export function AddToCartSection({
   // Max quantity per order (null = unlimited)
   const maxPerOrder = selectedVariant?.maxQuantityPerOrder ?? null;
 
-  // Cart quantity - derived from cart state for proper reactivity
+  // Cart quantity - combined across lines of this variant (a variant may
+  // sit on several lines with different modifier selections)
   const cartQuantity =
     selectedVariantId && isInitialized && cart
-      ? (cart.items.find((item) => item.variant.id === selectedVariantId)
-          ?.quantity ?? 0)
+      ? cart.items.reduce(
+          (sum, item) =>
+            item.variant.id === selectedVariantId ? sum + item.quantity : sum,
+          0,
+        )
       : 0;
 
   // Calculate remaining available (total - already in cart)
@@ -115,27 +139,32 @@ export function AddToCartSection({
     remainingAvailable = Math.min(remainingAvailable, remainingPerOrder);
   }
 
-  // Check if item is in cart
-  const isInCart = cartQuantity > 0;
+  // The quantity stepper only makes sense when a variant maps to exactly
+  // one cart line — products with modifiers always use the Add button
+  const isInCart = cartQuantity > 0 && !hasModifiers;
 
   // Check if can add more to cart
   const canAddMore =
     isInStock &&
     remainingAvailable > 0 &&
     selectedVariant !== undefined &&
-    !isLoading;
+    !isLoading &&
+    (!hasModifiers || allMinimumsMet);
 
   // Check if max is reached (not applicable for unlimited stock, but check maxPerOrder)
   const isMaxReached =
     (!isUnlimitedStock && cartQuantity >= totalAvailable) ||
     (maxPerOrder !== null && cartQuantity >= maxPerOrder);
 
-  // Helper to get variant cart quantity (for variant selector)
+  // Helper to get variant cart quantity (for variant selector) — combined
+  // across all lines of the variant
   const getVariantCartQuantity = useCallback(
     (variantId: string) => {
       if (!isInitialized || !cart) return 0;
-      return (
-        cart.items.find((item) => item.variant.id === variantId)?.quantity ?? 0
+      return cart.items.reduce(
+        (sum, item) =>
+          item.variant.id === variantId ? sum + item.quantity : sum,
+        0,
       );
     },
     [isInitialized, cart],
@@ -155,27 +184,35 @@ export function AddToCartSection({
     setJustAdded(false);
   }, []);
 
-  // Instant quantity change - directly updates cart
+  // The single cart line of the selected variant (stepper products only —
+  // products without modifiers keep a 1:1 variant/line relationship)
+  const selectedVariantLine =
+    !hasModifiers && selectedVariantId && isInitialized && cart
+      ? cart.items.find((item) => item.variant.id === selectedVariantId)
+      : undefined;
+
+  // Instant quantity change - directly updates the variant's cart line
   const handleQuantityChange = useCallback(
     (delta: number) => {
-      if (!selectedVariant || !isInitialized) return;
+      if (!selectedVariant || !isInitialized || !selectedVariantLine) return;
 
       const newQuantity = cartQuantity + delta;
 
       if (newQuantity <= 0) {
         // Remove from cart
-        removeItem(selectedVariant.id);
+        removeItem(selectedVariantLine.id);
       } else if (
         (isUnlimitedStock || newQuantity <= totalAvailable) &&
         (maxPerOrder === null || newQuantity <= maxPerOrder)
       ) {
         // Update quantity in cart (unlimited stock allows any positive quantity, but respect maxPerOrder)
-        updateQuantity(selectedVariant.id, newQuantity);
+        updateQuantity(selectedVariantLine.id, newQuantity);
       }
     },
     [
       selectedVariant,
       isInitialized,
+      selectedVariantLine,
       cartQuantity,
       totalAvailable,
       isUnlimitedStock,
@@ -185,16 +222,37 @@ export function AddToCartSection({
     ],
   );
 
-  // Handle initial add to cart (when not in cart yet)
+  // Handle add to cart — carries the current modifier selection
   const handleAddToCart = useCallback(() => {
     if (!selectedVariant || !canAddMore) return;
 
+    // Display snapshot for the optimistic cart line
+    const selectedModifiers: ApiCartItemModifier[] = [];
+    for (const group of modifierGroups) {
+      for (const modifier of group.modifiers) {
+        if (selectedModifierIdSet.has(modifier.id)) {
+          selectedModifiers.push({
+            modifierId: modifier.id,
+            groupName: group.name,
+            name: modifier.name,
+            priceDelta: modifier.priceDelta,
+          });
+        }
+      }
+    }
+
     // Add 1 item to cart
-    addItem(selectedVariant.id, 1, {
-      variant: selectedVariant,
-      productName: product.name,
-      imageUrl: product.images?.[0]?.imageUrl,
-    });
+    addItem(
+      selectedVariant.id,
+      1,
+      {
+        variant: selectedVariant,
+        productName: product.name,
+        imageUrl: product.images?.[0]?.imageUrl,
+        modifiers: selectedModifiers.length > 0 ? selectedModifiers : undefined,
+      },
+      selectedModifierIds,
+    );
 
     // Show success feedback
     setJustAdded(true);
@@ -202,24 +260,43 @@ export function AddToCartSection({
     justAddedTimerRef.current = setTimeout(() => {
       setJustAdded(false);
     }, 1500);
-  }, [selectedVariant, canAddMore, addItem, product]);
+  }, [
+    selectedVariant,
+    canAddMore,
+    addItem,
+    product,
+    modifierGroups,
+    selectedModifierIdSet,
+    selectedModifierIds,
+  ]);
 
   // Handle remove from cart
   const handleRemoveFromCart = useCallback(() => {
-    if (!selectedVariant) return;
-    removeItem(selectedVariant.id);
-  }, [selectedVariant, removeItem]);
+    if (!selectedVariantLine) return;
+    removeItem(selectedVariantLine.id);
+  }, [selectedVariantLine, removeItem]);
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Dynamic Price & Stock — updates when the user switches variants */}
+      {/* Dynamic Price & Stock — updates with variant and add-on selection */}
       {selectedVariant && (
         <div className="space-y-3">
           {/* Price */}
           <div className="flex items-baseline gap-3">
             <span className="text-2xl sm:text-3xl font-semibold">
-              {formatCurrency(selectedVariant.sellingPrice, currency, locale)}
+              {formatCurrency(
+                selectedVariant.sellingPrice + modifiersTotal,
+                currency,
+                locale,
+              )}
             </span>
+            {hasModifiers && modifiersTotal > 0 && (
+              <span className="text-sm text-muted-foreground">
+                {tModifiers("includesAddOns", {
+                  amount: formatCurrency(modifiersTotal, currency, locale),
+                })}
+              </span>
+            )}
             {product.taxIncluded && product.taxRate && (
               <span className="text-sm text-muted-foreground">
                 {t("taxIncluded")}
@@ -314,6 +391,18 @@ export function AddToCartSection({
             })}
           </div>
         </div>
+      )}
+
+      {/* Add-on picker — one section per modifier group */}
+      {hasModifiers && (
+        <ModifierGroupsPicker
+          groups={modifierGroups}
+          selectedIds={selectedModifierIdSet}
+          selectedCountByGroup={selectedCountByGroup}
+          onToggle={toggleModifier}
+          currency={currency}
+          locale={locale}
+        />
       )}
 
       {/* Max Reached Warning - More compact on mobile */}
@@ -422,30 +511,46 @@ export function AddToCartSection({
               </Link>
             </div>
           ) : (
-            /* Not in cart - Show add to cart button */
-            <Button
-              size="lg"
-              className="w-full gap-2 h-12 sm:h-11 text-base font-medium touch-manipulation"
-              disabled={!canAddMore}
-              onClick={handleAddToCart}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  {tCart("adding")}
-                </>
-              ) : justAdded ? (
-                <>
-                  <Check className="h-5 w-5" />
-                  {tCart("addedToCart")}
-                </>
-              ) : (
-                <>
-                  <ShoppingCart className="h-5 w-5" />
-                  {t("addToCart")}
-                </>
+            /* Not in cart (or add-on product) - Show add to cart button */
+            <div className="space-y-2">
+              <Button
+                size="lg"
+                className="w-full gap-2 h-12 sm:h-11 text-base font-medium touch-manipulation"
+                disabled={!canAddMore}
+                onClick={handleAddToCart}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    {tCart("adding")}
+                  </>
+                ) : justAdded ? (
+                  <>
+                    <Check className="h-5 w-5" />
+                    {tCart("addedToCart")}
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="h-5 w-5" />
+                    {t("addToCart")}
+                  </>
+                )}
+              </Button>
+              {hasModifiers && !allMinimumsMet && (
+                <p className="text-xs text-amber-600 dark:text-amber-500 text-center">
+                  {tModifiers("completeRequired")}
+                </p>
               )}
-            </Button>
+              {hasModifiers && cartQuantity > 0 && (
+                <Link
+                  href="/cart"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg border border-border text-sm font-medium transition-colors hover:bg-muted/60 touch-manipulation"
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  {tCart("viewCart")} ({cartQuantity})
+                </Link>
+              )}
+            </div>
           )}
         </div>
       )}
@@ -466,7 +571,11 @@ export function AddToCartSection({
                 {selectedVariant.name || product.name}
               </p>
               <p className="text-base font-bold">
-                {formatCurrency(selectedVariant.sellingPrice, currency, locale)}
+                {formatCurrency(
+                  selectedVariant.sellingPrice + modifiersTotal,
+                  currency,
+                  locale,
+                )}
               </p>
             </div>
             {isInCart ? (

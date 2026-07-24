@@ -35,6 +35,25 @@ export interface PublicProductImageDto {
   sortOrder: number;
 }
 
+/** A selectable add-on inside a modifier group */
+export interface PublicModifierDto {
+  id: string;
+  name: string;
+  priceDelta: number;
+  isDefault: boolean;
+}
+
+/** Group of add-ons offered on a product (min/max selection rules) */
+export interface PublicModifierGroupDto {
+  id: string;
+  name: string;
+  /** Minimum selections required (0 = optional) */
+  minSelections: number;
+  /** Maximum selections allowed (null = unlimited) */
+  maxSelections: number | null;
+  modifiers: PublicModifierDto[];
+}
+
 export interface PublicProductDto {
   id: string;
   name: string;
@@ -50,6 +69,8 @@ export interface PublicProductDto {
   averageRating?: number | null;
   /** Number of displayed reviews */
   reviewCount?: number;
+  /** Selectable modifier groups in picker order (active only) */
+  modifierGroups?: PublicModifierGroupDto[];
 }
 
 export interface PaginatedProductsResponse {

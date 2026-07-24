@@ -605,6 +605,9 @@ export function CheckoutForm({
         items: items.map((item) => ({
           variantId: item.variant.id,
           quantity: item.quantity,
+          modifierIds: item.modifiers?.map(
+            (modifier) => modifier.modifierId,
+          ),
         })),
         // Don't include customer info in preview - it doesn't affect pricing
         deliveryAddress: previewDeliveryAddress,
@@ -766,6 +769,9 @@ export function CheckoutForm({
         items: items.map((item) => ({
           variantId: item.variant.id,
           quantity: item.quantity,
+          modifierIds: item.modifiers?.map(
+            (modifier) => modifier.modifierId,
+          ),
         })),
         customerName: customerName || undefined,
         customerPhone: customerPhone || undefined,
@@ -822,6 +828,7 @@ export function CheckoutForm({
             name: item.productName || item.variant.name,
             variant: item.variant.name,
             quantity: item.quantity,
+            modifiers: item.modifiers?.map((modifier) => modifier.name),
           })),
           // Tracking verifies by checkout phone â€” keep it so the track
           // page can prefill instead of asking again seconds later

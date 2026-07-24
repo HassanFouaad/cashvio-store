@@ -137,7 +137,7 @@ export function CartList({ currency, locale }: CartListProps) {
       <div className="divide-y">
         {cart.items.map((item) => (
           <CartItem
-            key={item.variant.id}
+            key={item.id}
             item={item}
             currency={currency}
             locale={locale}

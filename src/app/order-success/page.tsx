@@ -175,14 +175,21 @@ function OrderSuccessContent() {
               {recap.items.map((item, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between gap-3 text-sm"
+                  className="flex items-start justify-between gap-3 text-sm"
                 >
-                  <span className="truncate">
-                    {item.name}
-                    {item.variant && item.variant !== item.name && (
-                      <span className="text-muted-foreground">
-                        {" "}
-                        — {item.variant}
+                  <span className="min-w-0">
+                    <span className="block truncate">
+                      {item.name}
+                      {item.variant && item.variant !== item.name && (
+                        <span className="text-muted-foreground">
+                          {" "}
+                          — {item.variant}
+                        </span>
+                      )}
+                    </span>
+                    {(item.modifiers ?? []).length > 0 && (
+                      <span className="block truncate text-xs text-muted-foreground">
+                        + {(item.modifiers ?? []).join(" · ")}
                       </span>
                     )}
                   </span>

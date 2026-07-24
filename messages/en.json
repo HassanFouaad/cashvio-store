@@ -105,6 +105,14 @@
       "backToFirstPage": "Back to First Page",
       "addToCart": "Add to Cart",
       "selectVariant": "Select Variant",
+      "modifiers": {
+        "optional": "Optional",
+        "pickAtLeast": "Pick at least {count}",
+        "upTo": "up to {count}",
+        "free": "No extra charge",
+        "includesAddOns": "includes {amount} add-ons",
+        "completeRequired": "Complete the required choices above to add this item"
+      },
       "inStock": "In Stock",
       "outOfStock": "Out of Stock",
       "leftInStock": "{count} left in stock",

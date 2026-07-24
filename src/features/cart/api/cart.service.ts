@@ -50,46 +50,53 @@ export async function modifyCartItem(
 }
 
 /**
- * Add item to cart
+ * Add item to cart (or set the quantity of the line with the exact same
+ * variant + modifier selection)
  */
 export async function addToCart(
   visitorId: string,
   variantId: string,
-  quantity: number
+  quantity: number,
+  modifierIds?: string[]
 ): Promise<void> {
-  return modifyCartItem({ visitorId, variantId, quantity });
+  return modifyCartItem({
+    visitorId,
+    variantId,
+    quantity,
+    ...(modifierIds && modifierIds.length > 0 ? { modifierIds } : {}),
+  });
 }
 
 /**
- * Update item quantity
+ * Update a cart line's quantity by its line id
  */
 export async function updateCartItemQuantity(
   visitorId: string,
-  variantId: string,
+  itemId: string,
   quantity: number
 ): Promise<void> {
-  return modifyCartItem({ visitorId, variantId, quantity });
+  return modifyCartItem({ visitorId, itemId, quantity });
 }
 
 /**
- * Remove item from cart
+ * Remove a cart line by its line id
  */
 export async function removeFromCart(
   visitorId: string,
-  variantId: string
+  itemId: string
 ): Promise<void> {
-  return modifyCartItem({ visitorId, variantId, quantity: 0 });
+  return modifyCartItem({ visitorId, itemId, quantity: 0 });
 }
 
 /**
  * Clear all items from cart
  * Backend doesn't have dedicated endpoint, so we remove items in parallel
  */
-export async function clearCart(visitorId: string, variantIds: string[]): Promise<void> {
-  if (variantIds.length === 0) return;
+export async function clearCart(visitorId: string, itemIds: string[]): Promise<void> {
+  if (itemIds.length === 0) return;
 
   // Remove all items in parallel for better performance
   await Promise.all(
-    variantIds.map(variantId => removeFromCart(visitorId, variantId))
+    itemIds.map(itemId => removeFromCart(visitorId, itemId))
   );
 }
