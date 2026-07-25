@@ -8,6 +8,7 @@ import { StoreFrontThemeProductPageVariant } from "@/features/store/types/store.
 import { resolveRequestTheme } from "@/lib/theme";
 import { ChevronRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import Image from "next/image";
 import Link from "next/link";
 import { AddToCartSection } from "./add-to-cart-section";
 import { ProductImageGallery } from "./product-image-gallery";
@@ -125,9 +126,10 @@ export async function ProductDetails({
       <div className="w-full">
         {breadcrumb}
 
-        {/* Single centered editorial column: title above the gallery */}
-        <div className="max-w-2xl mx-auto space-y-6">
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground leading-tight text-center">
+        {/* Single centered editorial column: display title above the
+            gallery, generous whitespace between blocks */}
+        <div className="max-w-2xl mx-auto space-y-8">
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground leading-tight text-center">
             {product.name}
           </h1>
           {gallery}
@@ -145,9 +147,41 @@ export async function ProductDetails({
       <div className="w-full">
         {breadcrumb}
 
-        {/* Image-first: large scrolling gallery + sticky compact buy panel */}
+        {/* Image-first: every image visible in a desktop mosaic (lead
+            image full width, the rest 2-up) + sticky compact buy panel.
+            Below lg the swipeable gallery takes over. */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
-          <div className="lg:col-span-8">{gallery}</div>
+          <div className="lg:col-span-8">
+            {sortedImages.length > 1 ? (
+              <>
+                <div className="lg:hidden">{gallery}</div>
+                <div className="hidden lg:grid grid-cols-2 gap-4">
+                  {sortedImages.map((image, index) => (
+                    <div
+                      key={image.imageUrl ?? index}
+                      className={`relative overflow-hidden rounded-xl bg-muted ${
+                        index === 0
+                          ? "col-span-2 aspect-[4/3]"
+                          : "aspect-[3/4]"
+                      }`}
+                    >
+                      <Image
+                        src={image.imageUrl}
+                        alt={image.altText || product.name}
+                        fill
+                        sizes="(min-width: 1024px) 45vw, 100vw"
+                        className="object-cover"
+                        priority={index === 0}
+                        loading={index === 0 ? "eager" : "lazy"}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              gallery
+            )}
+          </div>
           <div className="lg:col-span-4">
             <div className="lg:sticky lg:top-4 space-y-5">
               <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground leading-tight">

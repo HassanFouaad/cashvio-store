@@ -10,8 +10,8 @@ export type {
     ResolvedStoreTheme,
     ThemePreviewOverrides
 } from "./resolve-theme";
-export { getSectionHeadingStyle } from "./section-style";
-export type { SectionHeadingStyle } from "./section-style";
+export { getThemePersonality } from "./theme-personality";
+export type { ThemePersonality } from "./theme-personality";
 export {
     RADIUS_PRESET_REM,
     THEME_HEX_COLOR_REGEX,

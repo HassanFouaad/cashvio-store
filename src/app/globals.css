@@ -416,6 +416,26 @@ html[data-sf-buttons="OUTLINE"] .sf-btn-primary:hover:not(:disabled) {
 }
 
 /* ============================================
+   THEME ENGINE - TYPOGRAPHY PERSONALITY
+   ============================================ */
+
+/* EDITORIAL typography themes: primary CTAs and the announcement bar
+   read as editorial labels. The attribute is only set for non-REGULAR
+   typography, so default stores stay byte-identical. (text-transform
+   is a safe no-op for Arabic text.) */
+html[data-sf-type="EDITORIAL"] .sf-btn-primary {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8125rem;
+}
+
+html[data-sf-type="EDITORIAL"] .sf-announcement {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.6875rem;
+}
+
+/* ============================================
    THEME ENGINE - ICON STROKE PERSONALITY
    ============================================ */
 
@@ -429,6 +449,19 @@ html[data-sf-icons="LIGHT"] svg.lucide {
 
 html[data-sf-icons="BOLD"] svg.lucide {
   stroke-width: 2.5;
+}
+
+/* ============================================
+   THEME ENGINE - PER-THEME MICRO IDENTITY
+   ============================================ */
+
+/* TECH: prices read as spec values — system mono with tabular numerals.
+   Product surfaces mark prices with .sf-price; the attribute is only set
+   for themed stores, so default stores stay byte-identical. */
+html[data-sf-theme="TECH"] .sf-price {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.95em;
+  letter-spacing: -0.01em;
 }
 
 /* ============================================

@@ -283,7 +283,7 @@ export function AddToCartSection({
         <div className="space-y-3">
           {/* Price */}
           <div className="flex items-baseline gap-3">
-            <span className="text-2xl sm:text-3xl font-semibold tabular-nums">
+            <span className="sf-price text-2xl sm:text-3xl font-semibold tabular-nums">
               {formatCurrency(
                 selectedVariant.sellingPrice + modifiersTotal,
                 currency,
@@ -570,7 +570,7 @@ export function AddToCartSection({
               <p className="text-xs text-muted-foreground truncate">
                 {selectedVariant.name || product.name}
               </p>
-              <p className="text-base font-semibold tabular-nums">
+              <p className="sf-price text-base font-semibold tabular-nums">
                 {formatCurrency(
                   selectedVariant.sellingPrice + modifiersTotal,
                   currency,

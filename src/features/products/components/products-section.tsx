@@ -1,7 +1,7 @@
 import { ProductCard } from "@/features/products/components/product-card";
 import { PublicProductDto } from "@/features/products/types/product.types";
 import { ProductCardTranslations } from "@/features/products/utils";
-import { getSectionHeadingStyle, resolveRequestTheme } from "@/lib/theme";
+import { getThemePersonality, resolveRequestTheme } from "@/lib/theme";
 import { ArrowRight } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -18,7 +18,7 @@ export async function ProductsSection({
   const t = await getTranslations("store");
   const locale = await getLocale();
   const resolvedTheme = await resolveRequestTheme();
-  const headingStyle = getSectionHeadingStyle(resolvedTheme.layout.header);
+  const personality = getThemePersonality(resolvedTheme.layout);
 
   // Get translations for ProductCard
   const productTranslations: ProductCardTranslations = {
@@ -31,11 +31,11 @@ export async function ProductsSection({
   }
 
   return (
-    <section className="w-full max-w-full py-6 sm:py-8 md:py-12">
+    <section className={`w-full max-w-full ${personality.section}`}>
       <div className="container">
-        {/* Section Header - alignment follows the theme's header variant */}
-        <div className={headingStyle.wrapper}>
-          <h2 className={headingStyle.heading}>{t("products.title")}</h2>
+        {/* Section Header - alignment/type follow the theme personality */}
+        <div className={personality.headingWrapper}>
+          <h2 className={personality.heading}>{t("products.title")}</h2>
           <Link
             href="/products"
             className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium text-primary hover:text-primary/80 transition-colors group"
@@ -45,8 +45,8 @@ export async function ProductsSection({
           </Link>
         </div>
 
-        {/* Products Grid - 2 rows of 6 on desktop, responsive on mobile */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-4 md:gap-6">
+        {/* Products Grid - density follows the theme personality */}
+        <div className={personality.homeGrid}>
           {products.map((product) => (
             <ProductCard
               key={product.id}

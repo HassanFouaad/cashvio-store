@@ -32,7 +32,8 @@ export async function StoreAnnouncementBar({
       className="w-full bg-primary text-primary-foreground overflow-hidden"
     >
       <div className="container py-1.5 sm:py-2">
-        <p className="text-center text-xs sm:text-sm font-medium leading-snug break-words">
+        {/* sf-announcement lets typography personalities restyle the bar */}
+        <p className="sf-announcement text-center text-xs sm:text-sm font-medium leading-snug break-words">
           {text}
         </p>
       </div>

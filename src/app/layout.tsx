@@ -30,6 +30,7 @@ import {
   StoreFrontThemeButtonVariant,
   StoreFrontThemeIconStyle,
   StoreFrontThemeOrderPagesVariant,
+  StoreFrontThemeTypography,
 } from "@/features/store/types/store.types";
 import {
   getDirectionForLocale,
@@ -223,6 +224,12 @@ export default async function RootLayout({
         resolvedTheme.layout.orderPages ===
         StoreFrontThemeOrderPagesVariant.FLAT
           ? StoreFrontThemeOrderPagesVariant.FLAT
+          : undefined
+      }
+      data-sf-theme={resolvedTheme.themeKey ?? undefined}
+      data-sf-type={
+        resolvedTheme.layout.typography !== StoreFrontThemeTypography.REGULAR
+          ? resolvedTheme.layout.typography
           : undefined
       }
     >

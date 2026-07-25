@@ -2,6 +2,7 @@ import { SearchInput } from "@/components/common/search-input";
 import { getCategoriesWithErrorHandling } from "@/features/categories/api/get-categories";
 import { CategoriesGrid } from "@/features/categories/components/categories-grid";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
+import { getThemePersonality, resolveRequestTheme } from "@/lib/theme";
 import { validatePaginationAndRedirect } from "@/lib/utils/pagination-redirect";
 import { parsePage } from "@/lib/utils/query-params";
 import { buildLanguageAlternates } from "@/lib/utils/seo";
@@ -87,16 +88,19 @@ export default async function CategoriesPage({
     );
   }
 
+  const resolvedTheme = await resolveRequestTheme();
+  const personality = getThemePersonality(resolvedTheme.layout);
+
   return (
     <div className="w-full max-w-full overflow-x-hidden">
-      {/* Page Header */}
-      <section className="w-full max-w-full bg-muted/30 py-8 sm:py-12 md:py-16">
+      {/* Page Header - band treatment follows the theme personality */}
+      <section className={`w-full max-w-full ${personality.band}`}>
         <div className="container">
           <div className="max-w-3xl mx-auto text-center space-y-4">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight">
+            <h1 className={personality.bandTitle}>
               {t("store.categories.pageTitle")}
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
+            <p className={personality.bandSubtitle}>
               {t("store.categories.pageDescription")}
             </p>
 

@@ -3,6 +3,7 @@ import { CartList } from "@/features/cart/components/cart-list";
 import { CartSummary } from "@/features/cart/components/cart-summary";
 import { TrackViewCartEvent } from "@/lib/analytics/track-cart-events";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
+import { getThemePersonality, resolveRequestTheme } from "@/lib/theme";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -38,18 +39,17 @@ export default async function CartPage() {
   const { minimumOrderValue, freeDeliveryThreshold } =
     await getCartOrderSettings(store.id);
 
+  const resolvedTheme = await resolveRequestTheme();
+  const personality = getThemePersonality(resolvedTheme.layout);
+
   return (
     <div className="w-full max-w-full overflow-x-hidden">
-      {/* Page Header */}
-      <section className="w-full max-w-full bg-muted/30 py-6 sm:py-8 md:py-12">
+      {/* Page Header - band treatment follows the theme personality */}
+      <section className={`w-full max-w-full ${personality.band}`}>
         <div className="container">
           <div className="max-w-3xl mx-auto text-center space-y-2">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight">
-              {t("pageTitle")}
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              {t("pageDescription")}
-            </p>
+            <h1 className={personality.bandTitle}>{t("pageTitle")}</h1>
+            <p className={personality.bandSubtitle}>{t("pageDescription")}</p>
           </div>
         </div>
       </section>

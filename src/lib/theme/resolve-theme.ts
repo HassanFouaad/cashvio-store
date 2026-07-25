@@ -27,14 +27,16 @@ export interface ThemePreviewOverrides {
 /**
  * The fully resolved appearance of the current request. Everything the
  * rendering layer needs: validated CSS tokens, a concrete font pairing,
- * a radius override (null = keep the globals.css default), and the
- * layout-variant map for structural theming.
+ * a radius override (null = keep the globals.css default), the
+ * layout-variant map for structural theming, and the catalog theme key
+ * (drives data-sf-theme micro-identity CSS; null = default store).
  */
 export interface ResolvedStoreTheme {
   tokens: { light: SafeThemeTokenSet; dark: SafeThemeTokenSet } | null;
   fontPreset: StoreFrontFontPreset;
   radiusRem: string | null;
   layout: StoreFrontThemeLayout;
+  themeKey: string | null;
 }
 
 /**
@@ -105,6 +107,7 @@ export function resolveStoreTheme(
     fontPreset,
     radiusRem,
     layout: sanitizeThemeLayout(theme?.layout),
+    themeKey: theme?.key ?? null,
   };
 }
 

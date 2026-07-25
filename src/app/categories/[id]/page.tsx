@@ -6,6 +6,7 @@ import { ProductsGrid } from "@/features/products/components/products-grid";
 import { ProductSortBy } from "@/features/products/types/product.types";
 import { TrackViewItemList } from "@/lib/analytics/track-event";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
+import { getThemePersonality, resolveRequestTheme } from "@/lib/theme";
 import { serializeJsonLd } from "@/lib/utils";
 import { validatePaginationAndRedirect } from "@/lib/utils/pagination-redirect";
 import { parsePage } from "@/lib/utils/query-params";
@@ -204,6 +205,9 @@ export default async function CategoryDetailPage({
     ],
   };
 
+  const resolvedTheme = await resolveRequestTheme();
+  const personality = getThemePersonality(resolvedTheme.layout);
+
   return (
     <div className="w-full max-w-full overflow-x-hidden">
       {/* JSON-LD structured data for SEO */}
@@ -220,8 +224,8 @@ export default async function CategoryDetailPage({
         listName={category.name}
         items={analyticsItems}
       />
-      {/* Category Header */}
-      <section className="w-full max-w-full bg-muted/30 py-6 sm:py-8 md:py-12">
+      {/* Category Header - band treatment follows the theme personality */}
+      <section className={`w-full max-w-full ${personality.band}`}>
         <div className="container">
           {/* Back Link */}
           <Link
@@ -249,9 +253,7 @@ export default async function CategoryDetailPage({
 
             {/* Category Info */}
             <div className="text-center sm:text-start">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight">
-                {category.name}
-              </h1>
+              <h1 className={personality.bandTitle}>{category.name}</h1>
             </div>
           </div>
         </div>

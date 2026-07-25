@@ -66,7 +66,7 @@ export function ProductCardOverlay({
           </div>
         )}
         {priceDisplay && (
-          <p className="text-sm font-semibold tabular-nums text-white">
+          <p className="sf-price text-sm font-semibold tabular-nums text-white">
             {priceDisplay}
           </p>
         )}

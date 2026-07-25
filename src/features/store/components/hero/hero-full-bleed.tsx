@@ -10,13 +10,19 @@ import { StoreFrontHeroImageDto } from "../../types/store.types";
 interface HeroFullBleedProps {
   heroImages: StoreFrontHeroImageDto[];
   storeName: string;
+  /** Display-title classes from the theme's typography personality */
+  titleClassName?: string;
 }
 
 /**
  * FULL_BLEED hero — immersive edge-to-edge imagery with the store name,
  * tagline, and shop CTA overlaid. Rotates gently through banners.
  */
-export function HeroFullBleed({ heroImages, storeName }: HeroFullBleedProps) {
+export function HeroFullBleed({
+  heroImages,
+  storeName,
+  titleClassName = "text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight",
+}: HeroFullBleedProps) {
   const t = useTranslations("store.hero");
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -77,7 +83,9 @@ export function HeroFullBleed({ heroImages, storeName }: HeroFullBleedProps) {
 
       {/* Overlaid content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 sm:gap-5 px-4 text-center">
-        <h1 className="max-w-3xl text-3xl font-bold tracking-tight text-white drop-shadow-sm sm:text-5xl md:text-6xl">
+        <h1
+          className={`max-w-3xl ${titleClassName} text-white drop-shadow-sm`}
+        >
           {storeName}
         </h1>
         <p className="max-w-xl text-sm text-white/85 sm:text-lg">

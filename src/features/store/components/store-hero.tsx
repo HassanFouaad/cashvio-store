@@ -1,3 +1,4 @@
+import { getThemePersonality, resolveRequestTheme } from "@/lib/theme";
 import { ComponentType } from "react";
 import {
   StoreFrontHeroImageDto,
@@ -16,6 +17,8 @@ interface StoreHeroProps {
 interface HeroVariantProps {
   heroImages: StoreFrontHeroImageDto[];
   storeName: string;
+  /** Display-title classes from the theme's typography personality */
+  titleClassName?: string;
 }
 
 /**
@@ -35,11 +38,20 @@ const HERO_VARIANTS: Record<
  * Theme-aware hero dispatcher. Defaults to CAROUSEL (the pre-theme-engine
  * hero) so stores without a theme render exactly as before.
  */
-export function StoreHero({
+export async function StoreHero({
   heroImages,
   storeName,
   variant = StoreFrontThemeHeroVariant.CAROUSEL,
 }: StoreHeroProps) {
+  const resolvedTheme = await resolveRequestTheme();
+  const personality = getThemePersonality(resolvedTheme.layout);
   const HeroVariant = HERO_VARIANTS[variant] ?? HeroCarousel;
-  return <HeroVariant heroImages={heroImages} storeName={storeName} />;
+
+  return (
+    <HeroVariant
+      heroImages={heroImages}
+      storeName={storeName}
+      titleClassName={personality.heroTitle}
+    />
+  );
 }

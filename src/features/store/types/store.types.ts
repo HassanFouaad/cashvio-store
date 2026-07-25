@@ -51,6 +51,7 @@ export enum StoreFrontThemeProductCardVariant {
   STANDARD = 'STANDARD',
   OVERLAY = 'OVERLAY',
   MINIMAL = 'MINIMAL',
+  TILE = 'TILE',
 }
 
 /** Structural layout of the storefront footer */
@@ -90,6 +91,35 @@ export enum StoreFrontThemeOrderPagesVariant {
 export enum StoreFrontThemeMobileNavVariant {
   LABELED = 'LABELED',
   ICON_PILL = 'ICON_PILL',
+}
+
+/** Whitespace and grid-density personality of the theme */
+export enum StoreFrontThemeDensity {
+  REGULAR = 'REGULAR',
+  AIRY = 'AIRY',
+  COMPACT = 'COMPACT',
+}
+
+/** Typographic personality applied to display type and section headings */
+export enum StoreFrontThemeTypography {
+  REGULAR = 'REGULAR',
+  DISPLAY = 'DISPLAY',
+  EDITORIAL = 'EDITORIAL',
+}
+
+/** Treatment of the page-title band on listing and order pages */
+export enum StoreFrontThemePageBand {
+  MUTED = 'MUTED',
+  PLAIN = 'PLAIN',
+  RULED = 'RULED',
+}
+
+/** Section composition of the homepage */
+export enum StoreFrontThemeHomeComposition {
+  STANDARD = 'STANDARD',
+  CATEGORY_FIRST = 'CATEGORY_FIRST',
+  SHOWCASE = 'SHOWCASE',
+  EDITORIAL_ROWS = 'EDITORIAL_ROWS',
 }
 
 /**
@@ -135,6 +165,10 @@ export interface StoreFrontThemeLayout {
   mobileNav: StoreFrontThemeMobileNavVariant;
   buttonStyle: StoreFrontThemeButtonVariant;
   iconStyle: StoreFrontThemeIconStyle;
+  density: StoreFrontThemeDensity;
+  typography: StoreFrontThemeTypography;
+  pageBand: StoreFrontThemePageBand;
+  homeComposition: StoreFrontThemeHomeComposition;
 }
 
 /** Color palette catalog entry — matches backend StoreFrontPaletteDto */

@@ -87,7 +87,7 @@ export function RecentlyViewedSection({
                 {entry.name}
               </p>
               {typeof entry.price === "number" && entry.price > 0 && (
-                <p className="text-xs sm:text-sm font-semibold tabular-nums mt-0.5">
+                <p className="sf-price text-xs sm:text-sm font-semibold tabular-nums mt-0.5">
                   {formatCurrency(entry.price, currency, locale)}
                 </p>
               )}

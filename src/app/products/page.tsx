@@ -5,6 +5,7 @@ import { ProductsGrid } from "@/features/products/components/products-grid";
 import { ProductSortBy } from "@/features/products/types/product.types";
 import { TrackViewItemList } from "@/lib/analytics/track-event";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
+import { getThemePersonality, resolveRequestTheme } from "@/lib/theme";
 import { validatePaginationAndRedirect } from "@/lib/utils/pagination-redirect";
 import { parsePage } from "@/lib/utils/query-params";
 import { buildLanguageAlternates } from "@/lib/utils/seo";
@@ -129,6 +130,9 @@ export default async function ProductsPage({
     quantity: 1,
   }));
 
+  const resolvedTheme = await resolveRequestTheme();
+  const personality = getThemePersonality(resolvedTheme.layout);
+
   return (
     <div className="w-full max-w-full overflow-x-hidden">
       <TrackViewItemList
@@ -136,14 +140,14 @@ export default async function ProductsPage({
         listName="All Products"
         items={analyticsItems}
       />
-      {/* Page Header */}
-      <section className="w-full max-w-full bg-muted/30 py-6 sm:py-8 md:py-12">
+      {/* Page Header - band treatment follows the theme personality */}
+      <section className={`w-full max-w-full ${personality.band}`}>
         <div className="container">
           <div className="max-w-3xl mx-auto text-center space-y-3">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight">
+            <h1 className={personality.bandTitle}>
               {t("store.products.pageTitle")}
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
+            <p className={personality.bandSubtitle}>
               {t("store.products.pageDescription")}
             </p>
           </div>

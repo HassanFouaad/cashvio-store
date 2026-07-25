@@ -4,7 +4,7 @@ import { ProductCard } from "@/features/products/components/product-card";
 import { PublicProductDto } from "@/features/products/types/product.types";
 import { ProductCardTranslations } from "@/features/products/utils";
 import { PaginationMeta } from "@/lib/api/types";
-import { resolveRequestTheme } from "@/lib/theme";
+import { getThemePersonality, resolveRequestTheme } from "@/lib/theme";
 import { normalizePagination } from "@/lib/utils/pagination";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -30,6 +30,7 @@ export async function ProductsGrid({
   const t = await getTranslations("store.products");
   const locale = await getLocale();
   const resolvedTheme = await resolveRequestTheme();
+  const personality = getThemePersonality(resolvedTheme.layout);
 
   // Get translations for ProductCard
   const productTranslations: ProductCardTranslations = {
@@ -74,8 +75,8 @@ export async function ProductsGrid({
 
   return (
     <div className="space-y-8">
-      {/* Products Grid - SSR - Mobile-optimized gaps */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-4 md:gap-6">
+      {/* Products Grid - SSR - density follows the theme personality */}
+      <div className={personality.listingGrid}>
         {products.map((product) => (
           <ProductCard
             key={product.id}

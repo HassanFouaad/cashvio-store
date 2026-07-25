@@ -8,7 +8,10 @@ import { SpecialProductsSection } from "@/features/products/components/special-p
 import { StoreEmptyState } from "@/features/store/components/store-empty-state";
 import { StoreErrorComponent } from "@/features/store/components/store-error";
 import { StoreHero } from "@/features/store/components/store-hero";
-import { StoreErrorType } from "@/features/store/types/store.types";
+import {
+  StoreErrorType,
+  StoreFrontThemeHomeComposition,
+} from "@/features/store/types/store.types";
 import { TrackViewItemList } from "@/lib/analytics/track-event";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { resolveRequestTheme } from "@/lib/theme";
@@ -50,6 +53,32 @@ export default async function HomePage() {
 
   const heroImages = store.storeFront?.heroImages || [];
   const resolvedTheme = await resolveRequestTheme();
+  const composition = resolvedTheme.layout.homeComposition;
+
+  // Categories presentation follows the home composition: shop-by-aisle
+  // grid for CATEGORY_FIRST, oversized 2-up tiles for EDITORIAL_ROWS,
+  // the horizontal strip everywhere else.
+  const categoriesPresentation =
+    composition === StoreFrontThemeHomeComposition.CATEGORY_FIRST
+      ? "grid"
+      : composition === StoreFrontThemeHomeComposition.EDITORIAL_ROWS
+        ? "tiles"
+        : "strip";
+
+  const specialPresentation =
+    composition === StoreFrontThemeHomeComposition.CATEGORY_FIRST
+      ? "strip"
+      : composition === StoreFrontThemeHomeComposition.SHOWCASE ||
+          composition === StoreFrontThemeHomeComposition.EDITORIAL_ROWS
+        ? "feature"
+        : "grid";
+
+  const categoriesLimit =
+    categoriesPresentation === "grid"
+      ? 8
+      : categoriesPresentation === "tiles"
+        ? 4
+        : 7;
 
   // Independent data — fetched in parallel to keep TTFB low
   const [
@@ -60,7 +89,7 @@ export default async function HomePage() {
     getCategoriesWithErrorHandling({
       tenantId: store.tenantId,
       page: 1,
-      limit: 7,
+      limit: categoriesLimit,
     }),
     getProductsWithErrorHandling({
       storeId: store.id,
@@ -158,20 +187,69 @@ export default async function HomePage() {
         storeName={store.name}
         variant={resolvedTheme.layout.hero}
       />
-      {/* Special Products Section */}
-      <SpecialProductsSection
-        products={specialProducts || []}
-        currency={store.currency}
-      />
 
-      {/* Recently viewed (client-side history, hidden for new visitors) */}
-      <RecentlyViewedSection currency={store.currency} />
-
-      {/* Categories Section */}
-      <CategoriesSection categories={categories} />
-
-      {/* Products Section */}
-      <ProductsSection products={products} currency={store.currency} />
+      {/* Section order follows the theme's home composition */}
+      {composition === StoreFrontThemeHomeComposition.CATEGORY_FIRST ? (
+        <>
+          {/* Shop-by-aisle: categories lead, dense products follow */}
+          <CategoriesSection
+            categories={categories}
+            presentation={categoriesPresentation}
+          />
+          <ProductsSection products={products} currency={store.currency} />
+          <SpecialProductsSection
+            products={specialProducts || []}
+            currency={store.currency}
+            presentation={specialPresentation}
+          />
+          <RecentlyViewedSection currency={store.currency} />
+        </>
+      ) : composition === StoreFrontThemeHomeComposition.SHOWCASE ? (
+        <>
+          {/* Immersive: oversized special-product spotlights lead */}
+          <SpecialProductsSection
+            products={specialProducts || []}
+            currency={store.currency}
+            presentation={specialPresentation}
+          />
+          <CategoriesSection
+            categories={categories}
+            presentation={categoriesPresentation}
+          />
+          <ProductsSection products={products} currency={store.currency} />
+          <RecentlyViewedSection currency={store.currency} />
+        </>
+      ) : composition === StoreFrontThemeHomeComposition.EDITORIAL_ROWS ? (
+        <>
+          {/* Magazine: oversized category tiles, then curated features */}
+          <CategoriesSection
+            categories={categories}
+            presentation={categoriesPresentation}
+          />
+          <SpecialProductsSection
+            products={specialProducts || []}
+            currency={store.currency}
+            presentation={specialPresentation}
+          />
+          <ProductsSection products={products} currency={store.currency} />
+          <RecentlyViewedSection currency={store.currency} />
+        </>
+      ) : (
+        <>
+          {/* STANDARD — the original storefront order */}
+          <SpecialProductsSection
+            products={specialProducts || []}
+            currency={store.currency}
+            presentation={specialPresentation}
+          />
+          <RecentlyViewedSection currency={store.currency} />
+          <CategoriesSection
+            categories={categories}
+            presentation={categoriesPresentation}
+          />
+          <ProductsSection products={products} currency={store.currency} />
+        </>
+      )}
     </div>
   );
 }

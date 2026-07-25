@@ -1,15 +1,19 @@
 import {
   StoreFrontThemeButtonVariant,
+  StoreFrontThemeDensity,
   StoreFrontThemeFooterVariant,
   StoreFrontThemeHeaderVariant,
   StoreFrontThemeHeroVariant,
+  StoreFrontThemeHomeComposition,
   StoreFrontThemeIconStyle,
   StoreFrontThemeLayout,
   StoreFrontThemeMobileNavVariant,
   StoreFrontThemeOrderPagesVariant,
+  StoreFrontThemePageBand,
   StoreFrontThemeProductCardVariant,
   StoreFrontThemeProductPageVariant,
   StoreFrontThemeTokenSet,
+  StoreFrontThemeTypography,
 } from "@/features/store/types/store.types";
 import {
   THEME_HEX_COLOR_REGEX,
@@ -63,6 +67,10 @@ export function sanitizeThemeLayout(
   const mobileNavValues = Object.values(StoreFrontThemeMobileNavVariant);
   const buttonValues = Object.values(StoreFrontThemeButtonVariant);
   const iconStyleValues = Object.values(StoreFrontThemeIconStyle);
+  const densityValues = Object.values(StoreFrontThemeDensity);
+  const typographyValues = Object.values(StoreFrontThemeTypography);
+  const pageBandValues = Object.values(StoreFrontThemePageBand);
+  const homeCompositionValues = Object.values(StoreFrontThemeHomeComposition);
 
   return {
     header:
@@ -101,5 +109,21 @@ export function sanitizeThemeLayout(
       layout && iconStyleValues.includes(layout.iconStyle)
         ? layout.iconStyle
         : StoreFrontThemeIconStyle.OUTLINE,
+    density:
+      layout && densityValues.includes(layout.density)
+        ? layout.density
+        : StoreFrontThemeDensity.REGULAR,
+    typography:
+      layout && typographyValues.includes(layout.typography)
+        ? layout.typography
+        : StoreFrontThemeTypography.REGULAR,
+    pageBand:
+      layout && pageBandValues.includes(layout.pageBand)
+        ? layout.pageBand
+        : StoreFrontThemePageBand.MUTED,
+    homeComposition:
+      layout && homeCompositionValues.includes(layout.homeComposition)
+        ? layout.homeComposition
+        : StoreFrontThemeHomeComposition.STANDARD,
   };
 }

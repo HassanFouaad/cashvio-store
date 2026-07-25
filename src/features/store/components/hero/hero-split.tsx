@@ -10,6 +10,8 @@ import { StoreFrontHeroImageDto } from "../../types/store.types";
 interface HeroSplitProps {
   heroImages: StoreFrontHeroImageDto[];
   storeName: string;
+  /** Display-title classes from the theme's typography personality */
+  titleClassName?: string;
 }
 
 /**
@@ -18,7 +20,11 @@ interface HeroSplitProps {
  * Every uploaded banner shows: the image side rotates gently through all
  * of them (same cadence as the other hero variants).
  */
-export function HeroSplit({ heroImages, storeName }: HeroSplitProps) {
+export function HeroSplit({
+  heroImages,
+  storeName,
+  titleClassName = "text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight",
+}: HeroSplitProps) {
   const t = useTranslations("store.hero");
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -53,9 +59,7 @@ export function HeroSplit({ heroImages, storeName }: HeroSplitProps) {
       <div className="container grid gap-6 py-8 md:grid-cols-2 md:items-center md:gap-10 md:py-14">
         {/* Text block */}
         <div className="flex flex-col items-start gap-3 md:gap-5 text-start">
-          <h1 className="text-3xl font-bold tracking-tight leading-tight sm:text-4xl md:text-5xl">
-            {storeName}
-          </h1>
+          <h1 className={`${titleClassName} leading-tight`}>{storeName}</h1>
           <p className="text-base text-muted-foreground sm:text-lg">
             {t("tagline")}
           </p>

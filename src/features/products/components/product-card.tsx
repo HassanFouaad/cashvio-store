@@ -1,5 +1,6 @@
 import { ProductCardMinimal } from "@/features/products/components/product-card-minimal";
 import { ProductCardOverlay } from "@/features/products/components/product-card-overlay";
+import { ProductCardTile } from "@/features/products/components/product-card-tile";
 import { StarRatingDisplay } from "@/features/products/components/star-rating";
 import { PublicProductDto } from "@/features/products/types/product.types";
 import {
@@ -47,6 +48,17 @@ export function ProductCard({
   if (variant === StoreFrontThemeProductCardVariant.MINIMAL) {
     return (
       <ProductCardMinimal
+        product={product}
+        currency={currency}
+        locale={locale}
+        translations={translations}
+      />
+    );
+  }
+
+  if (variant === StoreFrontThemeProductCardVariant.TILE) {
+    return (
+      <ProductCardTile
         product={product}
         currency={currency}
         locale={locale}
@@ -111,7 +123,7 @@ export function ProductCard({
         )}
 
         {priceDisplay && (
-          <p className="text-sm font-semibold tabular-nums text-foreground">
+          <p className="sf-price text-sm font-semibold tabular-nums text-foreground">
             {priceDisplay}
           </p>
         )}

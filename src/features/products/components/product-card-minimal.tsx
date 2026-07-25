@@ -78,7 +78,7 @@ export function ProductCardMinimal({
           </div>
         )}
         {priceDisplay && (
-          <p className="text-sm text-muted-foreground tabular-nums">
+          <p className="sf-price text-sm text-muted-foreground tabular-nums">
             {priceDisplay}
           </p>
         )}
