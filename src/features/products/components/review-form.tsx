@@ -105,13 +105,13 @@ export function ReviewForm({ productId }: ReviewFormProps) {
                 onClick={() => setStars(starValue)}
                 onMouseEnter={() => setHoveredStar(starValue)}
                 onMouseLeave={() => setHoveredStar(0)}
-                className="p-0.5 transition-transform hover:scale-110"
+                className="p-0.5"
               >
                 <Star
                   className={cn(
                     "h-6 w-6 transition-colors",
                     starValue <= (hoveredStar || stars)
-                      ? "fill-yellow-400 text-yellow-400"
+                      ? "fill-rating text-rating"
                       : "fill-muted text-muted-foreground/40"
                   )}
                 />

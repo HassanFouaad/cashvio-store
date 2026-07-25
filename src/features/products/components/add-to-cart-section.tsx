@@ -308,21 +308,21 @@ export function AddToCartSection({
           <div className="flex items-center gap-2">
             {isInStock ? (
               <>
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-600 dark:text-green-500">
-                  <span className="h-2 w-2 rounded-full bg-green-500" />
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success">
+                  <span className="h-2 w-2 rounded-full bg-success" />
                   {t("inStock")}
                 </span>
                 {!isUnlimitedStock &&
                   totalAvailable > 0 &&
                   totalAvailable < 5 && (
-                    <span className="text-sm text-amber-600 dark:text-amber-500">
+                    <span className="text-sm text-warning">
                       — {t("leftInStock", { count: totalAvailable })}
                     </span>
                   )}
               </>
             ) : (
-              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-red-600 dark:text-red-500">
-                <span className="h-2 w-2 rounded-full bg-red-500" />
+              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-destructive">
+                <span className="h-2 w-2 rounded-full bg-destructive" />
                 {t("outOfStock")}
               </span>
             )}
@@ -537,7 +537,7 @@ export function AddToCartSection({
                 )}
               </Button>
               {hasModifiers && !allMinimumsMet && (
-                <p className="text-xs text-amber-600 dark:text-amber-500 text-center">
+                <p className="text-xs text-warning text-center">
                   {tModifiers("completeRequired")}
                 </p>
               )}

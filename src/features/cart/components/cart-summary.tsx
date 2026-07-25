@@ -139,14 +139,14 @@ export function CartSummary({
 
       {/* Minimum order progress nudge */}
       {isBelowMinimum && (
-        <div className="p-3 rounded-lg border border-amber-300/60 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10 space-y-2">
-          <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+        <div className="p-3 rounded-lg border border-border space-y-2">
+          <p className="text-sm font-medium">
             {t("minimumOrderNudge", {
               amount: formatCurrency(remainingToMinimum, currency, locale),
             })}
           </p>
           <div
-            className="h-2 w-full rounded-full bg-amber-200/60 dark:bg-amber-500/20 overflow-hidden"
+            className="h-1.5 w-full rounded-full bg-muted overflow-hidden"
             role="progressbar"
             aria-valuenow={minimumProgress}
             aria-valuemin={0}
@@ -156,11 +156,11 @@ export function CartSummary({
             })}
           >
             <div
-              className="h-full rounded-full bg-amber-500 transition-all duration-300"
+              className="h-full rounded-full bg-warning transition-all duration-300"
               style={{ width: `${minimumProgress}%` }}
             />
           </div>
-          <p className="text-xs text-amber-700 dark:text-amber-400">
+          <p className="text-xs text-muted-foreground">
             {t("minimumOrderProgress", {
               minimum: formatCurrency(minimumOrderValue, currency, locale),
             })}
@@ -171,14 +171,14 @@ export function CartSummary({
       {/* Free-delivery progress nudge (incentive, never blocks checkout) */}
       {hasFreeDeliveryThreshold &&
         (hasReachedFreeDelivery ? (
-          <div className="p-3 rounded-lg border border-primary/30 bg-primary/5">
-            <p className="text-sm font-medium text-primary">
+          <div className="p-3 rounded-lg border border-border">
+            <p className="text-sm font-medium text-success">
               {t("freeDeliveryReached")}
             </p>
           </div>
         ) : (
-          <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 space-y-2">
-            <p className="text-sm font-medium text-primary">
+          <div className="p-3 rounded-lg border border-border space-y-2">
+            <p className="text-sm font-medium">
               {t("freeDeliveryNudge", {
                 amount: formatCurrency(
                   remainingToFreeDelivery,
@@ -188,7 +188,7 @@ export function CartSummary({
               })}
             </p>
             <div
-              className="h-2 w-full rounded-full bg-primary/15 overflow-hidden"
+              className="h-1.5 w-full rounded-full bg-muted overflow-hidden"
               role="progressbar"
               aria-valuenow={freeDeliveryProgress}
               aria-valuemin={0}
@@ -206,7 +206,7 @@ export function CartSummary({
                 style={{ width: `${freeDeliveryProgress}%` }}
               />
             </div>
-            <p className="text-xs text-primary/80">
+            <p className="text-xs text-muted-foreground">
               {t("freeDeliveryProgress", {
                 threshold: formatCurrency(
                   freeDeliveryThreshold,

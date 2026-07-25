@@ -75,19 +75,26 @@ export function MobileSettingsSheet({ isOpen, onClose }: MobileSettingsSheetProp
           </div>
 
           {/* Settings Content */}
-          <div className="p-4 space-y-2" style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom, 0px))' }}>
+          <div
+            className="px-4 pt-2 divide-y divide-border"
+            style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom, 0px))' }}
+          >
             {/* Theme Setting - Fully Clickable Row */}
             <button
               onClick={toggleTheme}
-              className="w-full flex items-center gap-4 p-4 bg-muted/50 rounded-xl active:scale-[0.98] active:bg-muted transition-all text-start"
+              className="w-full flex items-center gap-4 py-3.5 active:opacity-60 transition-opacity text-start"
             >
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary shrink-0">
-                {mounted && isLight ? (
-                  <Sun className="h-5 w-5" />
-                ) : (
-                  <Moon className="h-5 w-5" />
-                )}
-              </div>
+              {mounted && isLight ? (
+                <Sun
+                  className="h-5 w-5 text-muted-foreground shrink-0"
+                  strokeWidth={1.5}
+                />
+              ) : (
+                <Moon
+                  className="h-5 w-5 text-muted-foreground shrink-0"
+                  strokeWidth={1.5}
+                />
+              )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">{t('theme.toggleTheme')}</p>
                 <p className="text-xs text-muted-foreground">
@@ -96,16 +103,17 @@ export function MobileSettingsSheet({ isOpen, onClose }: MobileSettingsSheetProp
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 rtl:rotate-180" />
             </button>
-            
+
             {/* Language Setting - Fully Clickable Row */}
             <button
               onClick={toggleLocale}
               disabled={isPending}
-              className="w-full flex items-center gap-4 p-4 bg-muted/50 rounded-xl active:scale-[0.98] active:bg-muted transition-all text-start disabled:opacity-50"
+              className="w-full flex items-center gap-4 py-3.5 active:opacity-60 transition-opacity text-start disabled:opacity-50"
             >
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary shrink-0">
-                <Globe className="h-5 w-5" />
-              </div>
+              <Globe
+                className="h-5 w-5 text-muted-foreground shrink-0"
+                strokeWidth={1.5}
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">{t('language.changeLanguage')}</p>
                 <p className="text-xs text-muted-foreground">{currentLanguage}</p>

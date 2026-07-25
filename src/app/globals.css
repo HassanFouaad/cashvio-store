@@ -22,6 +22,14 @@
   --color-input: oklch(0.91 0.01 255);
   --color-ring: oklch(0.15 0.02 255);
 
+  /* Storefront-level semantic status colors — deliberately NOT part of the
+     19-token merchant theme contract (like the scrollbar colors). They keep
+     stock/payment/fulfillment feedback consistent across every store so raw
+     Tailwind palette classes never appear in components. */
+  --color-success: oklch(0.55 0.12 155);
+  --color-warning: oklch(0.6 0.13 70);
+  --color-rating: oklch(0.72 0.13 85);
+
   /* Border radius */
   --radius: 0.5rem;
   --radius-sm: calc(var(--radius) - 4px);
@@ -54,6 +62,9 @@
   --color-border: oklch(0.22 0.02 255);
   --color-input: oklch(0.22 0.02 255);
   --color-ring: oklch(0.85 0.01 255);
+  --color-success: oklch(0.7 0.12 155);
+  --color-warning: oklch(0.75 0.12 75);
+  --color-rating: oklch(0.78 0.12 85);
 }
 
 /* Base styles */
@@ -227,24 +238,21 @@ p {
   }
 }
 
-/* Mobile card hover/active states */
-@media (hover: none) and (pointer: coarse) {
-  /* On touch devices, show active states instead of hover */
-  .group:hover .group-hover\:scale-105 {
-    transform: none;
-  }
+/* Shared media zoom for product/category card images. One restrained
+   recipe for every card: a slow, subtle zoom on hover-capable devices
+   and a lighter press response on touch. */
+.sf-img-zoom {
+  transition: transform 0.5s cubic-bezier(0.2, 0, 0, 1);
+}
 
-  .group:hover .group-hover\:scale-110 {
-    transform: none;
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .sf-img-zoom {
+    transform: scale(1.03);
   }
+}
 
-  .group:active .group-hover\:scale-105 {
-    transform: scale(1.02);
-  }
-
-  .group:active .group-hover\:scale-110 {
-    transform: scale(1.05);
-  }
+.group:active .sf-img-zoom {
+  transform: scale(1.015);
 }
 
 /* Floating action button positioning for mobile (above the bottom nav) */

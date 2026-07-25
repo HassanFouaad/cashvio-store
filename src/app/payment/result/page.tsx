@@ -161,9 +161,11 @@ function PaymentResultContent() {
       <div className="sf-order-shell min-h-[60vh] flex items-center justify-center px-4 py-12 sm:py-20">
         <div className="w-full max-w-md space-y-6 text-center">
           <div className="flex justify-center">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-              <PackageSearch className="h-8 w-8 text-muted-foreground" />
-            </div>
+            <PackageSearch
+              className="h-10 w-10 text-muted-foreground/60"
+              strokeWidth={1.5}
+              aria-hidden
+            />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">
             {t("missingContextTitle")}
@@ -196,9 +198,11 @@ function PaymentResultContent() {
       <div className="sf-order-shell min-h-[60vh] flex items-center justify-center px-4 py-12 sm:py-20">
         <div className="w-full max-w-md space-y-6 text-center">
           <div className="flex justify-center">
-            <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center">
-              <AlertCircle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
-            </div>
+            <AlertCircle
+              className="h-10 w-10 text-warning"
+              strokeWidth={1.5}
+              aria-hidden
+            />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">
             {t("unconfirmedTitle")}

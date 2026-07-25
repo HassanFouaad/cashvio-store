@@ -58,7 +58,7 @@ export function ModifierGroupsPicker({
               <span
                 className={`text-xs ${
                   isBelowMin
-                    ? "font-medium text-amber-600 dark:text-amber-500"
+                    ? "font-medium text-warning"
                     : "text-muted-foreground"
                 }`}
               >

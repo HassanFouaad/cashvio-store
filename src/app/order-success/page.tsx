@@ -89,9 +89,11 @@ function OrderSuccessContent() {
         {/* Confirmation heading */}
         <div className="text-center space-y-3">
           <div className="flex justify-center">
-            <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-950/30 flex items-center justify-center">
-              <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
-            </div>
+            <CheckCircle
+              className="h-10 w-10 text-success"
+              strokeWidth={1.5}
+              aria-hidden
+            />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             {t("title")}

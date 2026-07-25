@@ -17,9 +17,11 @@ export async function StoreEmptyState({ storeName }: StoreEmptyStateProps) {
       <div className="container">
         <div className="max-w-md mx-auto text-center space-y-5">
           <div className="flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <Store className="h-8 w-8 text-primary" />
-            </div>
+            <Store
+              className="h-10 w-10 text-muted-foreground/50"
+              strokeWidth={1.25}
+              aria-hidden
+            />
           </div>
 
           <div className="space-y-2">

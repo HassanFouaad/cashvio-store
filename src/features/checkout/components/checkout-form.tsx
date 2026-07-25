@@ -987,7 +987,7 @@ export function CheckoutForm({
       {/* Checkout Form - Left Column */}
       <div className="lg:col-span-2 space-y-6">
         {/* Fulfillment Method Selection */}
-        <div className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+        <div className="sf-panel p-4 sm:p-6 rounded-xl border bg-card space-y-4">
           <h2 className="text-lg font-semibold">{t("fulfillmentMethod")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {sortedFulfillmentMethods.map((fm) => {
@@ -1001,10 +1001,10 @@ export function CheckoutForm({
                   key={fm.fulfillmentMethod}
                   type="button"
                   onClick={() => handleMethodSelect(fm.fulfillmentMethod)}
-                  className={`relative flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all ${
+                  className={`relative flex flex-col items-center justify-center p-4 rounded-lg border transition-all ${
                     isSelected
-                      ? "border-primary bg-primary/5"
-                      : "border-muted hover:border-muted-foreground/30"
+                      ? "border-primary ring-1 ring-primary bg-primary/5"
+                      : "border-border hover:border-muted-foreground/40"
                   }`}
                 >
                   <Icon className="h-6 w-6 mb-2" />
@@ -1029,11 +1029,8 @@ export function CheckoutForm({
 
         {/* Delivery Address Selection (only for Delivery) */}
         {selectedMethod === FulfillmentMethod.DELIVERY && (
-          <div className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold">{t("deliveryAddress")}</h2>
-            </div>
+          <div className="sf-panel p-4 sm:p-6 rounded-xl border bg-card space-y-4">
+            <h2 className="text-lg font-semibold">{t("deliveryAddress")}</h2>
 
             {isFallbackMode ? (
               /* Fallback mode: show all countries/cities from common API */
@@ -1244,21 +1241,18 @@ export function CheckoutForm({
         )}
 
         {/* Payment Method Selection */}
-        <div className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
-          <div className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">{t("paymentMethod")}</h2>
-          </div>
+        <div className="sf-panel p-4 sm:p-6 rounded-xl border bg-card space-y-4">
+          <h2 className="text-lg font-semibold">{t("paymentMethod")}</h2>
 
           {!hasPaymentMethods ? (
             /* No payment methods available - show warning */
-            <div className="flex items-start gap-3 rounded-lg border-2 border-amber-300 dark:border-amber-700 p-4">
-              <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 rounded-lg border border-warning/40 p-4">
+              <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                <p className="text-sm font-medium">
                   {t("noPaymentMethodsTitle")}
                 </p>
-                <p className="text-sm text-amber-700 dark:text-amber-400">
+                <p className="text-sm text-muted-foreground">
                   {t("noPaymentMethodsDescription")}
                 </p>
               </div>
@@ -1277,10 +1271,10 @@ export function CheckoutForm({
                       key={pm.paymentMethod}
                       type="button"
                       onClick={() => setSelectedPaymentMethod(pm.paymentMethod)}
-                      className={`relative flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all ${
+                      className={`relative flex flex-col items-center justify-center p-4 rounded-lg border transition-all ${
                         isSelected
-                          ? "border-primary bg-primary/5"
-                          : "border-muted hover:border-muted-foreground/30"
+                          ? "border-primary ring-1 ring-primary bg-primary/5"
+                          : "border-border hover:border-muted-foreground/40"
                       }`}
                     >
                       <Icon className="h-6 w-6 mb-2" />
@@ -1312,12 +1306,10 @@ export function CheckoutForm({
 
                   {receiptUploadProgress === "success" ? (
                     /* Success state */
-                    <div className="flex items-center justify-between rounded-lg border border-green-200 dark:border-green-800/40 px-4 py-3">
+                    <div className="flex items-center justify-between rounded-lg border border-success/30 px-4 py-3">
                       <div className="flex items-center gap-2.5">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                          <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        </div>
-                        <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                        <Check className="h-4 w-4 text-success shrink-0" />
+                        <span className="text-sm font-medium text-success">
                           {t("receiptUploadSuccess")}
                         </span>
                       </div>
@@ -1332,7 +1324,7 @@ export function CheckoutForm({
                     </div>
                   ) : receiptUploadProgress === "uploading" ? (
                     /* Uploading state */
-                    <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-primary/40 py-8 gap-3">
+                    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-primary/40 py-8 gap-3">
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
                       <span className="text-sm text-muted-foreground">
                         {t("receiptUploading")}
@@ -1353,15 +1345,17 @@ export function CheckoutForm({
                       onDragOver={handleReceiptDragOver}
                       onDragLeave={handleReceiptDragLeave}
                       onDrop={handleReceiptDrop}
-                      className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed py-8 gap-2 cursor-pointer transition-colors ${
+                      className={`flex flex-col items-center justify-center rounded-lg border border-dashed py-8 gap-2 cursor-pointer transition-colors ${
                         isDraggingReceipt
                           ? "border-primary bg-primary/5"
                           : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/30"
                       }`}
                     >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                        <Upload className="h-5 w-5 text-muted-foreground" />
-                      </div>
+                      <Upload
+                        className="h-6 w-6 text-muted-foreground"
+                        strokeWidth={1.5}
+                        aria-hidden
+                      />
                       <p className="text-sm font-medium">
                         {t("receiptDragDrop")}
                       </p>
@@ -1391,11 +1385,8 @@ export function CheckoutForm({
         </div>
 
         {/* Customer Information */}
-        <div className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
-          <div className="flex items-center gap-2">
-            <User className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">{t("customerInfo")}</h2>
-          </div>
+        <div className="sf-panel p-4 sm:p-6 rounded-xl border bg-card space-y-4">
+          <h2 className="text-lg font-semibold">{t("customerInfo")}</h2>
           <div className="space-y-4">
             <div>
               <label
@@ -1471,19 +1462,16 @@ export function CheckoutForm({
       {/* Order Summary - Right Column */}
       <div className="lg:col-span-1">
         <div className="lg:sticky lg:top-24">
-          <div className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+          <div className="sf-panel p-4 sm:p-6 rounded-xl border bg-card space-y-4">
             {/* Collapsible header on mobile */}
             <button
               type="button"
               className="flex items-center justify-between w-full lg:cursor-default"
               onClick={() => setMobileSummaryOpen((v) => !v)}
             >
-              <div className="flex items-center gap-2">
-                <ShoppingBag className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-semibold">
-                  {tCart("orderSummary")}
-                </h2>
-              </div>
+              <h2 className="text-lg font-semibold">
+                {tCart("orderSummary")}
+              </h2>
               <div className="flex items-center gap-2">
                 {preview && (
                   <span className="text-sm font-bold lg:hidden">
@@ -1533,7 +1521,7 @@ export function CheckoutForm({
                         <span className="text-muted-foreground">
                           {t("discount")}
                         </span>
-                        <span className="font-medium text-green-600 dark:text-green-500">
+                        <span className="font-medium text-success">
                           -
                           {formatCurrency(
                             preview.totalDiscount,
@@ -1567,7 +1555,7 @@ export function CheckoutForm({
                         <span className="text-muted-foreground">
                           {t("deliveryFees")}
                         </span>
-                        <span className="font-medium text-green-600 dark:text-green-500">
+                        <span className="font-medium text-success">
                           {t("free")}
                         </span>
                       </div>
@@ -1641,7 +1629,7 @@ export function CheckoutForm({
                         <span className="text-muted-foreground">
                           {t("paymentDiscount")}
                         </span>
-                        <span className="font-medium text-green-600 dark:text-green-500">
+                        <span className="font-medium text-success">
                           {formatCurrency(
                             preview.paymentFees,
                             currency,
@@ -1661,7 +1649,7 @@ export function CheckoutForm({
                           <span className="text-sm font-medium font-mono truncate">
                             {preview.couponDiscount.couponCode}
                           </span>
-                          <span className="text-sm text-green-600 dark:text-green-500 shrink-0">
+                          <span className="text-sm text-success shrink-0">
                             -
                             {formatCurrency(
                               preview.couponDiscount.appliedAmount,
@@ -1735,7 +1723,7 @@ export function CheckoutForm({
 
             {/* Error message */}
             {submitError && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 text-sm">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>{submitError}</span>
               </div>
@@ -1743,7 +1731,7 @@ export function CheckoutForm({
 
             {/* Minimum order value warning */}
             {isBelowMinimumOrder && preview?.minimumOrderValue && (
-              <div className="flex items-center gap-2 p-3 rounded-lg text-amber-700 dark:text-amber-400 text-sm">
+              <div className="flex items-center gap-2 p-3 rounded-lg text-warning text-sm">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
                 <span>
                   {t("belowMinimumOrder", {
@@ -1810,7 +1798,7 @@ function CheckoutFormSkeleton() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
       {/* Left Column */}
       <div className="lg:col-span-2 space-y-6">
-        <div className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+        <div className="sf-panel p-4 sm:p-6 rounded-xl border bg-card space-y-4">
           <Skeleton className="h-6 w-40" />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[1, 2, 3].map((i) => (
@@ -1818,7 +1806,7 @@ function CheckoutFormSkeleton() {
             ))}
           </div>
         </div>
-        <div className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+        <div className="sf-panel p-4 sm:p-6 rounded-xl border bg-card space-y-4">
           <Skeleton className="h-6 w-44" />
           <div className="space-y-4">
             <Skeleton className="h-10 w-full" />
@@ -1830,7 +1818,7 @@ function CheckoutFormSkeleton() {
 
       {/* Right Column */}
       <div className="lg:col-span-1">
-        <div className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+        <div className="sf-panel p-4 sm:p-6 rounded-xl border bg-card space-y-4">
           <Skeleton className="h-6 w-36" />
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (

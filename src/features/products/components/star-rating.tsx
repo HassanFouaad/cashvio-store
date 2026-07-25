@@ -37,7 +37,7 @@ export function StarRatingDisplay({
           className={cn(
             sizeMap[size],
             i < rating
-              ? "fill-yellow-400 text-yellow-400"
+              ? "fill-rating text-rating"
               : "fill-muted text-muted"
           )}
         />

@@ -26,7 +26,7 @@ export async function ReviewCard({ review, dateLabel }: ReviewCardProps) {
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground">
               {review.name.charAt(0).toUpperCase()}
             </div>
             <div>

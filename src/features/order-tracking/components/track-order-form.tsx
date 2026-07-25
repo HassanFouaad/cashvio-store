@@ -371,7 +371,7 @@ export function TrackOrderForm({
             {result.totalDiscount > 0 && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t("discount")}</span>
-                <span className="font-medium text-green-600 dark:text-green-500">
+                <span className="font-medium text-success">
                   -{formatCurrency(result.totalDiscount, result.currency, locale)}
                 </span>
               </div>

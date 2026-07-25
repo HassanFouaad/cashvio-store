@@ -127,59 +127,60 @@ export function MobileContactSheet({
           </div>
 
           {/* Contact Items */}
-          <div 
-            className="p-4 space-y-2 overflow-y-auto"
+          <div
+            className="px-4 pt-2 overflow-y-auto"
             style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom, 0px))' }}
           >
             {storeName && (
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="text-sm text-muted-foreground py-3">
                 {t('contact.reachUs', { storeName })}
               </p>
             )}
 
-            {contactItems.map((item, index) => {
-              const Icon = item.icon;
-              
-              // If it has a link, make it clickable
-              if (item.href) {
+            <div className="divide-y divide-border">
+              {contactItems.map((item, index) => {
+                const Icon = item.icon;
+
+                // If it has a link, make it clickable
+                if (item.href) {
+                  return (
+                    <a
+                      key={index}
+                      href={item.href}
+                      target={item.isDirectContact ? undefined : '_blank'}
+                      rel={item.isDirectContact ? undefined : 'noopener noreferrer'}
+                      className="flex items-center gap-4 py-3.5 active:opacity-60 transition-opacity"
+                    >
+                      <Icon
+                        className="h-5 w-5 text-muted-foreground shrink-0"
+                        strokeWidth={1.5}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">{item.label}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {item.isDirectContact ? item.value : t('contact.tapToOpen')}
+                        </p>
+                      </div>
+                      <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+                    </a>
+                  );
+                }
+
+                // Non-clickable item (display only)
                 return (
-                  <a
-                    key={index}
-                    href={item.href}
-                    target={item.isDirectContact ? undefined : '_blank'}
-                    rel={item.isDirectContact ? undefined : 'noopener noreferrer'}
-                    className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl active:scale-[0.98] active:bg-muted transition-all"
-                  >
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary shrink-0">
-                      <Icon className="h-5 w-5" />
-                    </div>
+                  <div key={index} className="flex items-center gap-4 py-3.5">
+                    <Icon
+                      className="h-5 w-5 text-muted-foreground shrink-0"
+                      strokeWidth={1.5}
+                    />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{item.label}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {item.isDirectContact ? item.value : t('contact.tapToOpen')}
-                      </p>
+                      <p className="text-xs text-muted-foreground truncate">{item.value}</p>
                     </div>
-                    <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
-                  </a>
+                  </div>
                 );
-              }
-
-              // Non-clickable item (display only)
-              return (
-                <div
-                  key={index}
-                  className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl"
-                >
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted text-muted-foreground shrink-0">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{item.label}</p>
-                    <p className="text-xs text-muted-foreground truncate">{item.value}</p>
-                  </div>
-                </div>
-              );
-            })}
+              })}
+            </div>
           </div>
         </Drawer.Content>
       </Drawer.Portal>
