@@ -98,7 +98,7 @@ export function SearchInput({
             placeholder={placeholder ?? `${t("search")}...`}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            className="w-full h-12 ps-12 pe-24 text-base rounded-full border-2 border-muted bg-muted/30 focus:border-primary focus:bg-background transition-all placeholder:text-muted-foreground/70"
+            className="w-full h-12 ps-12 pe-24 text-base rounded-full border border-input bg-muted/30 focus:border-primary focus:bg-background transition-all placeholder:text-muted-foreground/70"
           />
           <div className="absolute end-2 flex items-center gap-1">
             {inputValue && (

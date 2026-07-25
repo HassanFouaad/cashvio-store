@@ -67,7 +67,7 @@ export async function ProductReviews({
             ))}
           </div>
         ) : (
-          <div className="mb-8 rounded-lg border border-border bg-muted/30 p-6 text-center">
+          <div className="mb-8 rounded-lg border border-border p-6 text-center">
             <p className="text-sm text-muted-foreground">{t("noReviews")}</p>
           </div>
         )}

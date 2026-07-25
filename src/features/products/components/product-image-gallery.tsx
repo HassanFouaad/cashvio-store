@@ -126,7 +126,7 @@ export function ProductImageGallery({
                 image.altText ||
                 t("imageOf", { index: index + 1, total: images.length })
               }
-              className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${
+              className={`relative aspect-square overflow-hidden rounded-lg border transition-all ${
                 index === selectedImageIndex
                   ? "border-foreground ring-1 ring-foreground/20"
                   : "border-transparent hover:border-muted-foreground/30"

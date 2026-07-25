@@ -93,7 +93,7 @@ export function CartList({ currency, locale }: CartListProps) {
 
       {/* Items silently removed by the store (out of stock / unpublished) */}
       {showRemovedNotice && (
-        <div className="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/40 text-sm">
+        <div className="flex items-start gap-3 p-3 rounded-lg border border-border text-sm">
           <Info className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
           <p className="flex-1 text-muted-foreground">
             {t("removedItemsNotice")}

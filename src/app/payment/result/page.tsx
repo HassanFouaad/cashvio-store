@@ -211,7 +211,7 @@ function PaymentResultContent() {
             {t("unconfirmedMessage")}
           </p>
 
-          <div className="rounded-lg border bg-muted/50 p-4 space-y-1 text-sm">
+          <div className="rounded-lg border bg-card p-4 space-y-1 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">{t("orderNumber")}</span>
               <span className="font-medium">{context.orderNumber}</span>

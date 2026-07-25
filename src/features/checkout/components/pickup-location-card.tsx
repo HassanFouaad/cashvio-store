@@ -5,7 +5,7 @@ import {
   hasPickupAddressLines,
   type StorePickupLocation,
 } from "@/features/checkout/utils/pickup-location";
-import { MapPin, Phone } from "lucide-react";
+import { Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface PickupLocationCardProps {
@@ -31,23 +31,20 @@ export function PickupLocationCard({
 
   const shellClass =
     variant === "success"
-      ? "sf-panel p-4 bg-muted/50 rounded-xl border border-border space-y-3"
-      : "sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-3";
+      ? "sf-panel p-4 rounded-xl border border-border bg-card space-y-3"
+      : "sf-panel p-4 sm:p-6 rounded-xl border bg-card space-y-3";
 
   return (
     <div className={shellClass} aria-label={t("pickupLocation")}>
-      <div className="flex items-center gap-2">
-        <MapPin className="h-5 w-5 text-primary shrink-0" aria-hidden />
-        <h2
-          className={
-            variant === "success"
-              ? "text-sm font-semibold"
-              : "text-lg font-semibold"
-          }
-        >
-          {t("pickupLocation")}
-        </h2>
-      </div>
+      <h2
+        className={
+          variant === "success"
+            ? "text-sm font-semibold"
+            : "text-lg font-semibold"
+        }
+      >
+        {t("pickupLocation")}
+      </h2>
 
       <div className="space-y-1 text-sm">
         <p className="font-medium">{location.storeName}</p>

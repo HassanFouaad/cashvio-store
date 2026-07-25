@@ -351,10 +351,10 @@ export function AddToCartSection({
                   key={variant.id}
                   onClick={() => handleVariantSelect(variant.id)}
                   disabled={isOos || variantMaxReached}
-                  className={`relative px-3 py-2.5 sm:px-4 sm:py-3 text-sm rounded-lg border-2 transition-all touch-manipulation ${
+                  className={`relative px-3 py-2.5 sm:px-4 sm:py-3 text-sm rounded-lg border transition-all touch-manipulation ${
                     variant.id === selectedVariantId
-                      ? "border-primary bg-primary/5"
-                      : "border-muted hover:border-muted-foreground/30"
+                      ? "border-primary ring-1 ring-primary bg-primary/5"
+                      : "border-border hover:border-muted-foreground/40"
                   } ${
                     isOos || variantMaxReached
                       ? "opacity-60 cursor-not-allowed"
@@ -461,7 +461,7 @@ export function AddToCartSection({
           {isInCart ? (
             <div className="flex flex-col gap-3">
               {/* Quantity adjuster - Large touch targets for mobile */}
-              <div className="flex items-center justify-center gap-2 p-2 bg-muted/50 rounded-xl">
+              <div className="flex items-center justify-center gap-2 p-2 rounded-xl border">
                 {cartQuantity === 1 ? (
                   // Show trash icon when quantity is 1
                   <Button

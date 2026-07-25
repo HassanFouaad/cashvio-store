@@ -218,7 +218,7 @@ export function ProductsFilterBar({
 
       {/* Mobile Filters Drawer */}
       {showFilters && (
-        <div className="sm:hidden p-4 bg-muted/30 rounded-xl border space-y-4 animate-in slide-in-from-top-2 duration-200">
+        <div className="sm:hidden p-4 rounded-xl border space-y-4 animate-in slide-in-from-top-2 duration-200">
           {/* Category */}
           {categories.length > 0 && (
             <div className="space-y-2">

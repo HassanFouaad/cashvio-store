@@ -105,7 +105,7 @@ function OrderSuccessContent() {
 
         {/* Order number card */}
         {orderNumber && (
-          <div className="sf-panel p-4 bg-muted/50 rounded-xl border border-border">
+          <div className="sf-panel p-4 rounded-xl border border-border bg-card">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
@@ -153,7 +153,7 @@ function OrderSuccessContent() {
         {recap?.fulfillmentMethod === FulfillmentMethod.DINE_IN &&
           recap.tableNumber && (
             <div
-              className="sf-panel p-4 bg-muted/50 rounded-xl border border-border space-y-1"
+              className="sf-panel p-4 rounded-xl border border-border bg-card space-y-1"
               aria-label={t("tableNumber")}
             >
               <div className="flex items-center gap-2">

@@ -165,7 +165,7 @@ export function TrackOrderForm({
       {/* Lookup form */}
       <form
         onSubmit={handleSubmit}
-        className="sf-panel p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4"
+        className="sf-panel p-4 sm:p-6 rounded-xl border bg-card space-y-4"
         aria-label={t("formAriaLabel")}
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -284,7 +284,7 @@ export function TrackOrderForm({
                     >
                       <div className="flex flex-col items-center gap-1.5">
                         <span
-                          className={`flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-semibold ${
+                          className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold ${
                             isDone
                               ? "border-primary bg-primary text-primary-foreground"
                               : "border-border bg-background text-muted-foreground"
@@ -293,7 +293,7 @@ export function TrackOrderForm({
                           {isDone ? <Check className="h-3.5 w-3.5" /> : index + 1}
                         </span>
                         <span
-                          className={`text-[10px] sm:text-xs whitespace-nowrap ${
+                          className={`text-xs whitespace-nowrap ${
                             isDone
                               ? "text-foreground font-medium"
                               : "text-muted-foreground"
@@ -416,7 +416,7 @@ export function TrackOrderForm({
 
       {/* Contact the merchant — after a result or a failed lookup */}
       {showContactMerchant && (
-        <div className="sf-panel p-4 sm:p-6 rounded-xl border border-border bg-muted/30 space-y-3">
+        <div className="sf-panel p-4 sm:p-6 rounded-xl border border-border bg-card space-y-3">
           <div>
             <p className="text-sm font-semibold">{t("contactMerchant.title")}</p>
             <p className="text-sm text-muted-foreground">

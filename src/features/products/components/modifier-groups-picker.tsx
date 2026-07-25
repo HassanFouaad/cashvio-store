@@ -78,10 +78,10 @@ export function ModifierGroupsPicker({
                     onClick={() => onToggle(group, modifier.id)}
                     disabled={isBlocked}
                     aria-pressed={isSelected}
-                    className={`relative flex items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3 text-sm rounded-lg border-2 text-start transition-all touch-manipulation ${
+                    className={`relative flex items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3 text-sm rounded-lg border text-start transition-all touch-manipulation ${
                       isSelected
-                        ? "border-primary bg-primary/5"
-                        : "border-muted hover:border-muted-foreground/30"
+                        ? "border-primary ring-1 ring-primary bg-primary/5"
+                        : "border-border hover:border-muted-foreground/40"
                     } ${
                       isBlocked
                         ? "opacity-50 cursor-not-allowed"
