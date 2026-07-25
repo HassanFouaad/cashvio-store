@@ -25,7 +25,7 @@ export async function FooterCentered({ store }: FooterCenteredProps) {
   return (
     <footer className="w-full max-w-full border-t bg-muted/50 overflow-hidden py-8 sm:py-12">
       <div className="container flex flex-col items-center gap-4 sm:gap-5 text-center">
-        <h3 className="text-lg sm:text-xl font-bold break-words">
+        <h3 className="text-lg sm:text-xl font-semibold tracking-tight break-words">
           {store.name}
         </h3>
 

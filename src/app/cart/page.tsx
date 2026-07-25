@@ -44,7 +44,7 @@ export default async function CartPage() {
       <section className="w-full max-w-full bg-muted/30 py-6 sm:py-8 md:py-12">
         <div className="container">
           <div className="max-w-3xl mx-auto text-center space-y-2">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight">
               {t("pageTitle")}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">

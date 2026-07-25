@@ -22,7 +22,7 @@ export function HeaderBrand({ store, isCompact, isCentered }: HeaderBrandProps) 
     : "h-8 w-8 sm:h-10 sm:w-10";
   const nameSizing = isCompact
     ? "text-sm sm:text-base font-semibold"
-    : "text-base sm:text-xl font-bold";
+    : "text-base sm:text-xl font-semibold tracking-tight";
 
   return (
     <Link
@@ -48,7 +48,7 @@ export function HeaderBrand({ store, isCompact, isCentered }: HeaderBrandProps) 
         </div>
       ) : (
         <div
-          className={`flex ${logoSizing} items-center justify-center rounded-md bg-primary text-primary-foreground font-bold text-sm sm:text-lg shrink-0`}
+          className={`flex ${logoSizing} items-center justify-center rounded-md bg-primary text-primary-foreground font-semibold text-sm sm:text-lg shrink-0`}
         >
           {store.name.charAt(0).toUpperCase()}
         </div>

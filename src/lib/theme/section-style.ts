@@ -21,19 +21,19 @@ export function getSectionHeadingStyle(
       return {
         wrapper:
           "flex flex-col items-center gap-2 text-center mb-5 sm:mb-8",
-        heading: "text-xl sm:text-2xl md:text-3xl font-bold",
+        heading: "text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight",
       };
     case StoreFrontThemeHeaderVariant.MINIMAL:
       return {
         wrapper: "flex items-center justify-between mb-4 sm:mb-6",
         heading:
-          "text-sm sm:text-base font-semibold uppercase tracking-[0.2em]",
+          "text-sm sm:text-base font-semibold uppercase tracking-[0.16em]",
       };
     case StoreFrontThemeHeaderVariant.CLASSIC:
     default:
       return {
         wrapper: "flex items-center justify-between mb-4 sm:mb-6",
-        heading: "text-xl sm:text-2xl md:text-3xl font-bold",
+        heading: "text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight",
       };
   }
 }

@@ -42,7 +42,7 @@ export default function CartLoading() {
 
             {/* Cart Summary Skeleton */}
             <div className="lg:col-span-1">
-              <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+              <div className="p-4 sm:p-6 rounded-xl border bg-card space-y-4">
                 <Skeleton className="h-6 w-32" />
                 <div className="space-y-2">
                   <div className="flex justify-between">

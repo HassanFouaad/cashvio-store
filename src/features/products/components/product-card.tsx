@@ -67,14 +67,14 @@ export function ProductCard({
       href={`/products/${product.id}`}
       className="group block touch-manipulation active:scale-[0.98] transition-transform duration-150"
     >
-      <div className="relative aspect-square overflow-hidden rounded-xl bg-muted mb-3 shadow-sm">
+      <div className="relative aspect-square overflow-hidden rounded-xl bg-muted mb-3">
         {primaryImage ? (
           <Image
             src={primaryImage.thumbnailUrl || primaryImage.imageUrl}
             alt={primaryImage.altText || product.name}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105 group-active:scale-[1.02]"
+            className="object-cover sf-img-zoom"
           />
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground">
@@ -111,7 +111,9 @@ export function ProductCard({
         )}
 
         {priceDisplay && (
-          <p className="text-sm font-bold text-foreground">{priceDisplay}</p>
+          <p className="text-sm font-semibold tabular-nums text-foreground">
+            {priceDisplay}
+          </p>
         )}
       </div>
     </Link>

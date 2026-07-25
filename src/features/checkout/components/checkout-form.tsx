@@ -1471,7 +1471,7 @@ export function CheckoutForm({
               </h2>
               <div className="flex items-center gap-2">
                 {preview && (
-                  <span className="text-sm font-bold lg:hidden">
+                  <span className="text-sm font-semibold tabular-nums lg:hidden">
                     {formatCurrency(preview.totalAmount, currency, locale)}
                   </span>
                 )}
@@ -1709,7 +1709,7 @@ export function CheckoutForm({
                       <span className="text-base font-semibold">
                         {tCart("total")}
                       </span>
-                      <span className="text-lg font-bold">
+                      <span className="text-lg font-semibold tabular-nums">
                         {formatCurrency(preview.totalAmount, currency, locale)}
                       </span>
                     </div>

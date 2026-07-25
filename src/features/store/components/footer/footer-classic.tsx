@@ -28,7 +28,7 @@ export async function FooterClassic({ store }: FooterClassicProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 w-full">
           {/* Store Info */}
           <div className="w-full">
-            <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3 break-words">
+            <h3 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3 break-words">
               {store.name}
             </h3>
             {(store.addressLine1 ||
@@ -65,7 +65,7 @@ export async function FooterClassic({ store }: FooterClassicProps) {
 
           {/* Quick Links */}
           <div className="w-full">
-            <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3">
+            <h3 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3">
               {t("footer.quickLinks")}
             </h3>
             <ul className="space-y-1.5 sm:space-y-2">
@@ -107,7 +107,7 @@ export async function FooterClassic({ store }: FooterClassicProps) {
           {/* Policy Pages / Static Pages */}
           {staticPages.length > 0 && (
             <div className="w-full">
-              <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3">
+              <h3 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3">
                 {t("footer.policies")}
               </h3>
               <ul className="space-y-1.5 sm:space-y-2">
@@ -128,7 +128,7 @@ export async function FooterClassic({ store }: FooterClassicProps) {
           {/* Social Media */}
           {socialMedia && (
             <div className="w-full sm:col-span-2 md:col-span-1">
-              <h3 className="font-bold text-sm sm:text-base mb-2 sm:mb-3">
+              <h3 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3">
                 {t("footer.connectWithUs")}
               </h3>
               <FooterSocialRow socialMedia={socialMedia} />

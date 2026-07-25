@@ -30,13 +30,13 @@ export async function FooterBottom({ store }: FooterBottomProps) {
           {customFooterText}
         </p>
       )}
-      <p className="text-[10px] sm:text-xs text-muted-foreground break-words leading-relaxed">
+      <p className="text-xs text-muted-foreground break-words leading-relaxed">
         {t("footer.copyright", {
           year: currentYear,
           storeName: store.name,
         })}
       </p>
-      <p className="text-[10px] sm:text-xs text-muted-foreground/70">
+      <p className="text-xs text-muted-foreground/70">
         {t("footer.poweredBy")}{" "}
         <a
           href={buildPoweredByUrl("storefront_footer")}

@@ -21,7 +21,7 @@ export async function FooterMinimal({ store }: FooterMinimalProps) {
   const staticPages = await getStaticPages(store.id, locale);
 
   const linkClass =
-    "text-xs uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground transition-colors";
+    "text-xs uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground transition-colors";
 
   return (
     <footer className="w-full max-w-full border-t bg-background overflow-hidden py-6 sm:py-8">

@@ -232,9 +232,11 @@ export function CartSummary({
           </span>
         </div>
         <hr className="border-border" />
-        <div className="flex items-center justify-between font-bold text-base pt-1">
+        <div className="flex items-center justify-between font-semibold text-base pt-1">
           <span>{t("total")}</span>
-          <span>{formatCurrency(subtotal, currency, locale)}</span>
+          <span className="tabular-nums">
+            {formatCurrency(subtotal, currency, locale)}
+          </span>
         </div>
       </div>
 

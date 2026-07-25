@@ -43,7 +43,7 @@ export function ProductCardOverlay({
           alt={primaryImage.altText || product.name}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover transition-transform duration-300 group-hover:scale-105 group-active:scale-[1.02]"
+          className="object-cover sf-img-zoom"
         />
       ) : (
         <div className="flex h-full items-center justify-center text-muted-foreground">
@@ -66,7 +66,9 @@ export function ProductCardOverlay({
           </div>
         )}
         {priceDisplay && (
-          <p className="text-sm font-bold text-white">{priceDisplay}</p>
+          <p className="text-sm font-semibold tabular-nums text-white">
+            {priceDisplay}
+          </p>
         )}
       </div>
 

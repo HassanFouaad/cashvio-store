@@ -15,7 +15,7 @@ interface HeaderNavLinksProps {
 export function HeaderNavLinks({ isUppercase }: HeaderNavLinksProps) {
   const t = useTranslations();
   const linkClass = isUppercase
-    ? "text-xs font-semibold uppercase tracking-[0.18em] transition-colors hover:text-primary whitespace-nowrap"
+    ? "text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:text-primary whitespace-nowrap"
     : "text-sm font-medium transition-colors hover:text-primary whitespace-nowrap";
 
   return (

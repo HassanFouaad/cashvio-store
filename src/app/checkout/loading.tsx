@@ -20,7 +20,7 @@ export default function CheckoutLoading() {
             {/* Checkout Form - Left Column */}
             <div className="lg:col-span-2 space-y-6">
               {/* Fulfillment Method Skeleton */}
-              <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+              <div className="p-4 sm:p-6 rounded-xl border bg-card space-y-4">
                 <Skeleton className="h-6 w-40" />
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[1, 2, 3].map((i) => (
@@ -30,7 +30,7 @@ export default function CheckoutLoading() {
               </div>
 
               {/* Customer Info Skeleton */}
-              <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+              <div className="p-4 sm:p-6 rounded-xl border bg-card space-y-4">
                 <Skeleton className="h-6 w-44" />
                 <div className="space-y-4">
                   <Skeleton className="h-10 w-full" />
@@ -43,7 +43,7 @@ export default function CheckoutLoading() {
             {/* Order Summary - Right Column */}
             <div className="lg:col-span-1">
               <div className="lg:sticky lg:top-24">
-                <div className="p-4 sm:p-6 bg-muted/50 rounded-xl space-y-4">
+                <div className="p-4 sm:p-6 rounded-xl border bg-card space-y-4">
                   <Skeleton className="h-6 w-36" />
                   <div className="space-y-3">
                     {[1, 2, 3].map((i) => (

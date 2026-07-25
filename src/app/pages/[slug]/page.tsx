@@ -94,7 +94,7 @@ export default async function StaticPage({ params }: StaticPageProps) {
         <article className="space-y-6">
           {/* Page title */}
           <header>
-            <h1 className="text-2xl sm:text-3xl font-bold">{page.title}</h1>
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">{page.title}</h1>
           </header>
 
           {/* Page content - safely rendered HTML */}

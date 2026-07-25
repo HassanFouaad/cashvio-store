@@ -167,7 +167,7 @@ function PaymentResultContent() {
               aria-hidden
             />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-2xl font-semibold tracking-tight">
             {t("missingContextTitle")}
           </h1>
           <p className="text-muted-foreground leading-relaxed">
@@ -204,7 +204,7 @@ function PaymentResultContent() {
               aria-hidden
             />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-2xl font-semibold tracking-tight">
             {t("unconfirmedTitle")}
           </h1>
           <p className="text-muted-foreground leading-relaxed">
@@ -273,7 +273,7 @@ function PaymentResultContent() {
         <div className="flex justify-center">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight">
           {t("checkingTitle")}
         </h1>
         <p className="text-muted-foreground leading-relaxed">

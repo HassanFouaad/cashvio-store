@@ -87,7 +87,7 @@ export function RecentlyViewedSection({
                 {entry.name}
               </p>
               {typeof entry.price === "number" && entry.price > 0 && (
-                <p className="text-xs sm:text-sm font-bold mt-0.5">
+                <p className="text-xs sm:text-sm font-semibold tabular-nums mt-0.5">
                   {formatCurrency(entry.price, currency, locale)}
                 </p>
               )}
@@ -123,7 +123,7 @@ function RecentlyViewedImage({
       alt={alt}
       fill
       sizes="160px"
-      className="object-cover transition-transform duration-300 group-hover:scale-105"
+      className="object-cover sf-img-zoom"
       onError={() => setHasFailed(true)}
     />
   );

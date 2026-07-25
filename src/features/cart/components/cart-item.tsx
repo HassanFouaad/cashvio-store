@@ -244,7 +244,7 @@ export function CartItem({ item, currency, locale }: CartItemProps) {
             {/* Show pending indicator or total */}
             <span
               className={cn(
-                "text-sm font-bold flex items-center gap-1",
+                "text-sm font-semibold tabular-nums flex items-center gap-1",
                 (quantityExceedsStock || quantityExceedsMaxPerOrder) &&
                   "text-destructive",
               )}

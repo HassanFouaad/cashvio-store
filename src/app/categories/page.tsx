@@ -75,7 +75,7 @@ export default async function CategoriesPage({
       <div className="w-full max-w-full py-12 sm:py-16">
         <div className="container">
           <div className="text-center space-y-4">
-            <h1 className="text-2xl sm:text-3xl font-bold">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
               {t("errors.generic")}
             </h1>
             <p className="text-muted-foreground">
@@ -93,7 +93,7 @@ export default async function CategoriesPage({
       <section className="w-full max-w-full bg-muted/30 py-8 sm:py-12 md:py-16">
         <div className="container">
           <div className="max-w-3xl mx-auto text-center space-y-4">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight">
               {t("store.categories.pageTitle")}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">

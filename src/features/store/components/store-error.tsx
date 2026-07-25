@@ -51,7 +51,9 @@ export function StoreErrorComponent({ error }: StoreErrorProps) {
         <div className="flex justify-center">{content.icon}</div>
 
         <div className="space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-bold">{content.title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+            {content.title}
+          </h1>
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed px-2">
             {content.description}
           </p>

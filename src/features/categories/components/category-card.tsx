@@ -20,25 +20,23 @@ export function CategoryCard({ category }: CategoryCardProps) {
     >
       <div className="flex flex-col gap-2 sm:gap-3">
         {/* Category Image */}
-        <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-muted shadow-sm">
+        <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-muted">
           {hasImage ? (
             <Image
               src={category.imageUrl!}
               alt={category.name}
               fill
               sizes="(max-width: 640px) 120px, (max-width: 1024px) 150px, 180px"
-              className="object-cover transition-transform duration-300 group-hover:scale-110 group-active:scale-105"
+              className="object-cover sf-img-zoom"
               loading="lazy"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-muted-foreground/10">
-              <span className="text-3xl sm:text-4xl font-bold text-muted-foreground/40">
+            <div className="flex h-full w-full items-center justify-center">
+              <span className="text-3xl sm:text-4xl font-semibold text-muted-foreground/40">
                 {category.name.charAt(0).toUpperCase()}
               </span>
             </div>
           )}
-          {/* Hover/Active Overlay */}
-          <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/10 group-active:bg-black/15" />
         </div>
 
         {/* Category Name */}

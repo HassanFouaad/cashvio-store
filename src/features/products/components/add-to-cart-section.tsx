@@ -283,7 +283,7 @@ export function AddToCartSection({
         <div className="space-y-3">
           {/* Price */}
           <div className="flex items-baseline gap-3">
-            <span className="text-2xl sm:text-3xl font-semibold">
+            <span className="text-2xl sm:text-3xl font-semibold tabular-nums">
               {formatCurrency(
                 selectedVariant.sellingPrice + modifiersTotal,
                 currency,
@@ -372,12 +372,12 @@ export function AddToCartSection({
                     {formatCurrency(variant.sellingPrice, currency, locale)}
                   </div>
                   {isOos && (
-                    <span className="mt-0.5 inline-block text-[10px] font-semibold uppercase tracking-wide text-destructive">
+                    <span className="mt-0.5 inline-block text-xs font-semibold uppercase tracking-[0.08em] text-destructive">
                       {t("outOfStock")}
                     </span>
                   )}
                   {!isOos && variantMaxReached && (
-                    <span className="mt-0.5 inline-block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    <span className="mt-0.5 inline-block text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                       {tCart("maxInCart")}
                     </span>
                   )}
@@ -486,7 +486,7 @@ export function AddToCartSection({
                     <Minus className="h-4 w-4" />
                   </Button>
                 )}
-                <span className="min-w-[4rem] text-center text-xl sm:text-lg font-bold tabular-nums">
+                <span className="min-w-[4rem] text-center text-xl sm:text-lg font-semibold tabular-nums">
                   {cartQuantity}
                 </span>
                 <Button
@@ -570,7 +570,7 @@ export function AddToCartSection({
               <p className="text-xs text-muted-foreground truncate">
                 {selectedVariant.name || product.name}
               </p>
-              <p className="text-base font-bold">
+              <p className="text-base font-semibold tabular-nums">
                 {formatCurrency(
                   selectedVariant.sellingPrice + modifiersTotal,
                   currency,
@@ -602,7 +602,7 @@ export function AddToCartSection({
                     <Minus className="h-4 w-4" />
                   )}
                 </Button>
-                <span className="min-w-[2.5rem] text-center text-lg font-bold tabular-nums">
+                <span className="min-w-[2.5rem] text-center text-lg font-semibold tabular-nums">
                   {cartQuantity}
                 </span>
                 <Button

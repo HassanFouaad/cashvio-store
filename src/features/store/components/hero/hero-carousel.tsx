@@ -137,7 +137,7 @@ export function HeroCarousel({ heroImages, storeName }: HeroCarouselProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute start-2 sm:start-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 sm:h-10 sm:w-10 z-10"
+            className="absolute start-2 sm:start-4 top-1/2 -translate-y-1/2 rounded-full bg-black/35 text-white hover:bg-black/55 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 sm:h-10 sm:w-10 z-10"
             onClick={goToPrevious}
             aria-label={t("previousImage")}
           >
@@ -146,7 +146,7 @@ export function HeroCarousel({ heroImages, storeName }: HeroCarouselProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute end-2 sm:end-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 sm:h-10 sm:w-10 z-10"
+            className="absolute end-2 sm:end-4 top-1/2 -translate-y-1/2 rounded-full bg-black/35 text-white hover:bg-black/55 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 sm:h-10 sm:w-10 z-10"
             onClick={goToNext}
             aria-label={t("nextImage")}
           >

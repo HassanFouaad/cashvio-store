@@ -95,7 +95,7 @@ function OrderSuccessContent() {
               aria-hidden
             />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
             {t("title")}
           </h1>
           <p className="text-muted-foreground text-base leading-relaxed">
@@ -111,7 +111,7 @@ function OrderSuccessContent() {
                 <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
                   {t("orderNumber")}
                 </p>
-                <p className="text-lg sm:text-xl font-bold font-mono break-all">
+                <p className="text-lg sm:text-xl font-semibold font-mono break-all">
                   {orderNumber}
                 </p>
               </div>
@@ -163,7 +163,7 @@ function OrderSuccessContent() {
                 />
                 <p className="text-sm font-semibold">{t("tableNumber")}</p>
               </div>
-              <p className="text-lg font-bold ps-7">{recap.tableNumber}</p>
+              <p className="text-lg font-semibold ps-7">{recap.tableNumber}</p>
             </div>
           )}
 
@@ -208,7 +208,7 @@ function OrderSuccessContent() {
             </div>
             <div className="px-4 py-3 border-t border-border flex items-center justify-between">
               <span className="text-sm font-semibold">{t("total")}</span>
-              <span className="font-bold">
+              <span className="font-semibold tabular-nums">
                 {formatCurrency(recap.totalAmount, recap.currency, locale)}
               </span>
             </div>

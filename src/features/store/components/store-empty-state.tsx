@@ -25,7 +25,7 @@ export async function StoreEmptyState({ storeName }: StoreEmptyStateProps) {
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
               {t("title", { storeName })}
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed">

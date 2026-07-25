@@ -247,7 +247,7 @@ export function TrackOrderForm({
               <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
                 {t("orderNumber")}
               </p>
-              <p className="text-lg font-bold font-mono">
+              <p className="text-lg font-semibold font-mono">
                 {result.orderNumber}
               </p>
             </div>
@@ -406,7 +406,7 @@ export function TrackOrderForm({
             )}
             <div className="flex justify-between pt-2 border-t border-border">
               <span className="font-semibold">{t("total")}</span>
-              <span className="font-bold">
+              <span className="font-semibold tabular-nums">
                 {formatCurrency(result.totalAmount, result.currency, locale)}
               </span>
             </div>

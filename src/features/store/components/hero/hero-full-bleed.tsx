@@ -77,7 +77,7 @@ export function HeroFullBleed({ heroImages, storeName }: HeroFullBleedProps) {
 
       {/* Overlaid content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 sm:gap-5 px-4 text-center">
-        <h1 className="max-w-3xl text-3xl font-bold text-white drop-shadow-sm sm:text-5xl md:text-6xl">
+        <h1 className="max-w-3xl text-3xl font-bold tracking-tight text-white drop-shadow-sm sm:text-5xl md:text-6xl">
           {storeName}
         </h1>
         <p className="max-w-xl text-sm text-white/85 sm:text-lg">

@@ -249,7 +249,7 @@ export default async function CategoryDetailPage({
 
             {/* Category Info */}
             <div className="text-center sm:text-start">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight">
                 {category.name}
               </h1>
             </div>

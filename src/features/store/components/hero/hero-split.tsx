@@ -53,7 +53,7 @@ export function HeroSplit({ heroImages, storeName }: HeroSplitProps) {
       <div className="container grid gap-6 py-8 md:grid-cols-2 md:items-center md:gap-10 md:py-14">
         {/* Text block */}
         <div className="flex flex-col items-start gap-3 md:gap-5 text-start">
-          <h1 className="text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
+          <h1 className="text-3xl font-bold tracking-tight leading-tight sm:text-4xl md:text-5xl">
             {storeName}
           </h1>
           <p className="text-base text-muted-foreground sm:text-lg">
