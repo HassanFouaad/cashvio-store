@@ -52,6 +52,14 @@ export function getCheapestVariant(
 }
 
 /**
+ * Check whether the merchant publishes this product to the online store.
+ * Treats a missing flag as published so older API responses keep working.
+ */
+export function isAvailableOnStoreFront(product: PublicProductDto): boolean {
+  return product.availableOnStoreFront !== false;
+}
+
+/**
  * Check if a product has any variants in stock
  * Non-trackable inventory products are always considered in stock
  */

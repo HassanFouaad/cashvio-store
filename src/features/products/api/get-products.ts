@@ -3,6 +3,7 @@ import {
     ProductFilters,
     PublicProductDto,
 } from "@/features/products/types/product.types";
+import { isAvailableOnStoreFront } from "@/features/products/utils/product-helpers";
 import { apiClient } from "@/lib/api/client";
 import { endpoints } from "@/lib/api/config";
 import { ApiException } from "@/lib/api/types";
@@ -33,7 +34,10 @@ export const getProducts = cache(
         `${endpoints.products.getPublic()}?${searchParams.toString()}`
       );
 
-      return response;
+      return {
+        ...response,
+        items: response.items.filter(isAvailableOnStoreFront),
+      };
     } catch (error) {
       if (error instanceof ApiException) {
         throw error;
@@ -58,6 +62,11 @@ export const getProductById = cache(
           productId
         )}?${searchParams.toString()}`
       );
+
+      // Unpublished products must read as missing, so the detail page 404s
+      if (!isAvailableOnStoreFront(product)) {
+        throw new ApiException(404, "Product not found");
+      }
 
       return product;
     } catch (error) {

@@ -76,8 +76,31 @@ export function CartList({ currency, locale }: CartListProps) {
     );
   }
 
+  // Items silently removed by the store (out of stock / unpublished)
+  const removedNotice = showRemovedNotice ? (
+    <div className="flex items-start gap-3 p-3 rounded-lg border border-border text-sm">
+      <Info className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
+      <p className="flex-1 text-muted-foreground">{t("removedItemsNotice")}</p>
+      <button
+        type="button"
+        onClick={() => setDismissedRemovedKey(removedKey)}
+        className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground transition-colors"
+        aria-label={t("dismiss")}
+      >
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  ) : null;
+
+  // The notice outlives the items: removing the last line empties the cart,
+  // and the shopper still needs to know why it went empty
   if (!cart || cart.items.length === 0) {
-    return <CartEmpty />;
+    return (
+      <div className="space-y-4">
+        {removedNotice}
+        <CartEmpty />
+      </div>
+    );
   }
 
   return (
@@ -91,23 +114,7 @@ export function CartList({ currency, locale }: CartListProps) {
         {t("continueShopping")}
       </Link>
 
-      {/* Items silently removed by the store (out of stock / unpublished) */}
-      {showRemovedNotice && (
-        <div className="flex items-start gap-3 p-3 rounded-lg border border-border text-sm">
-          <Info className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
-          <p className="flex-1 text-muted-foreground">
-            {t("removedItemsNotice")}
-          </p>
-          <button
-            type="button"
-            onClick={() => setDismissedRemovedKey(removedKey)}
-            className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground transition-colors"
-            aria-label={t("dismiss")}
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      )}
+      {removedNotice}
 
       {/* Header with clear button */}
       <div className="flex items-center justify-between">

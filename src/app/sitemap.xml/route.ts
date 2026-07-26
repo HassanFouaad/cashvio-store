@@ -1,6 +1,7 @@
 import { apiConfig } from "@/config/env.config";
 import { PublicCategoryDto } from "@/features/categories/types/category.types";
 import { PublicProductDto } from "@/features/products/types/product.types";
+import { isAvailableOnStoreFront } from "@/features/products/utils/product-helpers";
 import { getStoreBySubdomain } from "@/features/store/api/get-store";
 import { PublicStoreDto, StaticPageListItem } from "@/features/store/types/store.types";
 import { getStoreSubdomain } from "@/features/store/utils/store-resolver";
@@ -96,6 +97,9 @@ async function fetchAllProducts(
       const pagination = json.meta?.pagination;
 
       for (const product of data) {
+        // Never advertise a URL that resolves to a 404
+        if (!isAvailableOnStoreFront(product)) continue;
+
         items.push({
           id: product.id,
           updatedAt: (product as unknown as Record<string, unknown>).updatedAt as string | undefined,

@@ -1,4 +1,5 @@
 import { PublicProductDto } from '@/features/products/types/product.types';
+import { isAvailableOnStoreFront } from '@/features/products/utils/product-helpers';
 import { apiClient } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/config';
 import { ApiException } from '@/lib/api/types';
@@ -7,9 +8,11 @@ import { cache } from 'react';
 export const getSpecialProducts = cache(
   async (): Promise<PublicProductDto[]> => {
     try {
-      return await apiClient.get<PublicProductDto[]>(
+      const products = await apiClient.get<PublicProductDto[]>(
         endpoints.stores.specialProducts,
       );
+
+      return products.filter(isAvailableOnStoreFront);
     } catch (error) {
       if (error instanceof ApiException) {
         throw error;

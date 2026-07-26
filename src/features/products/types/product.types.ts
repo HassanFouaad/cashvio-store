@@ -63,6 +63,12 @@ export interface PublicProductDto {
   taxRate?: number | null;
   taxIncluded: boolean;
   inventoryTrackable: boolean;
+  /**
+   * Whether the merchant publishes this product to the online store. The API
+   * already filters unpublished products out; the storefront re-checks it so a
+   * regression upstream can never surface an unsellable product.
+   */
+  availableOnStoreFront: boolean;
   images?: PublicProductImageDto[];
   variants?: PublicProductVariantDto[];
   /** Average rating from displayed reviews (1 decimal), null when none */
