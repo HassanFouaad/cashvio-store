@@ -155,7 +155,12 @@ export class FacebookPixelAdapter implements AnalyticsAdapter {
   }
 
   /**
-   * Transform GA4 e-commerce data to Facebook Pixel format
+   * Transform GA4 e-commerce data to Facebook Pixel format.
+   *
+   * content_type is "product_group" because our content_ids are product
+   * UUIDs, which the Meta catalog feed publishes as item_group_id (feed
+   * rows are per-variant). This keeps Advantage+ catalog ads retargeting
+   * matching without exposing variant ids to the pixel.
    */
   private transformData(
     eventName: AnalyticsEventName,
@@ -173,7 +178,7 @@ export class FacebookPixelAdapter implements AnalyticsAdapter {
     switch (eventName) {
       case "view_item":
         return {
-          content_type: "product",
+          content_type: "product_group",
           content_ids: contentIds,
           content_name: contentNames[0] || "",
           value: data.value,
@@ -182,7 +187,7 @@ export class FacebookPixelAdapter implements AnalyticsAdapter {
 
       case "view_item_list":
         return {
-          content_type: "product",
+          content_type: "product_group",
           content_ids: contentIds,
           contents: items?.map((item) => ({
             id: item.item_id,
@@ -192,7 +197,7 @@ export class FacebookPixelAdapter implements AnalyticsAdapter {
 
       case "add_to_cart":
         return {
-          content_type: "product",
+          content_type: "product_group",
           content_ids: contentIds,
           content_name: contentNames[0] || "",
           value: data.value,
@@ -202,7 +207,7 @@ export class FacebookPixelAdapter implements AnalyticsAdapter {
 
       case "begin_checkout":
         return {
-          content_type: "product",
+          content_type: "product_group",
           content_ids: contentIds,
           value: data.value,
           currency: data.currency,
@@ -211,7 +216,7 @@ export class FacebookPixelAdapter implements AnalyticsAdapter {
 
       case "purchase":
         return {
-          content_type: "product",
+          content_type: "product_group",
           content_ids: contentIds,
           value: data.value,
           currency: data.currency,
