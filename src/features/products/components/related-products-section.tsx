@@ -10,8 +10,6 @@ import { LayoutGrid } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 interface RelatedProductsSectionProps {
-  storeId: string;
-  tenantId: string;
   categoryId: string;
   currentProductId: string;
   currency: string;
@@ -22,8 +20,6 @@ interface RelatedProductsSectionProps {
  * the same category, excluding the product being viewed.
  */
 export async function RelatedProductsSection({
-  storeId,
-  tenantId,
   categoryId,
   currentProductId,
   currency,
@@ -34,8 +30,6 @@ export async function RelatedProductsSection({
   const resolvedTheme = await resolveRequestTheme();
 
   const { products } = await getProductsWithErrorHandling({
-    storeId,
-    tenantId,
     categoryId,
     page: 1,
     limit: RELATED_PRODUCTS_FETCH_LIMIT,
