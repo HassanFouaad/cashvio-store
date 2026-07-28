@@ -85,8 +85,6 @@ export interface PaginatedProductsResponse {
 }
 
 export interface ProductFilters {
-  storeId: string;
-  tenantId: string;
   name?: string;
   categoryId?: string;
   page?: number;

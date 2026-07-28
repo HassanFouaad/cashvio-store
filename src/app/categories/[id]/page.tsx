@@ -48,7 +48,6 @@ export async function generateMetadata({
 
   const { category } = await getCategoryByIdWithErrorHandling(
     resolvedParams.id,
-    store.tenantId,
   );
 
   // Prefer the merchant-authored category description (stripped of HTML)
@@ -98,7 +97,7 @@ export default async function CategoryDetailPage({
 
   // Fetch category details
   const { category, error: categoryError } =
-    await getCategoryByIdWithErrorHandling(resolvedParams.id, store.tenantId);
+    await getCategoryByIdWithErrorHandling(resolvedParams.id);
 
   if (categoryError || !category) {
     notFound();
@@ -113,8 +112,6 @@ export default async function CategoryDetailPage({
   // Fetch products for this category
   const { products: productsData, error: productsError } =
     await getProductsWithErrorHandling({
-      storeId: store.id,
-      tenantId: store.tenantId,
       categoryId: resolvedParams.id,
       page: requestedPage,
       limit: 18,

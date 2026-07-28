@@ -38,7 +38,7 @@ export async function generateMetadata({
   }
 
   const { id } = await params;
-  const { product } = await getProductByIdWithErrorHandling(id, store.id);
+  const { product } = await getProductByIdWithErrorHandling(id);
 
   if (!product) {
     return {
@@ -130,10 +130,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const headersList = await headers();
   const hostname = headersList.get("host") || "";
 
-  const { product, error } = await getProductByIdWithErrorHandling(
-    id,
-    store.id,
-  );
+  const { product, error } = await getProductByIdWithErrorHandling(id);
 
   if (error || !product) {
     notFound();
@@ -281,8 +278,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
         {product.categoryId && (
           <RelatedProductsSection
-            storeId={store.id}
-            tenantId={store.tenantId}
             categoryId={product.categoryId}
             currentProductId={product.id}
             currency={store.currency}

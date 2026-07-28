@@ -57,7 +57,6 @@ export default async function CategoriesPage({
 
   const { categories: categoriesData, error } =
     await getCategoriesWithErrorHandling({
-      tenantId: store.tenantId,
       page: requestedPage,
       limit: 12,
       name: search || undefined,

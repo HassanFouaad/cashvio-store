@@ -20,6 +20,5 @@ export type PaginatedCategoriesResponse = PaginatedResponse<PublicCategoryDto>;
  * Query parameters for listing categories
  */
 export interface ListCategoriesQuery extends PaginationQuery {
-  tenantId: string;
   name?: string;
 }

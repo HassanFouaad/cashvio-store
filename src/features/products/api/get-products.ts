@@ -16,10 +16,9 @@ import { cache } from "react";
 export const getProducts = cache(
   async (filters: ProductFilters): Promise<PaginatedProductsResponse> => {
     try {
-      // Build query string
+      // Build query string. Store context is carried by the X-Store-Id
+      // header (set from the resolved store) — never as a query param.
       const searchParams = new URLSearchParams({
-        storeId: filters.storeId,
-        tenantId: filters.tenantId,
         page: (filters.page || 1).toString(),
         limit: (filters.limit || 12).toString(),
         ...(filters.name && { name: filters.name }),
@@ -51,16 +50,11 @@ export const getProducts = cache(
  * Fetch single product by ID
  */
 export const getProductById = cache(
-  async (productId: string, storeId: string): Promise<PublicProductDto> => {
+  async (productId: string): Promise<PublicProductDto> => {
     try {
-      const searchParams = new URLSearchParams({
-        storeId,
-      });
-
+      // Store context comes from the X-Store-Id header, not a query param.
       const product = await apiClient.get<PublicProductDto>(
-        `${endpoints.products.getPublicById(
-          productId
-        )}?${searchParams.toString()}`
+        endpoints.products.getPublicById(productId)
       );
 
       // Unpublished products must read as missing, so the detail page 404s
@@ -106,14 +100,13 @@ export const getProductsWithErrorHandling = cache(
  */
 export const getProductByIdWithErrorHandling = cache(
   async (
-    productId: string,
-    storeId: string
+    productId: string
   ): Promise<{
     product: PublicProductDto | null;
     error: string | null;
   }> => {
     try {
-      const product = await getProductById(productId, storeId);
+      const product = await getProductById(productId);
       return { product, error: null };
     } catch (error) {
       if (error instanceof ApiException) {

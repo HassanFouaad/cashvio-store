@@ -72,8 +72,6 @@ async function fetchAllProducts(
   try {
     do {
       const params = new URLSearchParams({
-        storeId: store.id,
-        tenantId: store.tenantId,
         page: page.toString(),
         limit: limit.toString(),
       });
@@ -130,7 +128,6 @@ async function fetchAllCategories(
   try {
     do {
       const params = new URLSearchParams({
-        tenantId: store.tenantId,
         page: page.toString(),
         limit: limit.toString(),
       });

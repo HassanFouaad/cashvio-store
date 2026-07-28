@@ -74,8 +74,6 @@ export default async function ProductsPage({
   const [{ products: productsData, error }, { categories: categoriesData }] =
     await Promise.all([
       getProductsWithErrorHandling({
-        storeId: store.id,
-        tenantId: store.tenantId,
         page: requestedPage,
         limit: 18,
         name: search || undefined,
@@ -84,7 +82,6 @@ export default async function ProductsPage({
         categoryId: categoryId || undefined,
       }),
       getCategoriesWithErrorHandling({
-        tenantId: store.tenantId,
         page: 1,
         limit: CATEGORY_FILTER_LIMIT,
       }),

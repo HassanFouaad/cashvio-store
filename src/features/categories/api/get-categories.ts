@@ -15,9 +15,9 @@ import {
 export async function getCategories(
   query: ListCategoriesQuery,
 ): Promise<PaginatedCategoriesResponse> {
-  // Build query string
+  // Build query string. Store context is carried by the X-Store-Id header
+  // (set from the resolved store) — never as a query param.
   const searchParams = new URLSearchParams({
-    tenantId: query.tenantId,
     page: query.page?.toString() || '1',
     limit: query.limit?.toString() || '10',
     ...(query.name && { name: query.name }),
@@ -56,12 +56,11 @@ export async function getCategoriesWithErrorHandling(
  * Uses React cache() to deduplicate requests
  */
 export const getCategoryById = cache(
-  async (categoryId: string, tenantId: string): Promise<PublicCategoryDto> => {
+  async (categoryId: string): Promise<PublicCategoryDto> => {
     try {
-      const searchParams = new URLSearchParams({ tenantId });
-
+      // Store context comes from the X-Store-Id header, not a query param.
       const category = await apiClient.get<PublicCategoryDto>(
-        `${endpoints.categories.getById(categoryId)}?${searchParams.toString()}`
+        endpoints.categories.getById(categoryId)
       );
 
       return category;
@@ -79,14 +78,13 @@ export const getCategoryById = cache(
  */
 export const getCategoryByIdWithErrorHandling = cache(
   async (
-    categoryId: string,
-    tenantId: string
+    categoryId: string
   ): Promise<{
     category: PublicCategoryDto | null;
     error: string | null;
   }> => {
     try {
-      const category = await getCategoryById(categoryId, tenantId);
+      const category = await getCategoryById(categoryId);
       return { category, error: null };
     } catch (error) {
       if (error instanceof ApiException) {

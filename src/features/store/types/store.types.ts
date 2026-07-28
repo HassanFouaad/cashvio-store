@@ -309,7 +309,6 @@ export interface CityDto {
 
 export interface PublicStoreDto {
   id: string;
-  tenantId: string;
   subdomain: string;
   name: string;
   currency: string;

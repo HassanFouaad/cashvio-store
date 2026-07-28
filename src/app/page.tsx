@@ -87,13 +87,10 @@ export default async function HomePage() {
     { products: specialProducts },
   ] = await Promise.all([
     getCategoriesWithErrorHandling({
-      tenantId: store.tenantId,
       page: 1,
       limit: categoriesLimit,
     }),
     getProductsWithErrorHandling({
-      storeId: store.id,
-      tenantId: store.tenantId,
       page: 1,
       limit: 12,
     }),
