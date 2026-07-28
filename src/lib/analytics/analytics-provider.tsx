@@ -7,6 +7,11 @@ import { useRef } from "react";
 import { FacebookPixelAdapter } from "./adapters/facebook-pixel-adapter";
 import { GtmAdapter } from "./adapters/gtm-adapter";
 import { TiktokPixelAdapter } from "./adapters/tiktok-pixel-adapter";
+import {
+  sanitizeFacebookPixelId,
+  sanitizeGtmId,
+  sanitizeTiktokPixelId,
+} from "./pixel-ids";
 import { analytics } from "./tracker";
 
 interface AnalyticsProviderProps {
@@ -32,10 +37,18 @@ interface AnalyticsProviderProps {
  * never crash the store front.
  */
 export function AnalyticsProvider({
-  gtmId,
-  facebookPixelId,
-  tiktokPixelId,
+  gtmId: rawGtmId,
+  facebookPixelId: rawFacebookPixelId,
+  tiktokPixelId: rawTiktokPixelId,
 }: AnalyticsProviderProps) {
+  // Re-validate before use: these IDs are merchant-controlled and get
+  // interpolated into inline <script> bodies below, where a malformed value
+  // would execute instead of being read as data. Anything unrecognised is
+  // dropped, so neither the script nor its adapter is rendered.
+  const gtmId = sanitizeGtmId(rawGtmId);
+  const facebookPixelId = sanitizeFacebookPixelId(rawFacebookPixelId);
+  const tiktokPixelId = sanitizeTiktokPixelId(rawTiktokPixelId);
+
   const initialized = useRef<boolean | null>(null);
 
   // Register adapters synchronously on first render (not in useEffect)
