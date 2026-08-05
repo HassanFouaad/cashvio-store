@@ -1,4 +1,3 @@
-import { getCartOrderSettings } from "@/features/cart/api/get-order-payment-settings";
 import { CartList } from "@/features/cart/components/cart-list";
 import { CartSummary } from "@/features/cart/components/cart-summary";
 import { TrackViewCartEvent } from "@/lib/analytics/track-cart-events";
@@ -36,8 +35,6 @@ export default async function CartPage() {
 
   const t = await getTranslations("cart");
   const locale = await getLocale();
-  const { minimumOrderValue, freeDeliveryThreshold } =
-    await getCartOrderSettings(store.id);
 
   const resolvedTheme = await resolveRequestTheme();
   const personality = getThemePersonality(resolvedTheme.layout);
@@ -70,10 +67,9 @@ export default async function CartPage() {
             <div className="lg:col-span-1">
               <div className="lg:sticky lg:top-24">
                 <CartSummary
+                  storeId={store.id}
                   currency={store.currency}
                   locale={locale}
-                  minimumOrderValue={minimumOrderValue}
-                  freeDeliveryThreshold={freeDeliveryThreshold}
                 />
               </div>
             </div>

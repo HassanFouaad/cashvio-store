@@ -1,11 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { FulfillmentMethod } from "@/features/checkout/types/checkout.types";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useMemo } from "react";
+import { useCartOrderPreview } from "../hooks";
 import {
   computeCartValidation,
   useCanCheckout,
@@ -15,35 +18,40 @@ import {
 } from "../store";
 
 interface CartSummaryProps {
+  storeId: string;
   currency: string;
   locale: string;
-  /** Store's minimum order value (0 = no minimum, nudge hidden) */
-  minimumOrderValue?: number;
-  /** Subtotal at which delivery becomes free (0 = disabled, nudge hidden) */
-  freeDeliveryThreshold?: number;
 }
 
+const METHOD_LABEL_KEY: Record<FulfillmentMethod, string> = {
+  [FulfillmentMethod.DELIVERY]: "methods.delivery",
+  [FulfillmentMethod.PICKUP]: "methods.pickup",
+  [FulfillmentMethod.DINE_IN]: "methods.dine_in",
+};
+
 /**
- * Cart summary component
- * Displays subtotal, item count, validation warnings, minimum-order and
- * free-delivery progress nudges, and checkout button
+ * Cart order summary — totals come from public order preview (same source
+ * as checkout / POS ticket), not from local cart math.
  */
-export function CartSummary({
-  currency,
-  locale,
-  minimumOrderValue = 0,
-  freeDeliveryThreshold = 0,
-}: CartSummaryProps) {
+export function CartSummary({ storeId, currency, locale }: CartSummaryProps) {
   const t = useTranslations("cart");
+  const tCheckout = useTranslations("checkout");
   const { cart, isInitialized, fetchCart } = useCartStore();
   const isSyncing = useIsCartSyncing();
   const pendingChangesCount = usePendingChangesCount();
   const canCheckout = useCanCheckout();
 
-  // Compute validation with memoization to prevent recalculation
+  const {
+    preview,
+    isPreviewLoading,
+    previewError,
+    fulfillmentMethod,
+    availableMethods,
+    setFulfillmentMethod,
+  } = useCartOrderPreview(storeId);
+
   const validation = useMemo(() => computeCartValidation(cart), [cart]);
 
-  // Show loading skeleton while initializing
   if (!isInitialized) {
     return (
       <div className="p-4 sm:p-6 rounded-xl border bg-card space-y-4 animate-pulse">
@@ -55,48 +63,75 @@ export function CartSummary({
   }
 
   const itemCount = cart?.itemCount ?? 0;
-  const subtotal = cart?.subtotal ?? 0;
   const hasPendingChanges = pendingChangesCount > 0;
+  const showPreviewSkeleton =
+    itemCount > 0 && (isPreviewLoading || (!preview && !previewError));
 
-  // Minimum-order nudge: only when a minimum is configured and the cart
-  // has items but hasn't reached it yet. Checkout preview re-validates
-  // server-side — this is a UX nudge, not the enforcement point.
-  const isBelowMinimum =
-    minimumOrderValue > 0 && itemCount > 0 && subtotal < minimumOrderValue;
-  const remainingToMinimum = Math.max(minimumOrderValue - subtotal, 0);
-  const minimumProgress =
-    minimumOrderValue > 0
-      ? Math.min(Math.round((subtotal / minimumOrderValue) * 100), 100)
-      : 100;
+  const isBelowMinimum = preview?.isBelowMinimumOrder ?? false;
+  const minimumOrderValue = preview?.minimumOrderValue ?? 0;
+  const isFreeDeliveryApplied = preview?.isFreeDeliveryApplied ?? false;
+  const freeDeliveryThreshold = preview?.freeDeliveryThreshold ?? 0;
 
-  // Free-delivery nudge: incentive (not a blocker) — checkout computes the
-  // actual fee waiver server-side, this only previews the progress
-  const hasFreeDeliveryThreshold = freeDeliveryThreshold > 0 && itemCount > 0;
-  const hasReachedFreeDelivery =
-    hasFreeDeliveryThreshold && subtotal >= freeDeliveryThreshold;
-  const remainingToFreeDelivery = Math.max(freeDeliveryThreshold - subtotal, 0);
-  const freeDeliveryProgress =
-    freeDeliveryThreshold > 0
-      ? Math.min(Math.round((subtotal / freeDeliveryThreshold) * 100), 100)
-      : 100;
+  const merchandiseTotal = preview
+    ? preview.subtotal - preview.totalDiscount + preview.totalTax
+    : 0;
+  const remainingToFreeDelivery = Math.max(
+    freeDeliveryThreshold - merchandiseTotal,
+    0,
+  );
 
   const handleRefreshCart = async () => {
     await fetchCart();
   };
+
+  const renderAmount = (value: number, isNegative = false) =>
+    showPreviewSkeleton ? (
+      <Skeleton className="h-4 w-14" />
+    ) : (
+      <span
+        className={`font-medium tabular-nums ${isNegative ? "text-success" : ""}`}
+      >
+        {isNegative && value > 0 ? "-" : ""}
+        {formatCurrency(value, currency, locale)}
+      </span>
+    );
 
   return (
     <div className="p-4 sm:p-6 rounded-xl border bg-card space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">{t("orderSummary")}</h2>
         <span className="text-muted-foreground text-sm flex items-center gap-1">
-          {(isSyncing || hasPendingChanges) && (
+          {(isSyncing || hasPendingChanges || isPreviewLoading) && (
             <Loader2 className="h-3 w-3 animate-spin" />
           )}
           {t("itemCount", { count: itemCount })}
         </span>
       </div>
 
-      {/* Stock Issues Warning */}
+      {/* Fulfillment method — required for accurate preview fees */}
+      {itemCount > 0 && availableMethods.length > 1 && (
+        <div className="flex flex-wrap gap-2">
+          {availableMethods.map((method) => {
+            const value = method.fulfillmentMethod;
+            const isSelected = fulfillmentMethod === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setFulfillmentMethod(value)}
+                className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  isSelected
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:border-foreground/30"
+                }`}
+              >
+                {tCheckout(METHOD_LABEL_KEY[value])}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {validation.hasStockIssues && (
         <div className="p-3 rounded-lg border border-destructive/50 bg-destructive/5">
           <div className="flex items-start gap-2">
@@ -137,110 +172,110 @@ export function CartSummary({
         </div>
       )}
 
-      {/* Minimum order progress nudge */}
-      {isBelowMinimum && (
-        <div className="p-3 rounded-lg border border-border space-y-2">
-          <p className="text-sm font-medium">
-            {t("minimumOrderNudge", {
-              amount: formatCurrency(remainingToMinimum, currency, locale),
-            })}
-          </p>
-          <div
-            className="h-1.5 w-full rounded-full bg-muted overflow-hidden"
-            role="progressbar"
-            aria-valuenow={minimumProgress}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label={t("minimumOrderProgress", {
-              minimum: formatCurrency(minimumOrderValue, currency, locale),
-            })}
-          >
-            <div
-              className="h-full rounded-full bg-warning transition-all duration-300"
-              style={{ width: `${minimumProgress}%` }}
-            />
+      {previewError && itemCount > 0 && (
+        <div className="text-sm text-destructive">{t("previewError")}</div>
+      )}
+
+      {itemCount > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">{t("subtotal")}</span>
+            {renderAmount(preview?.subtotal ?? 0)}
           </div>
-          <p className="text-xs text-muted-foreground">
-            {t("minimumOrderProgress", {
-              minimum: formatCurrency(minimumOrderValue, currency, locale),
-            })}
-          </p>
+
+          {preview && preview.totalTax > 0 && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{t("tax")}</span>
+              {renderAmount(preview.totalTax)}
+            </div>
+          )}
+
+          {preview && preview.totalDiscount > 0 && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{t("discount")}</span>
+              {renderAmount(preview.totalDiscount, true)}
+            </div>
+          )}
+
+          {preview && preview.serviceFees > 0 && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{t("serviceFees")}</span>
+              {renderAmount(preview.serviceFees)}
+            </div>
+          )}
+
+          {(fulfillmentMethod === FulfillmentMethod.DELIVERY ||
+            (preview?.deliveryFees ?? 0) > 0 ||
+            isFreeDeliveryApplied) && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{t("deliveryFees")}</span>
+              {showPreviewSkeleton ? (
+                <Skeleton className="h-4 w-14" />
+              ) : isFreeDeliveryApplied ? (
+                <span className="font-medium text-success">{t("free")}</span>
+              ) : (
+                renderAmount(preview?.deliveryFees ?? 0)
+              )}
+            </div>
+          )}
+          {isFreeDeliveryApplied && !showPreviewSkeleton && (
+            <div className="p-3 rounded-lg border border-border">
+              <p className="text-sm font-medium text-success">
+                {t("freeDeliveryApplied", {
+                  threshold: formatCurrency(
+                    freeDeliveryThreshold,
+                    currency,
+                    locale,
+                  ),
+                })}
+              </p>
+            </div>
+          )}
+
+          {fulfillmentMethod === FulfillmentMethod.DELIVERY &&
+            !isFreeDeliveryApplied &&
+            freeDeliveryThreshold > 0 &&
+            (preview?.deliveryFees ?? 0) > 0 &&
+            !showPreviewSkeleton && (
+              <p className="text-xs text-primary">
+                {t("freeDeliveryNudge", {
+                  amount: formatCurrency(
+                    remainingToFreeDelivery,
+                    currency,
+                    locale,
+                  ),
+                })}
+              </p>
+            )}
+
+          {isBelowMinimum && !showPreviewSkeleton && (
+            <div className="p-3 rounded-lg border border-warning/40 bg-warning/5">
+              <p className="text-sm font-medium">
+                {t("belowMinimumOrder", {
+                  minimumOrderValue: formatCurrency(
+                    minimumOrderValue,
+                    currency,
+                    locale,
+                  ),
+                })}
+              </p>
+            </div>
+          )}
+
+          <hr className="border-border" />
+          <div className="flex items-center justify-between font-semibold text-base pt-1">
+            <span>{t("total")}</span>
+            {showPreviewSkeleton ? (
+              <Skeleton className="h-5 w-20" />
+            ) : (
+              <span className="tabular-nums">
+                {formatCurrency(preview?.totalAmount ?? 0, currency, locale)}
+              </span>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Free-delivery progress nudge (incentive, never blocks checkout) */}
-      {hasFreeDeliveryThreshold &&
-        (hasReachedFreeDelivery ? (
-          <div className="p-3 rounded-lg border border-border">
-            <p className="text-sm font-medium text-success">
-              {t("freeDeliveryReached")}
-            </p>
-          </div>
-        ) : (
-          <div className="p-3 rounded-lg border border-border space-y-2">
-            <p className="text-sm font-medium">
-              {t("freeDeliveryNudge", {
-                amount: formatCurrency(
-                  remainingToFreeDelivery,
-                  currency,
-                  locale,
-                ),
-              })}
-            </p>
-            <div
-              className="h-1.5 w-full rounded-full bg-muted overflow-hidden"
-              role="progressbar"
-              aria-valuenow={freeDeliveryProgress}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={t("freeDeliveryProgress", {
-                threshold: formatCurrency(
-                  freeDeliveryThreshold,
-                  currency,
-                  locale,
-                ),
-              })}
-            >
-              <div
-                className="h-full rounded-full bg-primary transition-all duration-300"
-                style={{ width: `${freeDeliveryProgress}%` }}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {t("freeDeliveryProgress", {
-                threshold: formatCurrency(
-                  freeDeliveryThreshold,
-                  currency,
-                  locale,
-                ),
-              })}
-            </p>
-          </div>
-        ))}
-
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">{t("subtotal")}</span>
-          <span className="font-medium">
-            {formatCurrency(subtotal, currency, locale)}
-          </span>
-        </div>
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>{t("shipping")}</span>
-          <span className="italic">
-            {hasReachedFreeDelivery ? t("shippingFree") : t("calculatedAtCheckout")}
-          </span>
-        </div>
-        <hr className="border-border" />
-        <div className="flex items-center justify-between font-semibold text-base pt-1">
-          <span>{t("total")}</span>
-          <span className="tabular-nums">
-            {formatCurrency(subtotal, currency, locale)}
-          </span>
-        </div>
-      </div>
-
-      {/* Checkout Button */}
       {validation.hasStockIssues ? (
         <Button
           className="w-full"
@@ -257,10 +292,10 @@ export function CartSummary({
             t("reviewChanges")
           )}
         </Button>
-      ) : canCheckout && !isBelowMinimum ? (
+      ) : canCheckout && !isBelowMinimum && preview && !previewError ? (
         <Link href="/checkout" className="w-full">
           <Button className="w-full">
-            {hasPendingChanges ? (
+            {hasPendingChanges || isPreviewLoading ? (
               <>
                 <Loader2 className="h-4 w-4 me-2 animate-spin" />
                 {t("syncing")}
@@ -272,7 +307,7 @@ export function CartSummary({
         </Link>
       ) : (
         <Button className="w-full" disabled>
-          {t("proceedToCheckout")}
+          {showPreviewSkeleton ? t("calculating") : t("proceedToCheckout")}
         </Button>
       )}
     </div>
