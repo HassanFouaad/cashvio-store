@@ -5,13 +5,17 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { StoreFrontHeroImageDto } from "../../types/store.types";
 
 interface HeroCarouselProps {
   heroImages: StoreFrontHeroImageDto[];
   storeName: string;
 }
+
+const AUTO_ROTATE_MS = 5000;
+/** Resume autoplay if touchend/touchcancel never fires (common on scroll). */
+const TOUCH_PAUSE_FAILSAFE_MS = 4000;
 
 /**
  * Determines if a URL is an internal path (starts with /).
@@ -30,26 +34,48 @@ export function HeroCarousel({ heroImages, storeName }: HeroCarouselProps) {
   const t = useTranslations("store.hero");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const touchFailsafeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sort images by display order
   const sortedImages = [...heroImages].sort(
     (a, b) => a.displayOrder - b.displayOrder,
   );
 
+  const clearTouchFailsafe = useCallback(() => {
+    if (touchFailsafeRef.current !== null) {
+      clearTimeout(touchFailsafeRef.current);
+      touchFailsafeRef.current = null;
+    }
+  }, []);
+
+  const resumeAutoplay = useCallback(() => {
+    clearTouchFailsafe();
+    setIsPaused(false);
+  }, [clearTouchFailsafe]);
+
+  const pauseFromTouch = useCallback(() => {
+    setIsPaused(true);
+    clearTouchFailsafe();
+    // Scrolling often cancels the gesture with touchcancel (not touchend).
+    // Without a failsafe, isPaused stays true and the carousel never rotates.
+    touchFailsafeRef.current = setTimeout(() => {
+      touchFailsafeRef.current = null;
+      setIsPaused(false);
+    }, TOUCH_PAUSE_FAILSAFE_MS);
+  }, [clearTouchFailsafe]);
+
+  useEffect(() => () => clearTouchFailsafe(), [clearTouchFailsafe]);
+
   useEffect(() => {
     if (sortedImages.length <= 1 || isPaused) return;
 
     // Respect users who prefer reduced motion — no auto-rotation
-    if (
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      return;
-    }
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (motionQuery.matches) return;
 
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % sortedImages.length);
-    }, 5000); // Change image every 5 seconds
+    }, AUTO_ROTATE_MS);
 
     return () => clearInterval(timer);
   }, [sortedImages.length, isPaused]);
@@ -71,10 +97,9 @@ export function HeroCarousel({ heroImages, storeName }: HeroCarouselProps) {
   return (
     <div
       className="relative w-full max-w-full h-[250px] sm:h-[350px] md:h-[450px] overflow-hidden group bg-background"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onTouchStart={() => setIsPaused(true)}
-      onTouchEnd={() => setIsPaused(false)}
+      onTouchStart={pauseFromTouch}
+      onTouchEnd={resumeAutoplay}
+      onTouchCancel={resumeAutoplay}
     >
       {/* Images */}
       {sortedImages.map((image, index) => {
