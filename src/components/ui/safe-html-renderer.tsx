@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils/cn";
+import { normalizeQuillHtml } from "@/lib/utils/normalize-quill-html";
 import DOMPurify from "isomorphic-dompurify";
 import * as React from "react";
 
@@ -19,14 +20,17 @@ export interface SafeHtmlRendererProps {
  * - Sanitizes HTML to prevent XSS attacks on BOTH server and client
  *   (isomorphic-dompurify uses jsdom during SSR, so the initial HTML
  *   payload is sanitized too — never ship raw tenant HTML)
+ * - Normalizes Quill `&nbsp;` word separators so Arabic wraps at word
+ *   boundaries instead of mid-glyph
  * - Removes potentially dangerous tags and attributes
  * - Preserves safe formatting (bold, italic, lists, links, colors, etc.)
- * - Supports RTL languages properly
+ * - Supports RTL languages properly (`dir="auto"`)
  * - Removes images by default for consistency
  */
 export function SafeHtmlRenderer({ html, className }: SafeHtmlRendererProps) {
   const sanitizedHtml = React.useMemo(() => {
-    return DOMPurify.sanitize(html, {
+    const normalized = normalizeQuillHtml(html);
+    return DOMPurify.sanitize(normalized, {
       // Allow safe tags for rich text
       ALLOWED_TAGS: [
         "p",
@@ -68,6 +72,7 @@ export function SafeHtmlRenderer({ html, className }: SafeHtmlRendererProps) {
   return (
     <div
       className={cn("safe-html-content", className)}
+      dir="auto"
       dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
     />
   );

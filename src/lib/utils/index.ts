@@ -14,6 +14,9 @@ export * from './pagination-redirect';
 // Class name utilities (if you add cn utility)
 export { cn } from './cn';
 
+// Quill HTML normalization (nbsp → regular spaces for Arabic wrapping)
+export { normalizeQuillHtml } from './normalize-quill-html';
+
 // JSON-LD safe serialization
 export { serializeJsonLd } from './json-ld';
 

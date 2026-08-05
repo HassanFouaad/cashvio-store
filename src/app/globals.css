@@ -273,21 +273,68 @@ p {
    RICH TEXT / SAFE HTML CONTENT STYLES
    ============================================ */
 
-/* Base styles for safe-html-content */
+/* Base styles for safe-html-content.
+   Never use hyphens:auto or word-break:keep-all here — both fight Arabic
+   shaping and, combined with Quill &nbsp; runs, cause mid-word breaks. */
 .safe-html-content {
   line-height: 1.7;
-  word-wrap: break-word;
   overflow-wrap: break-word;
-  /* Proper word breaking for all languages including Arabic */
   word-break: normal;
-  hyphens: auto;
+  hyphens: none;
+  overflow-x: clip;
 }
 
-/* RTL specific fixes for Arabic content */
+/* RTL / auto-dir: keep logical start alignment */
+.safe-html-content[dir="rtl"],
+.safe-html-content[dir="auto"],
 [dir="rtl"] .safe-html-content {
   text-align: start;
-  /* Prevent unwanted word trimming in Arabic */
-  word-break: keep-all;
+}
+
+/* Quill class formats (survives sanitize; portal editor writes these) */
+.safe-html-content .ql-align-center {
+  text-align: center;
+}
+.safe-html-content .ql-align-right {
+  text-align: right;
+}
+.safe-html-content .ql-align-left {
+  text-align: left;
+}
+.safe-html-content .ql-align-justify {
+  text-align: justify;
+}
+.safe-html-content .ql-direction-rtl {
+  direction: rtl;
+  text-align: right;
+}
+.safe-html-content .ql-direction-ltr {
+  direction: ltr;
+  text-align: left;
+}
+.safe-html-content .ql-indent-1 {
+  padding-inline-start: 3em;
+}
+.safe-html-content .ql-indent-2 {
+  padding-inline-start: 6em;
+}
+.safe-html-content .ql-indent-3 {
+  padding-inline-start: 9em;
+}
+.safe-html-content .ql-indent-4 {
+  padding-inline-start: 12em;
+}
+.safe-html-content .ql-indent-5 {
+  padding-inline-start: 15em;
+}
+.safe-html-content .ql-indent-6 {
+  padding-inline-start: 18em;
+}
+.safe-html-content .ql-indent-7 {
+  padding-inline-start: 21em;
+}
+.safe-html-content .ql-indent-8 {
+  padding-inline-start: 24em;
 }
 
 .safe-html-content p {
