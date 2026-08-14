@@ -35,6 +35,8 @@ export interface OrderSuccessRecap {
   tableNumber?: string;
   /** Checkout phone — lets the track page prefill the verification field */
   phone?: string;
+  paymentMethod?: string;
+  paymentOption?: string;
 }
 
 export function saveOrderSuccessRecap(recap: OrderSuccessRecap): void {
@@ -76,6 +78,8 @@ export function buildOrderSuccessRecap(params: {
   pickupLocation?: StorePickupLocation;
   tableNumber?: string;
   phone?: string;
+  paymentMethod?: string;
+  paymentOption?: string;
 }): OrderSuccessRecap {
   return {
     orderNumber: params.orderNumber,
@@ -87,5 +91,7 @@ export function buildOrderSuccessRecap(params: {
     pickupLocation: params.pickupLocation,
     tableNumber: params.tableNumber,
     phone: params.phone,
+    paymentMethod: params.paymentMethod,
+    paymentOption: params.paymentOption,
   };
 }

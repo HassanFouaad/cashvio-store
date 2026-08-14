@@ -25,6 +25,7 @@ const TOKEN_MAX_AGE_MS = 30 * 60 * 1000;
  */
 function OrderSuccessContent() {
   const t = useTranslations("orderSuccess");
+  const tCheckout = useTranslations("checkout");
   const tFooter = useTranslations("footer");
   const locale = useLocale();
   const router = useRouter();
@@ -206,6 +207,14 @@ function OrderSuccessContent() {
                 </p>
               )}
             </div>
+            {recap.paymentMethod && (
+              <div className="px-4 py-2.5 border-t border-border flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{t("paymentMethod")}</span>
+                <span className="font-medium">
+                  {tCheckout(`paymentMethods.${recap.paymentMethod.toLowerCase()}`)}
+                </span>
+              </div>
+            )}
             <div className="px-4 py-3 border-t border-border flex items-center justify-between">
               <span className="text-sm font-semibold">{t("total")}</span>
               <span className="font-semibold tabular-nums">

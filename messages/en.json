@@ -417,6 +417,7 @@
     "pickupLocationFallback": "Contact the store for the pickup address and directions.",
     "tableNumber": "Table number",
     "recapTitle": "Order Summary",
+    "paymentMethod": "Payment Method",
     "moreItems": "+ {count} more items",
     "total": "Total",
     "trackOrder": "Track Order",
@@ -483,6 +484,7 @@
     "tax": "Tax",
     "serviceFees": "Service Fees",
     "deliveryFees": "Delivery Fees",
+    "paymentMethod": "Payment Method",
     "total": "Total"
   }
 }

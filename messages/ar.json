@@ -417,6 +417,7 @@
     "pickupLocationFallback": "تواصل مع المتجر لمعرفة عنوان الاستلام وكيفية الوصول.",
     "tableNumber": "رقم الطاولة",
     "recapTitle": "ملخص الطلب",
+    "paymentMethod": "طريقة الدفع",
     "moreItems": "+ {count} منتجات أخرى",
     "total": "الإجمالي",
     "trackOrder": "تتبع الطلب",
@@ -483,6 +484,7 @@
     "tax": "الضريبة",
     "serviceFees": "رسوم الخدمة",
     "deliveryFees": "رسوم التوصيل",
+    "paymentMethod": "طريقة الدفع",
     "total": "الإجمالي"
   }
 }

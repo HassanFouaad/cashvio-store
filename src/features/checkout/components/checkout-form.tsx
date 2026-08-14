@@ -839,9 +839,10 @@ export function CheckoutForm({
             quantity: item.quantity,
             modifiers: item.modifiers?.map((modifier) => modifier.name),
           })),
-          // Tracking verifies by checkout phone â€” keep it so the track
+          // Tracking verifies by checkout phone — keep it so the track
           // page can prefill instead of asking again seconds later
           phone: customerPhone || undefined,
+          paymentMethod: selectedPaymentMethod ?? undefined,
         }),
       );
 

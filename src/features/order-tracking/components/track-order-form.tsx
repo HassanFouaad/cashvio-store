@@ -9,20 +9,20 @@ import { StoreFrontSocialMediaDto } from "@/features/store/types/store.types";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { buildStoreWhatsAppLink } from "@/lib/utils/whatsapp";
 import {
-  Check,
-  Loader2,
-  MessageCircle,
-  PackageSearch,
-  Phone,
-  XCircle,
+    Check,
+    Loader2,
+    MessageCircle,
+    PackageSearch,
+    Phone,
+    XCircle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { trackOrder } from "../api";
 import {
-  FulfillmentStatus,
-  PublicOrderTrackingDto,
+    FulfillmentStatus,
+    PublicOrderTrackingDto,
 } from "../types/order-tracking.types";
 
 interface TrackOrderFormProps {
@@ -53,6 +53,7 @@ export function TrackOrderForm({
   socialMedia,
 }: TrackOrderFormProps) {
   const t = useTranslations("orderTracking");
+  const tCheckout = useTranslations("checkout");
   const searchParams = useSearchParams();
 
   const [orderNumber, setOrderNumber] = useState(
@@ -401,6 +402,18 @@ export function TrackOrderForm({
                 </span>
                 <span className="font-medium">
                   {formatCurrency(result.deliveryFees, result.currency, locale)}
+                </span>
+              </div>
+            )}
+            {result.paymentMethod && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  {t("paymentMethod")}
+                </span>
+                <span className="font-medium">
+                  {tCheckout(
+                    `paymentMethods.${result.paymentMethod.toLowerCase()}`,
+                  )}
                 </span>
               </div>
             )}
