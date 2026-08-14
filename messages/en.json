@@ -343,7 +343,15 @@
     "paymentMethods": {
       "cash": "Cash",
       "online": "Online Payment",
-      "receipt": "Upload Receipt"
+      "receipt": "Receipt / Transfer"
+    },
+    "transferDetails": {
+      "title": "Transfer Instructions",
+      "description": "Please transfer the amount to one of the accounts below and upload the confirmation receipt:",
+      "wallet": "Mobile Wallet",
+      "instapay": "InstaPay",
+      "copy": "Copy",
+      "copied": "Copied"
     },
     "receiptUploadLabel": "Upload payment receipt (JPEG, PNG or WebP)",
     "receiptUploading": "Uploading receipt...",

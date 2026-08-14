@@ -15,6 +15,7 @@ import {
   uploadReceiptToPresignedUrl,
 } from "@/features/checkout/api/checkout-api";
 import { PickupLocationCard } from "@/features/checkout/components/pickup-location-card";
+import { ReceiptTransferDetails } from "@/features/checkout/components/receipt-transfer-details";
 import {
   CommonCityDto,
   CommonCountryDto,
@@ -233,6 +234,13 @@ export function CheckoutForm({
   // Default to first available payment method
   const defaultPaymentMethod = useMemo(() => {
     return sortedPaymentMethods[0]?.paymentMethod ?? null;
+  }, [sortedPaymentMethods]);
+
+  // Active receipt/transfer method configuration (wallet number, instapay ID)
+  const receiptConfig = useMemo(() => {
+    return sortedPaymentMethods.find(
+      (pm) => pm.paymentMethod === PaymentMethod.RECEIPT,
+    )?.config;
   }, [sortedPaymentMethods]);
 
   // Form state
@@ -1285,12 +1293,17 @@ export function CheckoutForm({
 
               {/* Receipt upload UI when RECEIPT payment method selected */}
               {selectedPaymentMethod === PaymentMethod.RECEIPT && (
-                <div className="pt-4 border-t space-y-3">
-                  <label className="block text-sm font-medium">
-                    {t("receiptUploadLabel")}
-                  </label>
+                <div className="pt-4 border-t space-y-4">
+                  {receiptConfig && (
+                    <ReceiptTransferDetails config={receiptConfig} />
+                  )}
 
-                  {/* Hidden file input */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium">
+                      {t("receiptUploadLabel")}
+                    </label>
+
+                    {/* Hidden file input */}
                   <input
                     ref={receiptInputRef}
                     id="receipt-upload"
@@ -1375,6 +1388,7 @@ export function CheckoutForm({
                       )}
                     </div>
                   )}
+                  </div>
                 </div>
               )}
             </>

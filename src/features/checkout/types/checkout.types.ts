@@ -25,11 +25,20 @@ export enum PaymentMethod {
 }
 
 /**
+ * Public receipt/transfer payment method configuration
+ */
+export interface PublicReceiptPaymentConfigDto {
+  walletNumber?: string;
+  instapayId?: string;
+}
+
+/**
  * Public storefront payment method from API
  */
 export interface PublicStorefrontPaymentMethodDto {
   paymentMethod: PaymentMethod;
   sortOrder: number;
+  config?: PublicReceiptPaymentConfigDto;
 }
 
 /**

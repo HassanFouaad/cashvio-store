@@ -343,7 +343,15 @@
     "paymentMethods": {
       "cash": "نقداً",
       "online": "دفع إلكتروني",
-      "receipt": "رفع إيصال الدفع"
+      "receipt": "إيصال / تحويل"
+    },
+    "transferDetails": {
+      "title": "تعليمات التحويل",
+      "description": "يرجى تحويل المبلغ إلى أحد الحسابات التالية ثم رفع إيصال التأكيد:",
+      "wallet": "محفظة إلكترونية",
+      "instapay": "إنستاباي",
+      "copy": "نسخ",
+      "copied": "تم النسخ"
     },
     "receiptUploadLabel": "رفع إيصال الدفع (JPEG أو PNG أو WebP)",
     "receiptUploading": "جاري رفع الإيصال...",
