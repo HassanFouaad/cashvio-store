@@ -39,6 +39,7 @@ export async function ReviewCard({ review, dateLabel }: ReviewCardProps) {
         </div>
         <time
           dateTime={review.createdAt}
+          aria-label={`${dateLabel}: ${formattedDate}`}
           className="text-xs text-muted-foreground shrink-0"
         >
           {formattedDate}

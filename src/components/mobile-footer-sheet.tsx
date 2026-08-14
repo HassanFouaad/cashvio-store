@@ -33,20 +33,26 @@ export function MobileFooterSheet({
   const currentYear = new Date().getUTCFullYear();
 
   useEffect(() => {
+    let isMounted = true;
     if (isOpen && storeId) {
-      setIsLoading(true);
       getStaticPages(storeId, locale)
         .then((pages) => {
-          setStaticPages(pages);
+          if (isMounted) {
+            setStaticPages(pages);
+            setIsLoading(false);
+          }
         })
         .catch((error) => {
-          console.error('Failed to fetch static pages:', error);
-          setStaticPages([]);
-        })
-        .finally(() => {
-          setIsLoading(false);
+          if (isMounted) {
+            console.error('Failed to fetch static pages:', error);
+            setStaticPages([]);
+            setIsLoading(false);
+          }
         });
     }
+    return () => {
+      isMounted = false;
+    };
   }, [isOpen, storeId, locale]);
 
   return (

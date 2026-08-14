@@ -1,7 +1,6 @@
 import type {
     AnalyticsAdapter,
     AnalyticsEventName,
-    PageViewData,
 } from "../types";
 
 declare global {
@@ -135,7 +134,7 @@ export class TiktokPixelAdapter implements AnalyticsAdapter {
     }, TiktokPixelAdapter.RETRY_INTERVAL_MS);
   }
 
-  trackPageView(_data?: PageViewData): void {
+  trackPageView(): void {
     try {
       this.callTtq("page");
     } catch {
