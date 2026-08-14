@@ -13,11 +13,72 @@ import { Check, CheckCircle, Copy, Home, PackageSearch, UtensilsCrossed } from "
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 
 const TOKEN_KEY = "order-success-token";
 /** Max token age (30 minutes) — the page stays refresh-safe for this window. */
 const TOKEN_MAX_AGE_MS = 30 * 60 * 1000;
+
+interface OrderSuccessAccess {
+  authorized: boolean;
+  recap: OrderSuccessRecap | null;
+  shouldRedirect: boolean;
+}
+
+const SSR_ACCESS: OrderSuccessAccess = {
+  authorized: false,
+  recap: null,
+  shouldRedirect: false,
+};
+
+let cachedAccessKey = "";
+let cachedAccess: OrderSuccessAccess = SSR_ACCESS;
+
+function getOrderAccessSnapshot(orderNumber: string): OrderSuccessAccess {
+  if (typeof window === "undefined") return SSR_ACCESS;
+
+  if (cachedAccessKey === orderNumber && cachedAccess !== SSR_ACCESS) {
+    return cachedAccess;
+  }
+
+  try {
+    const token = sessionStorage.getItem(TOKEN_KEY);
+    const tokenTime = token ? parseInt(token, 10) : NaN;
+
+    if (
+      Number.isNaN(tokenTime) ||
+      Date.now() - tokenTime > TOKEN_MAX_AGE_MS
+    ) {
+      sessionStorage.removeItem(TOKEN_KEY);
+      cachedAccessKey = orderNumber;
+      cachedAccess = {
+        authorized: false,
+        recap: null,
+        shouldRedirect: true,
+      };
+      return cachedAccess;
+    }
+
+    cachedAccessKey = orderNumber;
+    cachedAccess = {
+      authorized: true,
+      recap: getOrderSuccessRecap(orderNumber),
+      shouldRedirect: false,
+    };
+    return cachedAccess;
+  } catch {
+    // sessionStorage unavailable — allow access if orderNumber exists
+    cachedAccessKey = orderNumber;
+    cachedAccess = {
+      authorized: Boolean(orderNumber),
+      recap: null,
+      shouldRedirect: !orderNumber,
+    };
+    return cachedAccess;
+  }
+}
+
+const emptySubscribe = () => () => {};
 
 /**
  * Inner content component that uses useSearchParams.
@@ -32,42 +93,24 @@ function OrderSuccessContent() {
   const searchParams = useSearchParams();
 
   const orderNumber = searchParams.get("orderNumber") ?? "";
-  const [authorized, setAuthorized] = useState(false);
-  const [recap, setRecap] = useState<OrderSuccessRecap | null>(null);
   const [copied, setCopied] = useState(false);
-  const guardChecked = useRef(false);
 
-  // ---------- Access guard ----------
+  const access = useSyncExternalStore(
+    emptySubscribe,
+    () => getOrderAccessSnapshot(orderNumber),
+    () => SSR_ACCESS,
+  );
+
+  // ---------- Access guard redirection ----------
   // The token is NOT consumed on read: refreshing the confirmation page
   // must keep working — this is the customer's only record of the order.
   useEffect(() => {
-    if (guardChecked.current) return;
-    guardChecked.current = true;
-
-    try {
-      const token = sessionStorage.getItem(TOKEN_KEY);
-      const tokenTime = token ? parseInt(token, 10) : NaN;
-
-      if (
-        Number.isNaN(tokenTime) ||
-        Date.now() - tokenTime > TOKEN_MAX_AGE_MS
-      ) {
-        sessionStorage.removeItem(TOKEN_KEY);
-        router.replace("/");
-        return;
-      }
-
-      setRecap(getOrderSuccessRecap(orderNumber));
-      setAuthorized(true);
-    } catch {
-      // sessionStorage unavailable — allow access if orderNumber exists
-      if (orderNumber) {
-        setAuthorized(true);
-      } else {
-        router.replace("/");
-      }
+    if (access.shouldRedirect) {
+      router.replace("/");
     }
-  }, [router, orderNumber]);
+  }, [access.shouldRedirect, router]);
+
+  const recap = access.recap;
 
   const handleCopyOrderNumber = async () => {
     try {
@@ -80,7 +123,7 @@ function OrderSuccessContent() {
   };
 
   // Don't render anything until the guard check has completed
-  if (!authorized) {
+  if (!access.authorized) {
     return null;
   }
 
