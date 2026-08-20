@@ -1,0 +1,107 @@
+# Coding Standards & TypeScript Discipline (CRITICAL — Never Violate)
+
+These rules apply to ALL code written for the `store-front` project. Violations are never acceptable.
+
+## TypeScript Strictness (CRITICAL)
+
+- **100% Type Safety — Zero `any` or loose `unknown` casts**:
+  - Never use `: any`, `as any`, `<any>`, or `@ts-ignore`.
+  - Use strictly typed interfaces, DTOs, and generics.
+- **Explicit Return Types on Public & Exported Functions**:
+  - Every exported utility, hook, API caller, and data fetching function must declare an explicit return type.
+  - React components should have explicit props interfaces and typed returns where complex.
+
+```typescript
+// ❌ FORBIDDEN
+export async function getProducts(filters: any) {
+  const res: any = await apiClient.get('/public/products');
+  return res.data;
+}
+
+// ✅ REQUIRED
+export async function getProducts(
+  filters: ProductFilters
+): Promise<PaginatedProductsResponse> {
+  const searchParams = buildProductQueryParams(filters);
+  const response = await apiClient.getPaginated<PublicProductDto>(
+    `${endpoints.products.getPublic()}?${searchParams.toString()}`
+  );
+  return {
+    ...response,
+    items: response.items.filter(isAvailableOnStoreFront),
+  };
+}
+```
+
+## Separation of Concerns & Type Organization
+
+- **Shared & Domain DTOs**: Store all shared and domain-specific DTOs, request payloads, and query types inside `src/features/<feature>/types/*.types.ts` or `src/lib/api/types.ts`.
+- **Component Props Interfaces**: Always define named interfaces (`[ComponentName]Props`) rather than anonymous inline object types on function arguments.
+- **No Module Constants or Magic Strings inside Component JSX**:
+  - Extract configuration arrays, timeouts, regex patterns, and query keys to feature `constants/` or module level `*.constants.ts`.
+  - Use Enums for statuses, methods, and types (`FulfillmentMethod`, `PaymentMethod`, `OrderStatus`, `Locale`, `Theme`).
+
+```typescript
+// ❌ FORBIDDEN — Inline anonymous types and magic strings
+export function DeliveryMethodCard({ method, onSelect }: { method: any; onSelect: (m: string) => void }) {
+  if (method === "delivery") { ... }
+}
+
+// ✅ REQUIRED — Dedicated named interface and enum
+export interface DeliveryMethodCardProps {
+  method: FulfillmentMethod;
+  isSelected: boolean;
+  onSelect: (method: FulfillmentMethod) => void;
+}
+
+export function DeliveryMethodCard({ method, isSelected, onSelect }: DeliveryMethodCardProps) {
+  if (method === FulfillmentMethod.DELIVERY) { ... }
+}
+```
+
+## Naming Conventions (Universal)
+
+| Target | Convention | Example |
+|---|---|---|
+| Components | PascalCase | `ProductCard`, `CheckoutForm`, `SearchInput` |
+| Files & directories | kebab-case | `product-details.tsx`, `checkout-form.tsx`, `get-store.ts` |
+| Functions & methods | camelCase, verb-first | `getStoreBySubdomain`, `formatCurrency`, `isValidLocale` |
+| Variables & properties | camelCase | `selectedVariantId`, `cartItemCount`, `isInitialized` |
+| Boolean variables | Verb prefix (`is`, `has`, `can`, `should`) | `isAvailable`, `hasModifiers`, `canAddMore` |
+| Interfaces & Types | PascalCase | `PublicStoreDto`, `CreateOrderRequest`, `CartItem` |
+| DTOs (API responses) | `Public*Dto` or `*Response` | `PublicProductDto`, `OrderPreviewResponse` |
+| DTOs (API requests) | `*Request` or `Create*Request` | `CreateOrderRequest`, `TrackOrderRequest` |
+| Enums & Enum values | PascalCase enum, `UPPER_SNAKE_CASE` values | `PaymentMethod.ONLINE`, `Locale.ARABIC` |
+| Constants | `UPPER_SNAKE_CASE` | `STORE_CACHE_REVALIDATE_SECONDS`, `LANG_QUERY_PARAM` |
+
+## Import Ordering
+
+Organize imports into 4 clean groups separated by single blank lines:
+
+```typescript
+// 1. React & Next.js framework imports
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+
+// 2. Third-party packages
+import { useTranslations } from 'next-intl';
+import { ShoppingCart, Check, AlertCircle } from 'lucide-react';
+import { clsx } from 'clsx';
+
+// 3. Internal absolute imports (@/*)
+import { apiClient } from '@/lib/api/client';
+import { endpoints } from '@/lib/api/config';
+import { formatCurrency } from '@/lib/utils/formatters';
+import { Button } from '@/components/ui/button';
+
+// 4. Relative feature-level imports
+import { PublicProductDto, PublicProductVariantDto } from '../types/product.types';
+import { ModifierGroupsPicker } from './modifier-groups-picker';
+```
+
+## DRY & Clean Architecture
+
+- **Never duplicate utility functions**: Use existing helpers from `src/lib/utils/` (`cn.ts`, `formatters.ts`, `phone.ts`, `whatsapp.ts`, `json-ld.ts`).
+- **No dead or ghost code**: Remove unused imports, abandoned test components, and commented-out JSX blocks.
+- **Package Manager**: Always use **Yarn** (`yarn install`, `yarn dev`, `yarn build`). Never run `npm` or commit `package-lock.json`.

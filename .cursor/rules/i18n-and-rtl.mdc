@@ -1,0 +1,86 @@
+# Internationalization (i18n) & RTL Architecture (CRITICAL)
+
+The `store-front` application is bilingual (`en` and `ar`), with **Arabic (`ar`) as the primary default locale**. All user-visible strings, aria-labels, layouts, and typography must adhere strictly to these invariants.
+
+## 1. next-intl & Key Parity Rules
+
+- **Identical JSON Key Sets (CRITICAL)**: Every translation key added to `messages/en.json` MUST exist with the identical nested path in `messages/ar.json`, and vice versa.
+- **Namespaces Structure**:
+  - `common`: Global actions, home, collections, products, error fallbacks.
+  - `store`: Welcome banner, hero, product sections, category grids.
+  - `cart`: Add to cart, quantity, summary, empty state, line limits.
+  - `checkout`: Form fields, delivery zones, pickup, receipt upload, validation.
+  - `orderTracking`: Search, timeline status steps, expectation copy.
+  - `errors`: Store not found, inactive, network, page not found.
+  - `metadata`: Page titles, descriptions, open graph templates.
+- **Translation Usage**:
+  - Server components: `const t = await getTranslations('namespace');`
+  - Client components: `const t = useTranslations('namespace');`
+  - Never hardcode user copy in JSX.
+
+```tsx
+// ❌ FORBIDDEN — Hardcoded English or missing Arabic key
+<button aria-label="Add to cart" onClick={handleAdd}>
+  Add to Cart (+{count})
+</button>
+
+// ✅ REQUIRED — next-intl with interpolation
+<Button aria-label={t("addToCartAria")} onClick={handleAdd}>
+  {t("addToCart")} {count > 1 && `(+${count})`}
+</Button>
+```
+
+## 2. Locale Routing & Cookie Architecture
+
+- **No URL Segment Prefix**: The storefront does NOT use `/en/` or `/ar/` paths. All routes are flat (`/products`, `/cart`, `/checkout`).
+- **Locale Resolution Priority**:
+  1. `?lang=en|ar` query parameter (forwarded via `x-sf-locale` header in middleware).
+  2. `NEXT_LOCALE` cookie (store-scoped, 1-year lifetime).
+  3. `Accept-Language` browser header parsing (on first visit).
+  4. Default: `Locale.ARABIC` (`'ar'`).
+- **Hreflang Alternates**: `buildLanguageAlternates(path)` generates language URLs via `?lang=en` and `?lang=ar` with `x-default` pointing to the canonical path.
+
+## 3. RTL / LTR Layout Rules (CRITICAL)
+
+- **HTML Attributes**: `src/app/layout.tsx` dynamically sets `<html lang={locale} dir={direction}>` where `direction` is `'rtl'` for Arabic and `'ltr'` for English.
+- **Tailwind Logical Properties (MANDATORY)**:
+  - Use `ps-` (padding-inline-start) and `pe-` (padding-inline-end) instead of `pl-` / `pr-`.
+  - Use `ms-` (margin-inline-start) and `me-` (margin-inline-end) instead of `ml-` / `mr-`.
+  - Use `start-` and `end-` instead of `left-` and `right-` for positioning.
+  - Use `text-start` and `text-end` instead of `text-left` and `text-right`.
+- **Icon Rotation in RTL**:
+  - Chevron and directional arrows must flip in Arabic using `rtl:rotate-180`:
+    ```tsx
+    <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+    <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+    ```
+
+```tsx
+// ❌ FORBIDDEN — Physical left/right classes break in RTL
+<div className="pl-4 pr-8 text-left absolute left-2">
+  <ChevronRight className="h-4 w-4" />
+</div>
+
+// ✅ REQUIRED — Logical properties and RTL rotation
+<div className="ps-4 pe-8 text-start absolute start-2">
+  <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+</div>
+```
+
+## 4. Typography & Font Pairing
+
+- **Font Presets (`src/lib/theme/fonts.ts`)**:
+  - `CLASSIC` (Default): **Inter** (English) + **Cairo** (Arabic)
+  - `MODERN`: **Rubik** (English & Arabic)
+  - `TECHNICAL`: **IBM Plex Sans** (English) + **IBM Plex Sans Arabic** (Arabic)
+  - `ELEGANT`: **Playfair Display** (English) + **Amiri** (Arabic)
+  - `FRIENDLY`: **Nunito** (English) + **Almarai** (Arabic)
+  - `CLEAN`: **Poppins** (English) + **Tajawal** (Arabic)
+- Font variables are injected into `body` dynamically via `${themeFonts.variables} ${themeFonts.family}`.
+
+## 5. Currency & Date Formatting
+
+- **Currency Formatting**: Always use `formatCurrency(amount, currency, locale)` from `@/lib/utils/formatters`.
+  - Never format money with manual string concatenation like `${amount} EGP`.
+  - `formatCurrency` uses `Intl.NumberFormat` with `ar-EG` or `en-US`.
+- **Date Formatting**: Use `toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' })` with the request locale.

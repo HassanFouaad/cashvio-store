@@ -1,0 +1,82 @@
+# Multi-Tenancy & Routing Architecture (CRITICAL)
+
+The `store-front` application is a multi-tenant platform where each merchant storefront is resolved dynamically via subdomain.
+
+## 1. Subdomain Resolution & Multi-Tenancy Flow
+
+```
+HTTP Request (Host: storeA.cash-vio.com)
+  │
+  ├── 1. middleware.ts: Parses subdomain with getStoreSubdomain(hostname)
+  │      - Validates against RESERVED_SUBDOMAINS ('www', 'api', 'admin', etc.)
+  │      - Enforces root-only access on main/apex domain
+  │      - Attaches locale and visitor cookies
+  │      - Forwards ?lang= and theme preview headers
+  │
+  ├── 2. resolveRequestStore() (React.cache per-request deduplication):
+  │      - Reads Host header
+  │      - Calls getStoreBySubdomain(subdomain) (cached 60s with unstable_cache)
+  │      - Invokes setApiStoreId(store.id) & setApiLocale(locale)
+  │
+  └── 3. API Requests via apiClient:
+         - Automatically attach header: X-Store-Id: <store-id>
+         - Automatically attach header: Accept-Language: <en|ar>
+```
+
+## 2. Invariant Store Context Rules
+
+- **Never bypass `resolveRequestStore()`**: Server components, layouts, and `generateMetadata` must always resolve store context via `resolveRequestStore()` in `src/lib/api/resolve-request-store.ts`.
+- **Never query without `X-Store-Id`**: All public backend queries (`/public/products`, `/public/categories`, `/public/orders`, etc.) require `X-Store-Id`. In client components, `StoreProvider` and the layout inline script ensure `window.__STORE_ID__` and cookie `sf_store_id` are populated.
+- **Inactive Storefront Gate**: When `store.storeFront.status !== StoreFrontStatus.ACTIVE`, `src/app/layout.tsx` must immediately render `StoreErrorComponent` (type `INACTIVE`) and prevent browsing or purchasing.
+
+```typescript
+// ❌ FORBIDDEN — Calling API directly without resolving store context
+export default async function ProductPage({ params }: { params: { id: string } }) {
+  const product = await apiClient.get(`/public/products/${params.id}`); // Missing X-Store-Id!
+  return <div>{product.name}</div>;
+}
+
+// ✅ REQUIRED — Resolving store context and handling notFound
+export default async function ProductPage({ params }: ProductPageProps) {
+  const { store, subdomain } = await resolveRequestStore();
+  if (!subdomain || !store) {
+    throw new Error("Invalid store subdomain");
+  }
+
+  const { id } = await params;
+  const { product, error } = await getProductByIdWithErrorHandling(id);
+  if (error || !product) {
+    notFound();
+  }
+
+  return <ProductDetails product={product} storeId={store.id} ... />;
+}
+```
+
+## 3. App Router Structure & Rendering Invariants
+
+- **Single Root Layout**: `src/app/layout.tsx` is the sole application shell. There are no nested segment layouts or `template.tsx` files.
+- **Dynamic Rendering**: `src/app/layout.tsx` explicitly declares:
+  ```typescript
+  export const dynamic = "force-dynamic";
+  export const revalidate = 0;
+  ```
+- **Loading Skeletons (`loading.tsx`)**: Every major route segment MUST provide a dedicated `loading.tsx` skeleton mirroring the exact geometry of the rendered page (`/`, `/products`, `/products/[id]`, `/categories`, `/categories/[id]`, `/cart`, `/checkout`, `/pages/[slug]`).
+- **Error Boundaries**:
+  - `src/app/error.tsx`: Root client error boundary with retry capability.
+  - `src/app/not-found.tsx`: Global 404 handler invoked via Next.js `notFound()`.
+- **Parallel Data Fetching**: Independent server-side fetches must NEVER be awaited in series. Always execute them in parallel using `Promise.all` or `Promise.allSettled`.
+
+```typescript
+// ❌ FORBIDDEN — Sequential awaiting in Server Component
+const categories = await getCategories();
+const products = await getProducts();
+const specialProducts = await getSpecialProducts();
+
+// ✅ REQUIRED — Parallel execution
+const [categoriesData, productsData, specialData] = await Promise.all([
+  getCategoriesWithErrorHandling({ page: 1, limit: 12 }),
+  getProductsWithErrorHandling({ page: 1, limit: 12 }),
+  getSpecialProductsWithErrorHandling(),
+]);
+```

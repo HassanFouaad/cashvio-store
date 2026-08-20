@@ -1,0 +1,86 @@
+# API Client & Data Fetching (CRITICAL)
+
+All network communication with the Cashvio backend occurs through the centralized `ApiClient` (`src/lib/api/client.ts`).
+
+## 1. ApiClient Architecture & Methods
+
+The singleton `apiClient` instance wraps native `fetch` with automatic timeout handling, request-scoped header injection, and envelope parsing:
+
+| Method | Signature | Purpose |
+|---|---|---|
+| `apiClient.get<T>` | `get<T>(endpoint: string, options?: FetchOptions): Promise<T>` | Unwraps `ApiResponse<T>.data` |
+| `apiClient.post<T, D>` | `post<T, D>(endpoint: string, data?: D, options?: FetchOptions): Promise<T>` | POST with JSON body; unwraps `.data` |
+| `apiClient.put<T, D>` | `put<T, D>(endpoint: string, data?: D, options?: FetchOptions): Promise<T>` | PUT with JSON body; unwraps `.data` |
+| `apiClient.delete<T>` | `delete<T>(endpoint: string, options?: FetchOptions): Promise<T>` | DELETE request; unwraps `.data` |
+| `apiClient.getPaginated<T>` | `getPaginated<T>(endpoint: string, options?: FetchOptions): Promise<PaginatedResponse<T>>` | Unwraps paginated envelope into `{ items, pagination }` |
+| `apiClient.postNoContent` | `postNoContent(endpoint: string, data?: unknown, options?: FetchOptions): Promise<void>` | 204 No Content for tracking |
+
+## 2. Automatic Header Injection
+
+Every request automatically receives:
+1. `Content-Type: application/json` (unless overridden)
+2. `Accept-Language: <en|ar>` (from `getApiLocale()`)
+3. `X-Store-Id: <store-uuid>` (from `getApiStoreId()`)
+
+Never construct custom fetch requests or pass `X-Store-Id` manually in query strings.
+
+## 3. Envelope Parsing & Error Handling
+
+- **Envelope Contract**: Backend responses match `ApiResponse<T>` (`{ success: boolean, data: T, meta: ApiResponseMeta }`).
+- **`ApiException` (`src/lib/api/types.ts`)**:
+  - Non-OK responses (4xx, 5xx) automatically parse error JSON `{ error: { message, code } }` or `{ message }` and throw a typed `ApiException(statusCode, message, error)`.
+  - Timeout (default 30s) aborts the request and throws `ApiException(408, "Request timeout")`.
+- **Safe Error Wrappers (`*WithErrorHandling`)**:
+  - Use `getProductsWithErrorHandling`, `getCategoriesWithErrorHandling`, `getStoreWithErrorHandling` in server components to return `{ data, error }` instead of crashing the RSC tree.
+
+```typescript
+// ❌ FORBIDDEN — Uncaught raw fetch in Server Component
+export async function getCategories() {
+  const res = await fetch('http://localhost:3000/api/v1/public/categories');
+  const json = await res.json();
+  return json.data;
+}
+
+// ✅ REQUIRED — Using apiClient and endpoints configuration
+export async function getCategoriesWithErrorHandling(
+  query?: ListCategoriesQuery
+): Promise<{ categories: PaginatedCategoriesResponse | null; error: Error | null }> {
+  try {
+    const searchParams = buildCategoryQueryParams(query);
+    const response = await apiClient.getPaginated<PublicCategoryDto>(
+      `${endpoints.categories.list}?${searchParams.toString()}`
+    );
+    return { categories: response, error: null };
+  } catch (error) {
+    return { categories: null, error: error instanceof Error ? error : new Error(String(error)) };
+  }
+}
+```
+
+## 4. Endpoints Catalog (`src/lib/api/config.ts`)
+
+All API routes live under `/public/*` and must be referenced via the `endpoints` catalog:
+
+- `endpoints.stores.getBySubdomain(subdomain)`
+- `endpoints.stores.getFulfillmentMethods(storeId)`
+- `endpoints.stores.getDeliveryZones(storeId)`
+- `endpoints.stores.getStorefrontPaymentMethods(storeId)`
+- `endpoints.stores.getReceiptUploadUrl(storeId)`
+- `endpoints.stores.staticPages.list` & `getBySlug(slug)`
+- `endpoints.stores.specialProducts`
+- `endpoints.products.getPublic()` & `getPublicById(id)` & `reviews(productId)`
+- `endpoints.categories.list` & `getById(id)`
+- `endpoints.orders.preview` & `create` & `track` & `paymentSession`
+- `endpoints.carts.get(visitorId)` & `modifyItem`
+- `endpoints.visitors.track`
+- `endpoints.common.countries` & `citiesByCountry(countryId)`
+
+## 5. State Management & Data Fetching Boundaries
+
+- **NO React Query / TanStack Query**: Server components fetch directly via `apiClient`.
+- **Zustand Cart Store (`src/features/cart/store/cart-store.ts`)**:
+  - Manages client-side cart items, optimistic mutations, and debounced sync with `/public/carts/items`.
+  - Visitor ID (`getOrCreateVisitorId()`) acts as the guest cart session key.
+- **Server Caching**:
+  - `React.cache()` for per-request deduplication (`resolveRequestStore`, `resolveRequestTheme`).
+  - `unstable_cache(..., { revalidate: 60 })` for cross-request store lookup caching.

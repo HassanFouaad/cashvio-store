@@ -1,0 +1,60 @@
+# Standards Index — cashvio-store-front
+# Task-specific standards: .agents/skills/{name}/SKILL.md
+# Always-on / glob-scoped: .cursor/rules/{name}.mdc
+# This index maps standards to categories for skill-based discovery
+
+global:
+  coding-standards:
+    description: "CRITICAL: Strict TypeScript, zero any, naming conventions, one concern per file, import ordering, Yarn only"
+  theme-and-design-system:
+    description: "CRITICAL: Multi-tenant dynamic branding, semantic tokens, data-sf-* attributes, zero hardcoded hex colors"
+  multi-tenancy-and-routing:
+    description: "CRITICAL: Subdomain resolution, resolveRequestStore(), force-dynamic root layout, active storefront gate"
+  i18n-and-rtl:
+    description: "CRITICAL: next-intl bilingual parity (en + ar), Arabic default, logical properties, RTL icon flipping"
+  api-and-data-fetching:
+    description: "CRITICAL: ApiClient singleton, endpoints catalog, typed ApiException handling, X-Store-Id auto-injection"
+  pre-flight:
+    description: "MANDATORY: Pre-flight rule lookup table and post-write verification checklist"
+
+routing-and-pages:
+  app-router-pages:
+    description: Next.js App Router server components, force-dynamic rendering, parallel Promise.all fetches, loading skeletons
+  multi-tenant-resolution:
+    description: Subdomain resolution, middleware routing, store context injection, and active storefront enforcement
+  product-details-pdp:
+    description: Product Details Page (PDP) layout variants, variant matrix, modifier groups, and Product JSON-LD schema
+  product-listing-plp:
+    description: Product Listing Pages (PLP), category filters, URL search synchronization, sorting, and pagination
+  order-tracking:
+    description: Guest order lookup by order number and phone, timeline status progression, and online payment status polling
+
+theme-and-ui:
+  theme-engine:
+    description: Dynamic theme palettes, CSS variable injection, font presets, structural attributes (data-sf-*), and PDP variants
+  rtl-styling:
+    description: Tailwind CSS v4 logical properties, RTL icon rotation, bidirectional typography, and horizontal alignment rules
+  ui-components:
+    description: CVA buttons, inputs, selects, bottom sheet modals (Vaul), skeleton loaders, and responsive mobile navigation
+
+api-and-state:
+  api-client:
+    description: ApiClient singleton methods, endpoint configuration, header injection, typed error handling, and envelope parsing
+  cart-management:
+    description: Zustand cart store, visitor ID persistence, optimistic updates, modifier selections, debounced server sync, stock limits
+  checkout-flow:
+    description: Guest checkout, fulfillment methods (DELIVERY, PICKUP, DINE_IN), address validation, order preview, coupon validation
+  payment-integrations:
+    description: CASH, ONLINE (Paymob intention, redirect, polling, retry), and RECEIPT (presigned S3 upload) payment flows
+  form-validation:
+    description: Checkout form validation, international phone validation, error state rendering, and field-level error messages
+
+growth-and-security:
+  seo-and-metadata:
+    description: generateMetadata, OpenGraph, Twitter cards, hreflang alternates, JSON-LD schemas, and XSS-safe serialization
+  analytics-and-pixels:
+    description: Multi-adapter tracking (GTM, Meta Pixel, TikTok Pixel), ecommerce event triggers, and visitor tracking API
+  security-and-sanitization:
+    description: DOMPurify HTML sanitization, JSON-LD XSS escaping, payment callback verification, and guest order lookup privacy
+  verify-code:
+    description: Comprehensive anti-pattern audit protocol, layer-specific checks, 20-item anti-pattern matrix, and verification report

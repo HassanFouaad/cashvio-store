@@ -1,0 +1,46 @@
+# Pre-Flight Check (MANDATORY)
+
+**Before writing or modifying ANY code in `store-front`, you MUST:**
+
+1. Identify which standards apply from the lookup table below.
+2. Read those standards (`.agents/skills/<name>/SKILL.md` or `.cursor/rules/<name>.mdc`).
+3. Write code following every pattern and invariant.
+4. After writing, perform the Post-Write Self-Check.
+
+## Standards Resolution Order
+
+1. Task skill: `.agents/skills/{name}/SKILL.md`
+2. Always-on rule: `.cursor/rules/{name}.mdc`
+
+## Rule Lookup Table
+
+| Task | Read these rules & skills |
+|---|---|
+| New page or layout | `multi-tenancy-and-routing.mdc`, `app-router-pages`, `seo-and-metadata` |
+| Theme, colors, styling | `theme-and-design-system.mdc`, `theme-engine`, `ui-components` |
+| Text, translation, RTL | `i18n-and-rtl.mdc`, `i18n-localization`, `rtl-styling` |
+| API call or data fetching | `api-and-data-fetching.mdc`, `api-client`, `multi-tenant-resolution` |
+| Cart, items, modifiers | `cart-management`, `api-client` |
+| Checkout & orders | `checkout-flow`, `payment-integrations`, `form-validation` |
+| Product page (PDP) | `product-details-pdp`, `theme-engine`, `seo-and-metadata` |
+| Product catalog / grid (PLP) | `product-listing-plp`, `ui-components` |
+| Order tracking | `order-tracking`, `payment-integrations` |
+| Analytics & tracking | `analytics-and-pixels` |
+| Security / HTML render | `security-and-sanitization` |
+| Verification / review | `verify-code` |
+
+## Post-Write Self-Check Checklist
+
+After writing code, verify every item:
+- [ ] **No `any` or loose `unknown` casts** — 100% strict TypeScript.
+- [ ] **No hardcoded palette colors** — all colors use semantic tokens (`bg-primary`, `text-foreground`, `border-border`, etc.).
+- [ ] **No hardcoded user-facing strings or aria-labels** — all copy uses `t(...)` with parity in `messages/en.json` and `messages/ar.json`.
+- [ ] **No physical left/right CSS** — all spacing/positioning uses Tailwind logical properties (`ps-`, `pe-`, `ms-`, `me-`, `start-`, `end-`, `text-start`, `text-end`).
+- [ ] **Directional icons flip in RTL** — chevrons/arrows include `rtl:rotate-180`.
+- [ ] **Store context attached** — all API calls ensure `setApiStoreId` / `resolveRequestStore` is invoked for `X-Store-Id`.
+- [ ] **Independent server fetches parallelized** — using `Promise.all` or `Promise.allSettled`.
+- [ ] **XSS protected** — all HTML rendering uses `SafeHtmlRenderer` (DOMPurify) and JSON-LD uses `serializeJsonLd()`.
+- [ ] **Money formatted correctly** — using `formatCurrency(amount, currency, locale)`.
+- [ ] **Package manager is Yarn** — never run `npm`.
+
+If any violation exists, fix it immediately before presenting to the user.

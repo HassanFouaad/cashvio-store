@@ -1,0 +1,79 @@
+# Theme Engine & Design System (CRITICAL)
+
+The `store-front` application is a multi-tenant white-label commerce surface. It has **NO fixed brand color** (never hardcode `#059669` or static theme colors). The entire visual identity is dynamically governed by the merchant theme engine.
+
+## 1. Dynamic Theme Contract & Invariants
+
+- **Zero Hardcoded Palette Colors in Components**:
+  - Never hardcode hex codes or Tailwind color arbitrary values (e.g. `text-[#059669]`, `bg-[#10b981]`) in JSX.
+  - Always use semantic tokens provided by Tailwind v4 `@theme`:
+    - `bg-primary`, `text-primary`, `text-primary-foreground`
+    - `bg-background`, `text-foreground`
+    - `bg-card`, `text-card-foreground`
+    - `bg-muted`, `text-muted-foreground`
+    - `border-border`, `border-input`, `ring-ring`
+    - `bg-destructive`, `text-destructive`
+- **19-Token Merchant Theme Contract**:
+  - Merchant palettes inject `--color-*` variables dynamically via `buildThemeStyle(resolvedTheme)` in `src/app/layout.tsx`.
+  - Default fallbacks use standard oklch definitions in `src/app/globals.css`.
+
+```tsx
+// ❌ FORBIDDEN — Hardcoded emerald or custom hex
+<button className="bg-[#059669] hover:bg-[#047857] text-white rounded-lg p-3">
+  {t("checkout")}
+</button>
+
+// ✅ REQUIRED — Semantic token with theme hook
+<Button variant="default" size="lg" className="w-full">
+  {t("checkout")}
+</Button>
+// Or using CVA / standard semantic utility classes:
+<button className="sf-btn-primary bg-primary text-primary-foreground hover:bg-primary/90 rounded-md p-3">
+  {t("checkout")}
+</button>
+```
+
+## 2. Structural Theme Attributes (`data-sf-*`)
+
+Merchant themes inject layout personality and visual styles via `data-sf-*` attributes on `<html>`:
+
+| Attribute | Valid Values | Effect |
+|---|---|---|
+| `data-sf-theme` | `ELEGANT`, `MODERN`, `MINIMAL`, `PLAYFUL`, `TECH`, `ORGANIC` | Adjusts prices (`.sf-price` monospace for TECH), borders, and cards |
+| `data-sf-buttons` | `SOLID`, `OUTLINE`, `SOFT` | Adjusts `.sf-btn-primary` rendering (outline vs filled) |
+| `data-sf-icons` | `OUTLINE`, `LIGHT`, `BOLD` | Adjusts Lucide icon stroke-width (1.5 for LIGHT, 2.5 for BOLD) |
+| `data-sf-type` | `REGULAR`, `DISPLAY`, `EDITORIAL` | Adjusts uppercase tracking and hero typography |
+| `data-sf-order-pages` | `CARD`, `FLAT` | Adjusts `.sf-panel` borders on checkout, cart, and track pages |
+
+Always attach theme classes to panel wrappers:
+- Use `.sf-panel` for cards on checkout and tracking (`rounded-xl border bg-card`).
+- Use `.sf-price` for formatted monetary amounts.
+- Use `.sf-img-zoom` for product card image hover effects.
+
+## 3. UI Primitives & Styling Layer
+
+- **Tailwind CSS v4 Configuration**: PostCSS `@tailwindcss/postcss` with `@import "tailwindcss"` in `src/app/globals.css`. No legacy `tailwind.config.js`.
+- **Class Merging**: Always use `cn(...)` (`src/lib/utils/cn.ts`) which merges `clsx` and `tailwind-merge`.
+- **Primitives (`src/components/ui/`)**:
+  - `Button` (`button.tsx`): Built with `class-variance-authority` (CVA). Supports `variant` (`default`, `destructive`, `outline`, `secondary`, `ghost`, `link`) and `size` (`default`, `sm`, `lg`, `icon`).
+  - `Input` (`input.tsx`): Styled with `border-input`, `bg-background`, `ring-ring`.
+  - `Select` (`select.tsx`): Controlled native select with RTL-safe chevron overlay.
+  - `PhoneInput` (`phone-input.tsx`): Built on `react-international-phone` with localized country names.
+  - `Skeleton` (`skeleton.tsx`): Pulse placeholder for loading states.
+  - `SafeHtmlRenderer` (`safe-html-renderer.tsx`): Sanitized HTML renderer using DOMPurify.
+
+## 4. Icon Language & Conventions
+
+- **Icon Library**: Exclusively `lucide-react`.
+- **Icon Sizing**:
+  - Standard navigation / header: `h-5 w-5` (sm: `h-4 w-4`)
+  - Inline buttons / chips: `h-4 w-4`
+  - Large empty state: `h-10 w-10` or `h-12 w-12` with `strokeWidth={1.25}`
+- **Brand / Payment Glyphs**: Use dedicated SVGs in `src/components/icons/` (`InstapayIcon`, `WalletIcon`) or `src/components/whatsapp-fab.tsx`.
+- **No Material Icons or Heroicons**: Never install or import `@mui/icons-material` or `@heroicons/react`.
+
+## 5. Light & Dark Mode Invariants
+
+- **`next-themes` Integration**: Uses class-based strategy (`<ThemeProvider attribute="class" defaultTheme="light" enableSystem>`).
+- **Surface Transitions**: Smooth color transitions defined on `body` (`transition: background-color 0.2s, color 0.2s`).
+- **Palettes**: Custom merchant themes provide both `light` and `dark` token sets dynamically derived from the primary hex or palette catalog.
