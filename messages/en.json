@@ -104,6 +104,8 @@
       "noResultsOnPage": "No products on this page. Please navigate to another page.",
       "backToFirstPage": "Back to First Page",
       "addToCart": "Add to Cart",
+      "buyNow": "Buy Now",
+      "buyNowLoading": "Going to checkout...",
       "selectVariant": "Select Variant",
       "modifiers": {
         "optional": "Optional",

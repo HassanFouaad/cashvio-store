@@ -7,73 +7,74 @@ import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { computeCartValidation, useCartStore } from "@/features/cart/store";
 import {
-  createOrder,
-  getCitiesByCountry,
-  getReceiptUploadUrl,
-  groupDeliveryZonesByCountry,
-  previewOrder,
-  uploadReceiptToPresignedUrl,
+    createOrder,
+    getCitiesByCountry,
+    getReceiptUploadUrl,
+    groupDeliveryZonesByCountry,
+    previewOrder,
+    uploadReceiptToPresignedUrl,
 } from "@/features/checkout/api/checkout-api";
 import { PickupLocationCard } from "@/features/checkout/components/pickup-location-card";
+import { PlaceOrderButton } from "@/features/checkout/components/place-order-button";
 import { ReceiptTransferDetails } from "@/features/checkout/components/receipt-transfer-details";
 import {
-  CommonCityDto,
-  CommonCountryDto,
-  CreateOrderRequest,
-  FulfillmentMethod,
-  GroupedDeliveryZoneCityDto,
-  GroupedDeliveryZoneCountryDto,
-  GroupedDeliveryZonesDto,
-  OrderPreviewDeliveryAddress,
-  OrderPreviewResponse,
-  PaymentMethod,
-  PublicDeliveryZonesResponseDto,
-  PublicFulfillmentMethodDto,
-  PublicStorefrontPaymentMethodDto,
+    CommonCityDto,
+    CommonCountryDto,
+    CreateOrderRequest,
+    FulfillmentMethod,
+    GroupedDeliveryZoneCityDto,
+    GroupedDeliveryZoneCountryDto,
+    GroupedDeliveryZonesDto,
+    OrderPreviewDeliveryAddress,
+    OrderPreviewResponse,
+    PaymentMethod,
+    PublicDeliveryZonesResponseDto,
+    PublicFulfillmentMethodDto,
+    PublicStorefrontPaymentMethodDto,
 } from "@/features/checkout/types/checkout.types";
 import { formatDeliveryZoneCityOptionLabel } from "@/features/checkout/utils/delivery-zone-fee-label";
 import {
-  buildOrderSuccessRecap,
-  saveOrderSuccessRecap,
+    buildOrderSuccessRecap,
+    saveOrderSuccessRecap,
 } from "@/features/checkout/utils/order-success-recap";
 import { savePendingPayment } from "@/features/checkout/utils/pending-payment";
 import type { StorePickupLocation } from "@/features/checkout/utils/pickup-location";
 import { analytics } from "@/lib/analytics";
 import {
-  clearPendingCoupon,
-  consumePendingCoupon,
-  normalizeCouponCode,
-  persistPendingCoupon,
+    clearPendingCoupon,
+    consumePendingCoupon,
+    normalizeCouponCode,
+    persistPendingCoupon,
 } from "@/lib/coupon-deep-link";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { getOrCreateVisitorId } from "@/lib/visitor/visitor-id";
 import {
-  AlertCircle,
-  AlertTriangle,
-  Banknote,
-  Check,
-  ChevronDown,
-  CreditCard,
-  Globe,
-  Loader2,
-  Package,
-  Receipt,
-  Store,
-  TicketPercent,
-  Upload,
-  UtensilsCrossed,
-  X,
+    AlertCircle,
+    AlertTriangle,
+    Banknote,
+    Check,
+    ChevronDown,
+    CreditCard,
+    Globe,
+    Loader2,
+    Package,
+    Receipt,
+    Store,
+    TicketPercent,
+    Upload,
+    UtensilsCrossed,
+    X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  FormEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+    FormEvent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
 } from "react";
 
 interface CheckoutFormProps {
@@ -1469,6 +1470,32 @@ export function CheckoutForm({
             </div>
           </div>
         </div>
+
+        {/* Mobile Place Order — visible after customer info without expanding summary */}
+        <div className="space-y-3 pt-2 border-t border-border lg:hidden">
+          {preview && (
+            <div className="flex justify-between text-base font-semibold">
+              <span>{tCart("total")}</span>
+              <span className="tabular-nums">
+                {formatCurrency(preview.totalAmount, currency, locale)}
+              </span>
+            </div>
+          )}
+          <PlaceOrderButton
+            disabled={isSubmitBlocked}
+            isSubmitting={isSubmitting}
+            isLoadingPreview={isLoadingPreview}
+          />
+          {showValidation &&
+            !isSubmitting &&
+            (!isCustomerInfoComplete ||
+              !isDeliveryAddressComplete ||
+              !isPaymentMethodSelected) && (
+              <p className="text-sm text-destructive text-center">
+                {t("completeRequiredFields")}
+              </p>
+            )}
+        </div>
       </div>
 
       {/* Order Summary - Right Column */}
@@ -1757,28 +1784,13 @@ export function CheckoutForm({
               </div>
             )}
 
-            {/* Place Order Button â€” submits the form so Enter works and
+            {/* Place Order Button — submits the form so Enter works and
                 field-level issues surface as inline messages */}
-            <Button
-              type="submit"
-              className="w-full"
-              size="lg"
+            <PlaceOrderButton
               disabled={isSubmitBlocked}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                  {t("placingOrder")}
-                </>
-              ) : isLoadingPreview ? (
-                <>
-                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                  {t("calculating")}
-                </>
-              ) : (
-                t("placeOrder")
-              )}
-            </Button>
+              isSubmitting={isSubmitting}
+              isLoadingPreview={isLoadingPreview}
+            />
 
             {/* Summary of what's missing after a submit attempt */}
             {showValidation &&

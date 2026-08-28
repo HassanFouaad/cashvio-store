@@ -2,7 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { ApiCartItemModifier } from "@/features/cart/api/cart.types";
-import { useCartStore } from "@/features/cart/store";
+import {
+  useCanCheckout,
+  useCartStore,
+  useIsCartSyncing,
+  usePendingChangesCount,
+} from "@/features/cart/store";
 import { ModifierGroupsPicker } from "@/features/products/components/modifier-groups-picker";
 import { useModifierSelection } from "@/features/products/hooks/use-modifier-selection";
 import {
@@ -18,9 +23,11 @@ import {
   Plus,
   ShoppingCart,
   Trash2,
+  Zap,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface AddToCartSectionProps {
@@ -54,6 +61,12 @@ export function AddToCartSection({
     },
   );
   const [justAdded, setJustAdded] = useState(false);
+  const [isBuyNowPending, setIsBuyNowPending] = useState(false);
+
+  const router = useRouter();
+  const canCheckout = useCanCheckout();
+  const pendingChangesCount = usePendingChangesCount();
+  const isSyncing = useIsCartSyncing();
 
   // Modifier groups (add-ons) — products with groups always use the Add
   // button flow: every add is one line keyed by its exact selection
@@ -222,11 +235,9 @@ export function AddToCartSection({
     ],
   );
 
-  // Handle add to cart — carries the current modifier selection
-  const handleAddToCart = useCallback(() => {
-    if (!selectedVariant || !canAddMore) return;
+  const addSelectedToCart = useCallback((): boolean => {
+    if (!selectedVariant || !canAddMore) return false;
 
-    // Display snapshot for the optimistic cart line
     const selectedModifiers: ApiCartItemModifier[] = [];
     for (const group of modifierGroups) {
       for (const modifier of group.modifiers) {
@@ -241,7 +252,6 @@ export function AddToCartSection({
       }
     }
 
-    // Add 1 item to cart
     addItem(
       selectedVariant.id,
       1,
@@ -254,12 +264,7 @@ export function AddToCartSection({
       selectedModifierIds,
     );
 
-    // Show success feedback
-    setJustAdded(true);
-    if (justAddedTimerRef.current) clearTimeout(justAddedTimerRef.current);
-    justAddedTimerRef.current = setTimeout(() => {
-      setJustAdded(false);
-    }, 1500);
+    return true;
   }, [
     selectedVariant,
     canAddMore,
@@ -269,6 +274,26 @@ export function AddToCartSection({
     selectedModifierIdSet,
     selectedModifierIds,
   ]);
+
+  const handleAddToCart = useCallback(() => {
+    if (!addSelectedToCart()) return;
+
+    setJustAdded(true);
+    if (justAddedTimerRef.current) clearTimeout(justAddedTimerRef.current);
+    justAddedTimerRef.current = setTimeout(() => {
+      setJustAdded(false);
+    }, 1500);
+  }, [addSelectedToCart]);
+
+  const handleBuyNow = useCallback(() => {
+    if (!addSelectedToCart()) return;
+    setIsBuyNowPending(true);
+  }, [addSelectedToCart]);
+
+  useEffect(() => {
+    if (!isBuyNowPending || !canCheckout) return;
+    router.push("/checkout");
+  }, [isBuyNowPending, canCheckout, pendingChangesCount, isSyncing, router]);
 
   // Handle remove from cart
   const handleRemoveFromCart = useCallback(() => {
@@ -516,7 +541,7 @@ export function AddToCartSection({
               <Button
                 size="lg"
                 className="w-full gap-2 h-12 sm:h-11 text-base font-medium touch-manipulation"
-                disabled={!canAddMore}
+                disabled={!canAddMore || isBuyNowPending}
                 onClick={handleAddToCart}
               >
                 {isLoading ? (
@@ -533,6 +558,26 @@ export function AddToCartSection({
                   <>
                     <ShoppingCart className="h-5 w-5" />
                     {t("addToCart")}
+                  </>
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="w-full gap-2 h-12 sm:h-11 text-base font-medium touch-manipulation border-border"
+                disabled={!canAddMore || isBuyNowPending}
+                onClick={handleBuyNow}
+              >
+                {isBuyNowPending ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    {t("buyNowLoading")}
+                  </>
+                ) : (
+                  <>
+                    <Zap className="h-5 w-5" />
+                    {t("buyNow")}
                   </>
                 )}
               </Button>
@@ -617,14 +662,29 @@ export function AddToCartSection({
                 </Button>
               </div>
             ) : (
-              <Button
-                className="h-10 gap-1.5 touch-manipulation"
-                disabled={!canAddMore}
-                onClick={handleAddToCart}
-              >
-                <ShoppingCart className="h-4 w-4" />
-                {t("addToCart")}
-              </Button>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="outline"
+                  className="h-10 gap-1 touch-manipulation px-2.5"
+                  disabled={!canAddMore || isBuyNowPending}
+                  onClick={handleBuyNow}
+                  aria-label={t("buyNow")}
+                >
+                  {isBuyNowPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Zap className="h-4 w-4" />
+                  )}
+                </Button>
+                <Button
+                  className="h-10 gap-1.5 touch-manipulation"
+                  disabled={!canAddMore || isBuyNowPending}
+                  onClick={handleAddToCart}
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  {t("addToCart")}
+                </Button>
+              </div>
             )}
           </div>
         </div>

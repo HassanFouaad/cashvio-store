@@ -104,6 +104,8 @@
       "noResultsOnPage": "لا توجد منتجات في هذه الصفحة. يرجى الانتقال إلى صفحة أخرى.",
       "backToFirstPage": "العودة إلى الصفحة الأولى",
       "addToCart": "أضف إلى السلة",
+      "buyNow": "اشتري الآن",
+      "buyNowLoading": "جاري الانتقال للدفع...",
       "selectVariant": "اختر النوع",
       "modifiers": {
         "optional": "اختياري",
