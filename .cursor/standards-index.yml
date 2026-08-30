@@ -18,43 +18,43 @@ global:
     description: "MANDATORY: Pre-flight rule lookup table and post-write verification checklist"
 
 routing-and-pages:
-  app-router-pages:
+  store-front-app-router-pages:
     description: Next.js App Router server components, force-dynamic rendering, parallel Promise.all fetches, loading skeletons
-  multi-tenant-resolution:
+  store-front-multi-tenant-resolution:
     description: Subdomain resolution, middleware routing, store context injection, and active storefront enforcement
-  product-details-pdp:
+  store-front-product-details-pdp:
     description: Product Details Page (PDP) layout variants, variant matrix, modifier groups, and Product JSON-LD schema
-  product-listing-plp:
+  store-front-product-listing-plp:
     description: Product Listing Pages (PLP), category filters, URL search synchronization, sorting, and pagination
-  order-tracking:
+  store-front-order-tracking:
     description: Guest order lookup by order number and phone, timeline status progression, and online payment status polling
 
 theme-and-ui:
-  theme-engine:
+  store-front-theme-engine:
     description: Dynamic theme palettes, CSS variable injection, font presets, structural attributes (data-sf-*), and PDP variants
-  rtl-styling:
+  store-front-rtl-styling:
     description: Tailwind CSS v4 logical properties, RTL icon rotation, bidirectional typography, and horizontal alignment rules
-  ui-components:
+  store-front-ui-components:
     description: CVA buttons, inputs, selects, bottom sheet modals (Vaul), skeleton loaders, and responsive mobile navigation
 
 api-and-state:
-  api-client:
+  store-front-api-client:
     description: ApiClient singleton methods, endpoint configuration, header injection, typed error handling, and envelope parsing
-  cart-management:
+  store-front-cart-management:
     description: Zustand cart store, visitor ID persistence, optimistic updates, modifier selections, debounced server sync, stock limits
-  checkout-flow:
+  store-front-checkout-flow:
     description: Guest checkout, fulfillment methods (DELIVERY, PICKUP, DINE_IN), address validation, order preview, coupon validation
-  payment-integrations:
+  store-front-payment-integrations:
     description: CASH, ONLINE (Paymob intention, redirect, polling, retry), and RECEIPT (presigned S3 upload) payment flows
-  form-validation:
+  store-front-form-validation:
     description: Checkout form validation, international phone validation, error state rendering, and field-level error messages
 
 growth-and-security:
-  seo-and-metadata:
+  store-front-seo-and-metadata:
     description: generateMetadata, OpenGraph, Twitter cards, hreflang alternates, JSON-LD schemas, and XSS-safe serialization
-  analytics-and-pixels:
+  store-front-analytics-and-pixels:
     description: Multi-adapter tracking (GTM, Meta Pixel, TikTok Pixel), ecommerce event triggers, and visitor tracking API
-  security-and-sanitization:
+  store-front-security-and-sanitization:
     description: DOMPurify HTML sanitization, JSON-LD XSS escaping, payment callback verification, and guest order lookup privacy
-  verify-code:
+  store-front-verify-code:
     description: Comprehensive anti-pattern audit protocol, layer-specific checks, 20-item anti-pattern matrix, and verification report

@@ -16,18 +16,18 @@
 
 | Task | Read these rules & skills |
 |---|---|
-| New page or layout | `multi-tenancy-and-routing.mdc`, `app-router-pages`, `seo-and-metadata` |
-| Theme, colors, styling | `theme-and-design-system.mdc`, `theme-engine`, `ui-components` |
-| Text, translation, RTL | `i18n-and-rtl.mdc`, `i18n-localization`, `rtl-styling` |
-| API call or data fetching | `api-and-data-fetching.mdc`, `api-client`, `multi-tenant-resolution` |
-| Cart, items, modifiers | `cart-management`, `api-client` |
-| Checkout & orders | `checkout-flow`, `payment-integrations`, `form-validation` |
-| Product page (PDP) | `product-details-pdp`, `theme-engine`, `seo-and-metadata` |
-| Product catalog / grid (PLP) | `product-listing-plp`, `ui-components` |
-| Order tracking | `order-tracking`, `payment-integrations` |
-| Analytics & tracking | `analytics-and-pixels` |
-| Security / HTML render | `security-and-sanitization` |
-| Verification / review | `verify-code` |
+| New page or layout | `multi-tenancy-and-routing.mdc`, `store-front-app-router-pages`, `store-front-seo-and-metadata` |
+| Theme, colors, styling | `theme-and-design-system.mdc`, `store-front-theme-engine`, `store-front-ui-components` |
+| Text, translation, RTL | `i18n-and-rtl.mdc`, `store-front-i18n-localization`, `store-front-rtl-styling` |
+| API call or data fetching | `api-and-data-fetching.mdc`, `store-front-api-client`, `store-front-multi-tenant-resolution` |
+| Cart, items, modifiers | `store-front-cart-management`, `store-front-api-client` |
+| Checkout & orders | `store-front-checkout-flow`, `store-front-payment-integrations`, `store-front-form-validation` |
+| Product page (PDP) | `store-front-product-details-pdp`, `store-front-theme-engine`, `store-front-seo-and-metadata` |
+| Product catalog / grid (PLP) | `store-front-product-listing-plp`, `store-front-ui-components` |
+| Order tracking | `store-front-order-tracking`, `store-front-payment-integrations` |
+| Analytics & tracking | `store-front-analytics-and-pixels` |
+| Security / HTML render | `store-front-security-and-sanitization` |
+| Verification / review | `store-front-verify-code` |
 
 ## Post-Write Self-Check Checklist
 

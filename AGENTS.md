@@ -17,7 +17,7 @@ Machine-readable catalog of every standard: `.cursor/standards-index.yml`.
 1. Match the task under "Task → standards" below.
 2. Read those files before editing anything.
 3. Follow every pattern they define.
-4. Self-check output against "Never ship", then `.agents/skills/verify-code/SKILL.md`.
+4. Self-check output against "Never ship", then `.agents/skills/store-front-verify-code/SKILL.md`.
 
 Full procedure: see `.cursor/rules/pre-flight.mdc`
 
@@ -144,34 +144,34 @@ src/
 ### Theme, Design System & Styling
 
 - Multi-tenant dynamic branding & semantic tokens: see `.cursor/rules/theme-and-design-system.mdc`
-- Theme engine, CSS variables, font presets, and `data-sf-*` attributes: see `.agents/skills/theme-engine/SKILL.md`
-- Tailwind v4 logical properties & RTL layout: see `.cursor/rules/i18n-and-rtl.mdc` and `.agents/skills/rtl-styling/SKILL.md`
-- CVA UI primitives (Button, Input, Select, Skeleton, Sheet): see `.agents/skills/ui-components/SKILL.md`
+- Theme engine, CSS variables, font presets, and `data-sf-*` attributes: see `.agents/skills/store-front-theme-engine/SKILL.md`
+- Tailwind v4 logical properties & RTL layout: see `.cursor/rules/i18n-and-rtl.mdc` and `.agents/skills/store-front-rtl-styling/SKILL.md`
+- CVA UI primitives (Button, Input, Select, Skeleton, Sheet): see `.agents/skills/store-front-ui-components/SKILL.md`
 
 ### Multi-Tenancy & App Router Pages
 
-- Subdomain routing, middleware, and store context: see `.cursor/rules/multi-tenancy-and-routing.mdc` and `.agents/skills/multi-tenant-resolution/SKILL.md`
-- Server component data fetching, `Promise.all`, and skeletons: see `.agents/skills/app-router-pages/SKILL.md`
-- Product Details Page (PDP) layout variants & modifier groups: see `.agents/skills/product-details-pdp/SKILL.md`
-- Product Listing Page (PLP), search, sorting, and category filters: see `.agents/skills/product-listing-plp/SKILL.md`
-- Guest order tracking & status progression timelines: see `.agents/skills/order-tracking/SKILL.md`
+- Subdomain routing, middleware, and store context: see `.cursor/rules/multi-tenancy-and-routing.mdc` and `.agents/skills/store-front-multi-tenant-resolution/SKILL.md`
+- Server component data fetching, `Promise.all`, and skeletons: see `.agents/skills/store-front-app-router-pages/SKILL.md`
+- Product Details Page (PDP) layout variants & modifier groups: see `.agents/skills/store-front-product-details-pdp/SKILL.md`
+- Product Listing Page (PLP), search, sorting, and category filters: see `.agents/skills/store-front-product-listing-plp/SKILL.md`
+- Guest order tracking & status progression timelines: see `.agents/skills/store-front-order-tracking/SKILL.md`
 
 ### Data Fetching, State & Cart
 
-- `ApiClient` methods, endpoints config, and typed `ApiException`: see `.cursor/rules/api-and-data-fetching.mdc` and `.agents/skills/api-client/SKILL.md`
-- Zustand cart store, visitor ID persistence, and debounced sync: see `.agents/skills/cart-management/SKILL.md`
-- Guest checkout, fulfillment methods, order preview, and receipt upload: see `.agents/skills/checkout-flow/SKILL.md`
-- Payment integrations (`CASH`, `ONLINE`, `RECEIPT`): see `.agents/skills/payment-integrations/SKILL.md`
-- Form validation and international phone handling: see `.agents/skills/form-validation/SKILL.md`
+- `ApiClient` methods, endpoints config, and typed `ApiException`: see `.cursor/rules/api-and-data-fetching.mdc` and `.agents/skills/store-front-api-client/SKILL.md`
+- Zustand cart store, visitor ID persistence, and debounced sync: see `.agents/skills/store-front-cart-management/SKILL.md`
+- Guest checkout, fulfillment methods, order preview, and receipt upload: see `.agents/skills/store-front-checkout-flow/SKILL.md`
+- Payment integrations (`CASH`, `ONLINE`, `RECEIPT`): see `.agents/skills/store-front-payment-integrations/SKILL.md`
+- Form validation and international phone handling: see `.agents/skills/store-front-form-validation/SKILL.md`
 
 ### Localization, SEO, Analytics & Security
 
-- `next-intl` bilingual key parity and formatters: see `.cursor/rules/i18n-and-rtl.mdc` and `.agents/skills/i18n-localization/SKILL.md`
-- Dynamic metadata, OpenGraph, hreflang, and JSON-LD schema: see `.agents/skills/seo-and-metadata/SKILL.md`
-- Analytics adapters (GTM, Meta Pixel, TikTok Pixel): see `.agents/skills/analytics-and-pixels/SKILL.md`
-- DOMPurify HTML sanitization and XSS security: see `.agents/skills/security-and-sanitization/SKILL.md`
+- `next-intl` bilingual key parity and formatters: see `.cursor/rules/i18n-and-rtl.mdc` and `.agents/skills/store-front-i18n-localization/SKILL.md`
+- Dynamic metadata, OpenGraph, hreflang, and JSON-LD schema: see `.agents/skills/store-front-seo-and-metadata/SKILL.md`
+- Analytics adapters (GTM, Meta Pixel, TikTok Pixel): see `.agents/skills/store-front-analytics-and-pixels/SKILL.md`
+- DOMPurify HTML sanitization and XSS security: see `.agents/skills/store-front-security-and-sanitization/SKILL.md`
 
 ### Code Review & Verification
 
 - Pre-flight rules and post-write checklist: see `.cursor/rules/pre-flight.mdc`
-- Comprehensive anti-pattern audit matrix & review protocol: see `.agents/skills/verify-code/SKILL.md`
+- Comprehensive anti-pattern audit matrix & review protocol: see `.agents/skills/store-front-verify-code/SKILL.md`
