@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+set -e
+sh "$(dirname "$0")/../scripts/husky-sync-map.sh" "yarn run index:code"

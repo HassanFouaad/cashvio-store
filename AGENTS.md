@@ -10,6 +10,15 @@ Standards live in exactly two places:
 Resolution order: read the skill; if no skill of that name exists, read the rule file.
 Machine-readable catalog of every standard: `.cursor/standards-index.yml`.
 
+## Repository map (`MAP.md`)
+
+When you need the **folder structure**, **where files live**, or a **searchable index** of this codebase — read **`MAP.md`** at the repo root. It is the canonical file tree. Prefer it over guessing paths or running broad filesystem searches.
+
+- **Read**: `MAP.md`
+- **Regenerate**: `yarn index:code` · **check sync**: `yarn index:code:check`
+- **After adding/moving/renaming files**: run `yarn index:code`
+- **Pre-commit**: Husky runs `yarn index:code` and auto-stages `MAP.md` when it changes (`.husky/pre-commit`, `scripts/husky-sync-map.sh`). Run `yarn prepare` after clone.
+
 ---
 
 ## Before writing code (MANDATORY)
@@ -90,12 +99,17 @@ Front-loaded because these are the easiest to violate by accident.
 - **Build**: `yarn build` (`next build`)
 - **Start Production**: `yarn start` (runs on port 4000)
 - **Lint**: `yarn lint` (`eslint .`)
+- **Index**: `yarn index:code` · check `yarn index:code:check` (`MAP.md` file tree)
+- **Hooks**: `yarn prepare` (Husky; pre-commit syncs `MAP.md`)
 
 ---
 
 ## Structure
 
+High-level layout below. **Full tree**: see **`MAP.md`**.
+
 ```
+MAP.md repository file tree (run `yarn index:code`)
 src/
 ├── app/                      # Next.js App Router (force-dynamic root layout)
 │   ├── layout.tsx            # Global multi-tenant shell, theme injector & providers
