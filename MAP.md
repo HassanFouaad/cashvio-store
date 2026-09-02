@@ -114,7 +114,6 @@
 │      └── 📂 types/
 │        ├── 📄 cart.types.ts
 │        ├── 📄 index.ts
-│      └── 📂 utils/
 │    └── 📂 categories/
 │      └── 📂 api/
 │        ├── 📄 get-categories.ts

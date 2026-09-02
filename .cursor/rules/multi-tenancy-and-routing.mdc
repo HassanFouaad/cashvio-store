@@ -15,7 +15,7 @@ HTTP Request (Host: storeA.cash-vio.com)
   │
   ├── 2. resolveRequestStore() (React.cache per-request deduplication):
   │      - Reads Host header
-  │      - Calls getStoreBySubdomain(subdomain) (cached 60s with unstable_cache)
+  │      - Calls getStoreBySubdomain(subdomain) (React.cache per-request deduplication only)
   │      - Invokes setApiStoreId(store.id) & setApiLocale(locale)
   │
   └── 3. API Requests via apiClient:

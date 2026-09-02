@@ -82,5 +82,5 @@ All API routes live under `/public/*` and must be referenced via the `endpoints`
   - Manages client-side cart items, optimistic mutations, and debounced sync with `/public/carts/items`.
   - Visitor ID (`getOrCreateVisitorId()`) acts as the guest cart session key.
 - **Server Caching**:
-  - `React.cache()` for per-request deduplication (`resolveRequestStore`, `resolveRequestTheme`).
-  - `unstable_cache(..., { revalidate: 60 })` for cross-request store lookup caching.
+  - `React.cache()` for per-request deduplication (`resolveRequestStore`, `resolveRequestTheme`, `getStoreBySubdomain`).
+  - Initial store lookup has no cross-request cache; backend cache invalidation owns freshness after subdomain renames.

@@ -259,6 +259,7 @@ export interface StoreFrontDto {
   id: string;
   storeId: string;
   tenantId: string;
+  subdomain: string;
   logoUrl: string | null;
   themeId: string | null;
   paletteId: string | null;
@@ -309,7 +310,6 @@ export interface CityDto {
 
 export interface PublicStoreDto {
   id: string;
-  subdomain: string;
   name: string;
   currency: string;
   addressLine1?: string | null;

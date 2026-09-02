@@ -74,7 +74,7 @@ Front-loaded because these are the easiest to violate by accident.
 | Booleans            | Verb prefix (`is`, `has`, `can`, `should`) | `isAvailable`, `hasModifiers`, `canSubmit`              |
 | DTOs & Interfaces   | PascalCase                                 | `PublicProductDto`, `CreateOrderRequest`                |
 | Enums & Values      | PascalCase enum, `UPPER_SNAKE_CASE` values | `PaymentMethod.ONLINE`, `Locale.ARABIC`                 |
-| Constants           | UPPER_SNAKE_CASE                           | `STORE_CACHE_REVALIDATE_SECONDS`                        |
+| Constants           | UPPER_SNAKE_CASE                           | `LANG_QUERY_PARAM`, `THEME_PREVIEW_HEADER`              |
 | i18n Keys           | camelCase nested under namespace           | `cart.summaryTitle`, `checkout.validation.nameRequired` |
 
 ---

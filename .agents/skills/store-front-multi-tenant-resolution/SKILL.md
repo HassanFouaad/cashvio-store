@@ -18,6 +18,7 @@ How to resolve tenant stores from the incoming HTTP request host, inject store c
 2. **Never query without `X-Store-Id`**: The backend public API requires `X-Store-Id`. `resolveRequestStore()` automatically calls `setApiStoreId(store.id)` and `setApiLocale(locale)` on the request context.
 3. **Inactive Gate**: If `store.storeFront.status !== StoreFrontStatus.ACTIVE`, render `StoreErrorComponent` with type `INACTIVE` in `layout.tsx` to halt rendering.
 4. **Subdomain Validation**: Subdomains in `RESERVED_SUBDOMAINS` (`www`, `api`, `admin`, `app`, etc.) or apex domains with non-root paths are blocked in `src/middleware.ts`.
+5. **No cross-request store cache**: `getStoreBySubdomain` uses `React.cache()` for per-request deduplication only. Every HTTP request performs a fresh backend lookup so subdomain renames resolve immediately; backend cache invalidation owns cross-request freshness.
 
 ## Step-by-Step Implementation Flow
 

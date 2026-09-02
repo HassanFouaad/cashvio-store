@@ -72,7 +72,7 @@ export function DeliveryMethodCard({ method, isSelected, onSelect }: DeliveryMet
 | DTOs (API responses) | `Public*Dto` or `*Response` | `PublicProductDto`, `OrderPreviewResponse` |
 | DTOs (API requests) | `*Request` or `Create*Request` | `CreateOrderRequest`, `TrackOrderRequest` |
 | Enums & Enum values | PascalCase enum, `UPPER_SNAKE_CASE` values | `PaymentMethod.ONLINE`, `Locale.ARABIC` |
-| Constants | `UPPER_SNAKE_CASE` | `STORE_CACHE_REVALIDATE_SECONDS`, `LANG_QUERY_PARAM` |
+| Constants | `UPPER_SNAKE_CASE` | `LANG_QUERY_PARAM`, `THEME_PREVIEW_HEADER` |
 
 ## Import Ordering
 
