@@ -57,14 +57,17 @@ export default async function SalePage({ searchParams }: SalePageProps) {
   const sortBy = resolvedSearchParams.sortBy || ProductSortBy.CREATED_AT;
   const inStock = resolvedSearchParams.inStock === "true";
 
-  const { products: productsData, error } = await getProductsWithErrorHandling({
-    hasDiscount: true,
-    page: requestedPage,
-    limit: 18,
-    name: search || undefined,
-    sortBy,
-    inStock: inStock || undefined,
-  });
+  const [{ products: productsData, error }, resolvedTheme] = await Promise.all([
+    getProductsWithErrorHandling({
+      hasDiscount: true,
+      page: requestedPage,
+      limit: 18,
+      name: search || undefined,
+      sortBy,
+      inStock: inStock || undefined,
+    }),
+    resolveRequestTheme(),
+  ]);
 
   validatePaginationAndRedirect(
     productsData?.pagination,
@@ -101,7 +104,6 @@ export default async function SalePage({ searchParams }: SalePageProps) {
     quantity: 1,
   }));
 
-  const resolvedTheme = await resolveRequestTheme();
   const personality = getThemePersonality(resolvedTheme.layout);
   const hasSaleProducts = productsData.pagination.totalItems > 0;
 

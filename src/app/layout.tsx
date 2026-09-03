@@ -5,7 +5,6 @@ import { VisitorTracker } from "@/components/visitor-tracker";
 import { WhatsAppFab } from "@/components/whatsapp-fab";
 import { appConfig, validateEnvironment } from "@/config/env.config";
 import { CartInitializer } from "@/features/cart/components";
-import { getProductsWithErrorHandling } from "@/features/products/api/get-products";
 import { StoreAnnouncementBar } from "@/features/store/components/store-announcement-bar";
 import { StoreErrorComponent } from "@/features/store/components/store-error";
 import { StoreFooter } from "@/features/store/components/store-footer";
@@ -174,30 +173,18 @@ export default async function RootLayout({
 
   const direction = getDirectionForLocale(locale);
 
-  // Resolve store and set API context (cached — shares result with generateMetadata)
-  const { store, subdomain: storeSubdomain } = await resolveRequestStore();
-
+  // Resolve store + theme in parallel (React.cache dedupes shared store lookup)
+  const [{ store, subdomain: storeSubdomain }, resolvedTheme] =
+    await Promise.all([resolveRequestStore(), resolveRequestTheme()]);
   // Gate deactivated storefronts: a store whose storefront is missing or
   // INACTIVE must not be browsable or accept orders (mirrors generateMetadata)
   const isStoreFrontActive =
     !!store?.storeFront && store.storeFront.status === StoreFrontStatus.ACTIVE;
 
-  // Theme engine + sale nav probe in parallel (see performance-review.md §2)
-  const [resolvedTheme, saleProbe] = await Promise.all([
-    resolveRequestTheme(),
-    store && isStoreFrontActive
-      ? getProductsWithErrorHandling({
-          hasDiscount: true,
-          page: 1,
-          limit: 1,
-        })
-      : Promise.resolve({ products: null, error: null }),
-  ]);
   const themeStyle = buildThemeStyle(resolvedTheme);
   const themeFonts = getThemeFontClassNames(resolvedTheme.fontPreset, locale);
 
-  const showSaleNav =
-    (saleProbe.products?.pagination.totalItems ?? 0) > 0;
+  const showSaleNav = store?.hasActiveDiscounts === true;
 
   // Get visitor ID from cookie (set by middleware)
   const cookieStore = await cookies();

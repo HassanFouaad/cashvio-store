@@ -312,6 +312,7 @@ export interface PublicStoreDto {
   id: string;
   name: string;
   currency: string;
+  hasActiveDiscounts?: boolean;
   addressLine1?: string | null;
   addressLine2?: string | null;
   postalCode?: string | null;
