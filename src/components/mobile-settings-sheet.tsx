@@ -5,15 +5,14 @@ import { Globe, Moon, Sun, X, ChevronRight } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useTheme } from 'next-themes';
 import { Drawer } from 'vaul';
+import { applyLocaleChange } from '@/lib/utils';
 import { Button } from './ui/button';
-import { Locale, CookieName, Theme } from '@/types/enums';
+import { Locale, Theme } from '@/types/enums';
 
 interface MobileSettingsSheetProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const COOKIE_MAX_AGE = 31536000; // 1 year
 
 /**
  * Mobile Settings Sheet for Store-front
@@ -41,9 +40,7 @@ export function MobileSettingsSheet({ isOpen, onClose }: MobileSettingsSheetProp
   const toggleLocale = () => {
     startTransition(() => {
       const newLocale = locale === Locale.ENGLISH ? Locale.ARABIC : Locale.ENGLISH;
-      // Store-specific locale cookie (no domain = current host only)
-      document.cookie = `${CookieName.LOCALE}=${newLocale}; path=/; max-age=${COOKIE_MAX_AGE}; samesite=lax`;
-      window.location.reload();
+      applyLocaleChange(newLocale);
     });
   };
 

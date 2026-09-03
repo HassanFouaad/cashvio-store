@@ -35,3 +35,6 @@ export {
 
 // "Powered by Cashvio" attribution URL
 export { buildPoweredByUrl } from './powered-by';
+
+// Locale cookie + navigation (language switcher)
+export { applyLocaleChange } from './locale.utils';

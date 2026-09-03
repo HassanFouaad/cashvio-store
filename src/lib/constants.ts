@@ -21,6 +21,9 @@ export const VISITOR_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 2;
 /** Store ID cookie lifetime: 1 year (seconds) */
 export const STORE_ID_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
+/** Locale cookie lifetime: 1 year (seconds) — store-scoped NEXT_LOCALE */
+export const LOCALE_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+
 /**
  * Query parameter that forces a language for the request (?lang=en|ar).
  * Powers hreflang alternates — crawlers and shared links can address each

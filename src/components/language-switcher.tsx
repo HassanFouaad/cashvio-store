@@ -3,10 +3,9 @@
 import { useTransition } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Globe } from 'lucide-react';
+import { applyLocaleChange } from '@/lib/utils';
 import { Button } from './ui/button';
-import { Locale, CookieName } from '@/types/enums';
-
-const COOKIE_MAX_AGE = 31536000; // 1 year
+import { Locale } from '@/types/enums';
 
 /**
  * Language Switcher for Store-front
@@ -20,18 +19,11 @@ export function LanguageSwitcher() {
   const locale = useLocale();
   const [isPending, startTransition] = useTransition();
 
-  const changeLanguage = (newLocale: Locale) => {
-    startTransition(() => {
-      // Set store-specific locale cookie (no domain = current host only)
-      document.cookie = `${CookieName.LOCALE}=${newLocale}; path=/; max-age=${COOKIE_MAX_AGE}; samesite=lax`;
-      // Reload to apply new locale
-      window.location.reload();
-    });
-  };
-
   const toggleLocale = () => {
     const newLocale = locale === Locale.ENGLISH ? Locale.ARABIC : Locale.ENGLISH;
-    changeLanguage(newLocale);
+    startTransition(() => {
+      applyLocaleChange(newLocale);
+    });
   };
 
   return (

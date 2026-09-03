@@ -6,6 +6,7 @@ import {
 import { getStoreSubdomain } from "./features/store/utils/store-resolver";
 import {
     LANG_QUERY_PARAM,
+    LOCALE_COOKIE_MAX_AGE_SECONDS,
     LOCALE_OVERRIDE_HEADER,
     THEME_PREVIEW_CUSTOM_PARAM,
     THEME_PREVIEW_FONT_PARAM,
@@ -38,7 +39,7 @@ import { CookieName, isValidLocale, Locale } from "./types/enums";
  * those use 'cv_' prefixed cookies with cross-domain settings.
  */
 
-const COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year
+const COOKIE_MAX_AGE = LOCALE_COOKIE_MAX_AGE_SECONDS;
 const DEFAULT_LOCALE = Locale.ARABIC;
 
 /**
