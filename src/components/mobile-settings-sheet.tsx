@@ -1,13 +1,14 @@
 'use client';
 
-import * as React from 'react';
-import { Globe, Moon, Sun, X, ChevronRight } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
+import { localeMetadata } from '@/lib/i18n/locale-metadata';
+import { applyLocaleChange, cn } from '@/lib/utils';
+import { getAllLocales, isValidLocale, Locale, Theme } from '@/types/enums';
+import { Check, Globe, Moon, Sun, X } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
+import * as React from 'react';
 import { Drawer } from 'vaul';
-import { applyLocaleChange } from '@/lib/utils';
 import { Button } from './ui/button';
-import { Locale, Theme } from '@/types/enums';
 
 interface MobileSettingsSheetProps {
   isOpen: boolean;
@@ -15,15 +16,16 @@ interface MobileSettingsSheetProps {
 }
 
 /**
- * Mobile Settings Sheet for Store-front
+ * Mobile settings sheet for the storefront.
  *
- * Manages store-specific locale and theme settings.
- * Locale cookie is intentionally store-specific (no cross-domain).
+ * Theme toggles inline; language uses an explicit picker (English / Arabic)
+ * like the tenant portal, not a blind toggle.
  */
 export function MobileSettingsSheet({ isOpen, onClose }: MobileSettingsSheetProps) {
   const t = useTranslations();
   const { theme, setTheme, resolvedTheme } = useTheme();
-  const locale = useLocale();
+  const localeString = useLocale();
+  const locale = isValidLocale(localeString) ? localeString : Locale.ARABIC;
   const [mounted, setMounted] = React.useState(false);
   const [isPending, startTransition] = React.useTransition();
 
@@ -31,31 +33,31 @@ export function MobileSettingsSheet({ isOpen, onClose }: MobileSettingsSheetProp
     setMounted(true);
   }, []);
 
-  const toggleTheme = () => {
+  const toggleTheme = (): void => {
     const currentTheme = resolvedTheme || theme;
     const newTheme = currentTheme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT;
     setTheme(newTheme);
   };
 
-  const toggleLocale = () => {
+  const handleLocaleSelect = (newLocale: Locale): void => {
+    if (newLocale === locale || isPending) {
+      return;
+    }
+
     startTransition(() => {
-      const newLocale = locale === Locale.ENGLISH ? Locale.ARABIC : Locale.ENGLISH;
       applyLocaleChange(newLocale);
     });
   };
 
   const isLight = mounted && (resolvedTheme === Theme.LIGHT || theme === Theme.LIGHT);
-  const currentLanguage = locale === Locale.ENGLISH ? t('language.english') : t('language.arabic');
 
   return (
     <Drawer.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40 z-50" />
         <Drawer.Content className="bg-background flex flex-col rounded-t-2xl fixed bottom-0 left-0 right-0 z-50 overflow-hidden">
-          {/* Drawer Handle */}
           <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-muted mt-4" />
-          
-          {/* Header */}
+
           <div className="flex items-center justify-between p-4 border-b">
             <Drawer.Title className="text-lg font-semibold">
               {t('common.settings')}
@@ -71,13 +73,12 @@ export function MobileSettingsSheet({ isOpen, onClose }: MobileSettingsSheetProp
             </Button>
           </div>
 
-          {/* Settings Content */}
           <div
             className="px-4 pt-2 divide-y divide-border"
             style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom, 0px))' }}
           >
-            {/* Theme Setting - Fully Clickable Row */}
             <button
+              type="button"
               onClick={toggleTheme}
               className="w-full flex items-center gap-4 py-3.5 active:opacity-60 transition-opacity text-start"
             >
@@ -98,25 +99,49 @@ export function MobileSettingsSheet({ isOpen, onClose }: MobileSettingsSheetProp
                   {mounted ? (isLight ? t('theme.light') : t('theme.dark')) : '...'}
                 </p>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 rtl:rotate-180" />
             </button>
 
-            {/* Language Setting - Fully Clickable Row */}
-            <button
-              onClick={toggleLocale}
-              disabled={isPending}
-              className="w-full flex items-center gap-4 py-3.5 active:opacity-60 transition-opacity text-start disabled:opacity-50"
-            >
-              <Globe
-                className="h-5 w-5 text-muted-foreground shrink-0"
-                strokeWidth={1.5}
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">{t('language.changeLanguage')}</p>
-                <p className="text-xs text-muted-foreground">{currentLanguage}</p>
+            <div className="py-3.5">
+              <div className="flex items-center gap-4 mb-3">
+                <Globe
+                  className="h-5 w-5 text-muted-foreground shrink-0"
+                  strokeWidth={1.5}
+                />
+                <p className="text-sm font-medium">{t('language.selectLanguage')}</p>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 rtl:rotate-180" />
-            </button>
+
+              <div className="grid grid-cols-1 gap-1 ps-9">
+                {getAllLocales().map((option) => {
+                  const isSelected = option === locale;
+                  const label =
+                    option === Locale.ENGLISH
+                      ? localeMetadata[Locale.ENGLISH].nativeName
+                      : localeMetadata[Locale.ARABIC].nativeName;
+
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => handleLocaleSelect(option)}
+                      disabled={isPending}
+                      aria-current={isSelected ? 'true' : undefined}
+                      className={cn(
+                        'flex items-center justify-between rounded-md px-3 py-2.5 text-sm text-start',
+                        'transition-colors active:opacity-60 disabled:opacity-50',
+                        isSelected
+                          ? 'bg-accent text-foreground font-medium'
+                          : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
+                      )}
+                    >
+                      <span>{label}</span>
+                      {isSelected ? (
+                        <Check className="h-4 w-4 shrink-0 text-primary" strokeWidth={2} />
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </Drawer.Content>
       </Drawer.Portal>

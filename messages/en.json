@@ -286,7 +286,9 @@
   "language": {
     "english": "English",
     "arabic": "Arabic",
-    "changeLanguage": "Change language"
+    "changeLanguage": "Change language",
+    "selectLanguage": "Select language",
+    "switchTo": "Switch to {{language}}"
   },
   "cart": {
     "pageTitle": "Shopping Cart",

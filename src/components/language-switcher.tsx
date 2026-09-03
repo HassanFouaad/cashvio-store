@@ -1,41 +1,51 @@
 'use client';
 
-import { useTransition } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import {
+    getAlternateLocale,
+    localeMetadata,
+} from '@/lib/i18n/locale-metadata';
+import { applyLocaleChange, cn } from '@/lib/utils';
+import { isValidLocale, Locale } from '@/types/enums';
 import { Globe } from 'lucide-react';
-import { applyLocaleChange } from '@/lib/utils';
-import { Button } from './ui/button';
-import { Locale } from '@/types/enums';
+import { useLocale, useTranslations } from 'next-intl';
+import { useTransition } from 'react';
 
 /**
- * Language Switcher for Store-front
+ * Language switcher for the storefront header.
  *
- * Sets store-specific locale cookie.
- * This is intentionally NOT a cross-domain cookie because
- * different stores may have different locale preferences.
+ * Matches the marketing site pattern: one click switches to the other
+ * language and the button label shows the target language native name
+ * (e.g. "العربية" while browsing in English).
  */
 export function LanguageSwitcher() {
   const t = useTranslations('language');
-  const locale = useLocale();
+  const localeString = useLocale();
+  const locale = isValidLocale(localeString) ? localeString : Locale.ARABIC;
   const [isPending, startTransition] = useTransition();
 
-  const toggleLocale = () => {
-    const newLocale = locale === Locale.ENGLISH ? Locale.ARABIC : Locale.ENGLISH;
+  const targetLocale = getAlternateLocale(locale);
+  const targetMeta = localeMetadata[targetLocale];
+
+  const handleSwitch = (): void => {
     startTransition(() => {
-      applyLocaleChange(newLocale);
+      applyLocaleChange(targetLocale);
     });
   };
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={toggleLocale}
+    <button
+      type="button"
+      onClick={handleSwitch}
       disabled={isPending}
-      title={t('changeLanguage')}
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-medium',
+        'text-muted-foreground transition-colors hover:bg-accent hover:text-foreground',
+        'disabled:pointer-events-none disabled:opacity-50',
+      )}
+      aria-label={t('switchTo', { language: targetMeta.nativeName })}
     >
-      <Globe className="h-5 w-5" />
-      <span className="sr-only">{t('changeLanguage')}</span>
-    </Button>
+      <Globe className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+      <span>{targetMeta.nativeName}</span>
+    </button>
   );
 }

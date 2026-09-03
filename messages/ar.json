@@ -286,7 +286,9 @@
   "language": {
     "english": "الإنجليزية",
     "arabic": "العربية",
-    "changeLanguage": "تغيير اللغة"
+    "changeLanguage": "تغيير اللغة",
+    "selectLanguage": "اختر اللغة",
+    "switchTo": "التبديل إلى {{language}}"
   },
   "cart": {
     "pageTitle": "سلة التسوق",
