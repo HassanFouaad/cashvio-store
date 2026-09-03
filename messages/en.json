@@ -96,10 +96,10 @@
       "title": "Special Products"
     },
     "sale": {
-      "pageTitle": "Sale",
-      "pageDescription": "Browse products on sale right now",
+      "pageTitle": "Sale & Offers",
+      "pageDescription": "Browse products currently on sale",
       "emptyTitle": "No sale items right now",
-      "emptyDescription": "Check back soon for new deals on your favorite products."
+      "emptyDescription": "Check back soon for new deals and promotions on your favorite products."
     },
     "products": {
       "title": "Latest Products",
