@@ -15,6 +15,7 @@ import { HeaderNavLinks } from "./header-nav-links";
 
 interface HeaderCenteredProps {
   store: PublicStoreDto;
+  showSaleNav?: boolean;
 }
 
 /**
@@ -22,7 +23,10 @@ interface HeaderCenteredProps {
  * with actions split to both sides, and the navigation gets its own
  * centered row on desktop.
  */
-export function HeaderCentered({ store }: HeaderCenteredProps) {
+export function HeaderCentered({
+  store,
+  showSaleNav = false,
+}: HeaderCenteredProps) {
   const t = useTranslations();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -72,7 +76,7 @@ export function HeaderCentered({ store }: HeaderCenteredProps) {
 
         {/* Centered navigation row - desktop only */}
         <nav className="hidden md:flex items-center justify-center gap-6 lg:gap-8 pb-3">
-          <HeaderNavLinks />
+          <HeaderNavLinks showSaleNav={showSaleNav} />
         </nav>
       </header>
 

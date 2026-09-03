@@ -3,6 +3,7 @@
  */
 
 import { PaginationMeta } from "@/lib/api/types";
+import { ProductDiscountDto } from "./product-discount.types";
 
 export enum ProductStatus {
   ACTIVE = 'ACTIVE',
@@ -21,6 +22,8 @@ export interface PublicProductVariantDto {
   sku: string;
   name: string;
   sellingPrice: number;
+  originalSellingPrice?: number | null;
+  discount?: ProductDiscountDto | null;
   availableQuantity: number;
   inStock: boolean;
   inventoryTrackable: boolean;
@@ -91,6 +94,7 @@ export interface ProductFilters {
   limit?: number;
   sortBy?: ProductSortBy;
   inStock?: boolean;
+  hasDiscount?: boolean;
 }
 
 /**

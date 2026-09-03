@@ -10,10 +10,12 @@ import { HeaderMinimal } from "./header/header-minimal";
 interface StoreHeaderProps {
   store: PublicStoreDto;
   variant?: StoreFrontThemeHeaderVariant;
+  showSaleNav?: boolean;
 }
 
 interface HeaderVariantProps {
   store: PublicStoreDto;
+  showSaleNav?: boolean;
 }
 
 /**
@@ -36,7 +38,8 @@ const HEADER_VARIANTS: Record<
 export function StoreHeader({
   store,
   variant = StoreFrontThemeHeaderVariant.CLASSIC,
+  showSaleNav = false,
 }: StoreHeaderProps) {
   const HeaderVariant = HEADER_VARIANTS[variant] ?? HeaderClassic;
-  return <HeaderVariant store={store} />;
+  return <HeaderVariant store={store} showSaleNav={showSaleNav} />;
 }

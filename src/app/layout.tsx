@@ -5,6 +5,7 @@ import { VisitorTracker } from "@/components/visitor-tracker";
 import { WhatsAppFab } from "@/components/whatsapp-fab";
 import { appConfig, validateEnvironment } from "@/config/env.config";
 import { CartInitializer } from "@/features/cart/components";
+import { getProductsWithErrorHandling } from "@/features/products/api/get-products";
 import { StoreAnnouncementBar } from "@/features/store/components/store-announcement-bar";
 import { StoreErrorComponent } from "@/features/store/components/store-error";
 import { StoreFooter } from "@/features/store/components/store-footer";
@@ -12,6 +13,10 @@ import { StoreHeader } from "@/features/store/components/store-header";
 import {
   StoreErrorType,
   StoreFrontStatus,
+  StoreFrontThemeButtonVariant,
+  StoreFrontThemeIconStyle,
+  StoreFrontThemeOrderPagesVariant,
+  StoreFrontThemeTypography,
 } from "@/features/store/types/store.types";
 import { AnalyticsProvider } from "@/lib/analytics";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
@@ -26,12 +31,6 @@ import { toAbsoluteUrl } from "@/lib/utils";
 import { StoreProvider } from "@/providers/store-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { VisitorProvider } from "@/providers/visitor-provider";
-import {
-  StoreFrontThemeButtonVariant,
-  StoreFrontThemeIconStyle,
-  StoreFrontThemeOrderPagesVariant,
-  StoreFrontThemeTypography,
-} from "@/features/store/types/store.types";
 import {
   getDirectionForLocale,
   isValidLocale,
@@ -183,11 +182,22 @@ export default async function RootLayout({
   const isStoreFrontActive =
     !!store?.storeFront && store.storeFront.status === StoreFrontStatus.ACTIVE;
 
-  // Theme engine: assigned theme + merchant customizations + validated
-  // preview overrides, emitted as CSS-variable overrides (null = default)
-  const resolvedTheme = await resolveRequestTheme();
+  // Theme engine + sale nav probe in parallel (see performance-review.md §2)
+  const [resolvedTheme, saleProbe] = await Promise.all([
+    resolveRequestTheme(),
+    store && isStoreFrontActive
+      ? getProductsWithErrorHandling({
+          hasDiscount: true,
+          page: 1,
+          limit: 1,
+        })
+      : Promise.resolve({ products: null, error: null }),
+  ]);
   const themeStyle = buildThemeStyle(resolvedTheme);
   const themeFonts = getThemeFontClassNames(resolvedTheme.fontPreset, locale);
+
+  const showSaleNav =
+    (saleProbe.products?.pagination.totalItems ?? 0) > 0;
 
   // Get visitor ID from cookie (set by middleware)
   const cookieStore = await cookies();
@@ -286,6 +296,7 @@ export default async function RootLayout({
                     <StoreHeader
                       store={store}
                       variant={resolvedTheme.layout.header}
+                      showSaleNav={showSaleNav}
                     />
                     <main className="flex-1">{children}</main>
                     {/* Footer - hidden on mobile, shown on desktop */}
@@ -298,6 +309,7 @@ export default async function RootLayout({
                       socialMedia={store.storeFront?.socialMedia}
                       storeName={store.name}
                       storeId={store.id}
+                      showSaleNav={showSaleNav}
                       footerText={
                         (locale === Locale.ARABIC
                           ? store.storeFront?.footerTextAr ||

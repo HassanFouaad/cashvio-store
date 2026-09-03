@@ -15,13 +15,17 @@ import { HeaderNavLinks } from "./header-nav-links";
 
 interface HeaderMinimalProps {
   store: PublicStoreDto;
+  showSaleNav?: boolean;
 }
 
 /**
  * MINIMAL header — slim editorial bar: compact brand, uppercase
  * micro-navigation, tight actions. No blur, plain hairline border.
  */
-export function HeaderMinimal({ store }: HeaderMinimalProps) {
+export function HeaderMinimal({
+  store,
+  showSaleNav = false,
+}: HeaderMinimalProps) {
   const t = useTranslations();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -33,7 +37,7 @@ export function HeaderMinimal({ store }: HeaderMinimalProps) {
 
           {/* Editorial micro-navigation - desktop only */}
           <nav className="hidden md:flex items-center gap-5 lg:gap-7">
-            <HeaderNavLinks isUppercase />
+            <HeaderNavLinks isUppercase showSaleNav={showSaleNav} />
           </nav>
 
           {/* Actions */}

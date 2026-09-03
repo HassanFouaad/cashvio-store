@@ -16,12 +16,12 @@ import { MobileFooterSheet } from './mobile-footer-sheet';
 
 interface NavItem {
   href: string;
-  labelKey: 'home' | 'collections' | 'products' | 'cart';
+  labelKey: 'home' | 'collections' | 'products' | 'sale' | 'cart';
   icon: React.ComponentType<{ className?: string }>;
   matchPaths?: string[];
 }
 
-const navItems: NavItem[] = [
+const baseNavItems: NavItem[] = [
   {
     href: '/',
     labelKey: 'home',
@@ -35,7 +35,6 @@ const navItems: NavItem[] = [
     matchPaths: ['/categories'],
   },
   {
-    // Full catalog + search — must be reachable from primary mobile nav
     href: '/products',
     labelKey: 'products',
     icon: Search,
@@ -49,10 +48,18 @@ const navItems: NavItem[] = [
   },
 ];
 
+const saleNavItem: NavItem = {
+  href: '/sale',
+  labelKey: 'sale',
+  icon: Grid3X3,
+  matchPaths: ['/sale'],
+};
+
 interface MobileBottomNavProps {
   socialMedia?: StoreFrontSocialMediaDto | null;
   storeName?: string;
   storeId: string;
+  showSaleNav?: boolean;
   /** Tenant-configured footer text (already locale-resolved) */
   footerText?: string;
   /** Theme structural variant (LABELED bar or floating icon pill) */
@@ -63,6 +70,7 @@ export function MobileBottomNav({
   socialMedia,
   storeName,
   storeId,
+  showSaleNav = false,
   footerText,
   variant = StoreFrontThemeMobileNavVariant.LABELED,
 }: MobileBottomNavProps) {
@@ -71,6 +79,15 @@ export function MobileBottomNav({
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isFooterOpen, setIsFooterOpen] = useState(false);
   const isIconPill = variant === StoreFrontThemeMobileNavVariant.ICON_PILL;
+  const navItems = showSaleNav
+    ? [
+        baseNavItems[0],
+        baseNavItems[1],
+        saleNavItem,
+        baseNavItems[2],
+        baseNavItems[3],
+      ]
+    : baseNavItems;
 
   // Get cart item count from Zustand store
   const cartItemCount = useCartItemCount();

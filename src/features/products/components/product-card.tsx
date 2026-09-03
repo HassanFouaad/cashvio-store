@@ -1,10 +1,14 @@
+import { DiscountBadge } from "@/features/products/components/discount-badge";
+import { PriceDisplay } from "@/features/products/components/price-display";
 import { ProductCardMinimal } from "@/features/products/components/product-card-minimal";
 import { ProductCardOverlay } from "@/features/products/components/product-card-overlay";
 import { ProductCardTile } from "@/features/products/components/product-card-tile";
 import { StarRatingDisplay } from "@/features/products/components/star-rating";
 import { PublicProductDto } from "@/features/products/types/product.types";
 import {
-  formatProductPrice,
+  CatalogueDiscountUtils,
+} from "@/features/products/utils/catalogue-discount.utils";
+import {
   getPrimaryImage,
   isProductInStock,
   ProductCardTranslations,
@@ -70,7 +74,7 @@ export function ProductCard({
   // STANDARD — the storefront's original card
   const primaryImage = getPrimaryImage(product);
   const inStock = isProductInStock(product);
-  const priceDisplay = formatProductPrice(product, currency, locale);
+  const discountBadge = CatalogueDiscountUtils.pickProductDiscountBadge(product);
   const reviewCount = product.reviewCount ?? 0;
   const hasRating = reviewCount > 0 && product.averageRating != null;
 
@@ -91,6 +95,18 @@ export function ProductCard({
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground">
             <span className="text-sm">{translations.noImageAvailable}</span>
+          </div>
+        )}
+
+        {discountBadge && (
+          <div className="absolute top-2 start-2 z-10">
+            <DiscountBadge
+              discount={discountBadge.discount}
+              savingsAmount={discountBadge.savingsAmount}
+              isPartialProduct={discountBadge.isPartialProduct}
+              currency={currency}
+              locale={locale}
+            />
           </div>
         )}
 
@@ -122,11 +138,12 @@ export function ProductCard({
           </div>
         )}
 
-        {priceDisplay && (
-          <p className="sf-price text-sm font-semibold tabular-nums text-foreground">
-            {priceDisplay}
-          </p>
-        )}
+        <PriceDisplay
+          product={product}
+          currency={currency}
+          locale={locale}
+          effectiveClassName="text-sm font-semibold"
+        />
       </div>
     </Link>
   );

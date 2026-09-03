@@ -15,6 +15,7 @@ import { HeaderNavLinks } from "./header-nav-links";
 
 interface HeaderClassicProps {
   store: PublicStoreDto;
+  showSaleNav?: boolean;
 }
 
 /**
@@ -22,7 +23,10 @@ interface HeaderClassicProps {
  * end. This is the storefront's original header, byte-compatible for
  * stores without a theme.
  */
-export function HeaderClassic({ store }: HeaderClassicProps) {
+export function HeaderClassic({
+  store,
+  showSaleNav = false,
+}: HeaderClassicProps) {
   const t = useTranslations();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -34,7 +38,7 @@ export function HeaderClassic({ store }: HeaderClassicProps) {
 
           {/* Navigation - Desktop only */}
           <nav className="hidden md:flex items-center gap-4 lg:gap-6">
-            <HeaderNavLinks />
+            <HeaderNavLinks showSaleNav={showSaleNav} />
           </nav>
 
           {/* Actions */}

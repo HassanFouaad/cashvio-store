@@ -1,4 +1,5 @@
 import { CartList } from "@/features/cart/components/cart-list";
+import { CartPreviewProvider } from "@/features/cart/components/cart-preview-provider";
 import { CartSummary } from "@/features/cart/components/cart-summary";
 import { TrackViewCartEvent } from "@/lib/analytics/track-cart-events";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
@@ -57,23 +58,19 @@ export default async function CartPage() {
       {/* Cart Content */}
       <section className="w-full max-w-full py-6 sm:py-8 md:py-12">
         <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-            {/* Cart Items - Left Column */}
-            <div className="lg:col-span-2">
-              <CartList currency={store.currency} locale={locale} />
-            </div>
+          <CartPreviewProvider storeId={store.id}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+              <div className="lg:col-span-2">
+                <CartList currency={store.currency} locale={locale} />
+              </div>
 
-            {/* Cart Summary - Right Column */}
-            <div className="lg:col-span-1">
-              <div className="lg:sticky lg:top-24">
-                <CartSummary
-                  storeId={store.id}
-                  currency={store.currency}
-                  locale={locale}
-                />
+              <div className="lg:col-span-1">
+                <div className="lg:sticky lg:top-24">
+                  <CartSummary currency={store.currency} locale={locale} />
+                </div>
               </div>
             </div>
-          </div>
+          </CartPreviewProvider>
         </div>
       </section>
     </div>

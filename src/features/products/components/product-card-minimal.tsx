@@ -1,7 +1,9 @@
+import { DiscountBadge } from "@/features/products/components/discount-badge";
+import { PriceDisplay } from "@/features/products/components/price-display";
 import { StarRatingDisplay } from "@/features/products/components/star-rating";
 import { PublicProductDto } from "@/features/products/types/product.types";
+import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
 import {
-  formatProductPrice,
   getPrimaryImage,
   isProductInStock,
   ProductCardTranslations,
@@ -28,7 +30,7 @@ export function ProductCardMinimal({
 }: ProductCardMinimalProps) {
   const primaryImage = getPrimaryImage(product);
   const inStock = isProductInStock(product);
-  const priceDisplay = formatProductPrice(product, currency, locale);
+  const discountBadge = CatalogueDiscountUtils.pickProductDiscountBadge(product);
   const reviewCount = product.reviewCount ?? 0;
   const hasRating = reviewCount > 0 && product.averageRating != null;
 
@@ -49,6 +51,18 @@ export function ProductCardMinimal({
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground">
             <span className="text-sm">{translations.noImageAvailable}</span>
+          </div>
+        )}
+
+        {discountBadge && (
+          <div className="absolute top-2 start-2 z-10">
+            <DiscountBadge
+              discount={discountBadge.discount}
+              savingsAmount={discountBadge.savingsAmount}
+              isPartialProduct={discountBadge.isPartialProduct}
+              currency={currency}
+              locale={locale}
+            />
           </div>
         )}
 
@@ -77,11 +91,13 @@ export function ProductCardMinimal({
             </span>
           </div>
         )}
-        {priceDisplay && (
-          <p className="sf-price text-sm text-muted-foreground tabular-nums">
-            {priceDisplay}
-          </p>
-        )}
+        <PriceDisplay
+          product={product}
+          currency={currency}
+          locale={locale}
+          effectiveClassName="text-sm"
+          originalClassName="text-xs"
+        />
       </div>
     </Link>
   );

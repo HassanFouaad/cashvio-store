@@ -212,6 +212,9 @@ function buildSitemapXml(
   // Categories listing
   urls.push({ loc: `${baseUrl}/categories`, changefreq: "daily", priority: "0.8" });
 
+  // Sale listing (catalogue discounts)
+  urls.push({ loc: `${baseUrl}/sale`, changefreq: "daily", priority: "0.8" });
+
   // Individual products — lastmod only when the API provides it
   for (const product of products) {
     urls.push({

@@ -129,6 +129,9 @@ export function useCartOrderPreview(
         setPreview(null);
         setPreviewError(null);
         setIsPreviewLoading(false);
+      } else if (pendingChangesCount > 0) {
+        setPreview(null);
+        setIsPreviewLoading(true);
       }
       return;
     }

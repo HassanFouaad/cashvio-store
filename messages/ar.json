@@ -19,6 +19,7 @@
     "home": "الرئيسية",
     "collections": "المجموعات",
     "products": "المنتجات",
+    "sale": "تخفيضات",
     "cart": "السلة",
     "menu": "القائمة",
     "settings": "الإعدادات",
@@ -94,6 +95,12 @@
     "specialProducts": {
       "title": "المنتجات المميزة"
     },
+    "sale": {
+      "pageTitle": "تخفيضات",
+      "pageDescription": "تصفح المنتجات المخفضة الآن",
+      "emptyTitle": "لا توجد تخفيضات حالياً",
+      "emptyDescription": "ارجع قريباً لمتابعة العروض على منتجاتك المفضلة."
+    },
     "products": {
       "title": "أحدث المنتجات",
       "viewAll": "عرض الكل",
@@ -165,7 +172,15 @@
       "outOf": "من",
       "review": "تقييم",
       "reviewsCount": "تقييمات",
-      "reviewDate": "التاريخ"
+      "reviewDate": "التاريخ",
+      "discount": {
+        "percentOff": "خصم {percent}%",
+        "fixedOff": "خصم {amount}",
+        "upToPercentOff": "خصم حتى {percent}%",
+        "upToFixedOff": "خصم حتى {amount}",
+        "saveAmount": "وفر {amount}",
+        "endsOn": "ينتهي العرض {date}"
+      }
     }
   },
   "errors": {
@@ -233,6 +248,12 @@
       "titleWithStore": "المنتجات - {storeName}",
       "descriptionWithStore": "تصفح جميع المنتجات في {storeName}"
     },
+    "sale": {
+      "title": "تخفيضات",
+      "description": "منتجات مخفضة",
+      "titleWithStore": "تخفيضات - {storeName}",
+      "descriptionWithStore": "تصفح المنتجات المخفضة في {storeName}"
+    },
     "productDetail": {
       "title": "المنتج غير موجود",
       "titleWithStore": "{productName} - {storeName}",
@@ -286,6 +307,7 @@
     "calculatedAtCheckout": "يحسب عند الدفع",
     "tax": "الضريبة",
     "discount": "خصم",
+    "catalogueDiscount": "توفير التخفيضات",
     "serviceFees": "رسوم الخدمة",
     "deliveryFees": "رسوم التوصيل",
     "free": "مجاني",

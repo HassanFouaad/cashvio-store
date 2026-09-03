@@ -8,12 +8,15 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useMemo } from "react";
 import { ApiCartItem } from "../api/cart.types";
+import { OrderPreviewItem } from "@/features/checkout/types/checkout.types";
+import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
 import { getLineUnitPrice, useCartStore, useIsItemPending } from "../store";
 
 interface CartItemProps {
   item: ApiCartItem;
   currency: string;
   locale: string;
+  previewItem?: OrderPreviewItem;
 }
 
 /**
@@ -21,13 +24,43 @@ interface CartItemProps {
  * Displays product info, selected add-ons, quantity controls, and remove
  * button. Shows warnings when quantity exceeds available stock.
  */
-export function CartItem({ item, currency, locale }: CartItemProps) {
+export function CartItem({
+  item,
+  currency,
+  locale,
+  previewItem,
+}: CartItemProps) {
   const t = useTranslations("cart");
   const { updateQuantity, removeItem } = useCartStore();
   const isPending = useIsItemPending(item);
   const { variant } = item;
   const modifiers = item.modifiers ?? [];
-  const unitPrice = getLineUnitPrice(item);
+  const modifierTotal = modifiers.reduce(
+    (sum, modifier) => sum + modifier.priceDelta,
+    0,
+  );
+  const localUnitPrice = getLineUnitPrice(item);
+  const hasCatalogueDiscount = CatalogueDiscountUtils.hasVariantDiscount(variant);
+  const previewQuantity = previewItem?.quantity ?? 0;
+  const isPreviewSynced =
+    previewItem != null &&
+    previewQuantity > 0 &&
+    previewQuantity === item.quantity;
+  const previewHasDiscount =
+    isPreviewSynced && previewItem.lineDiscount > 0;
+  const displayUnitPrice =
+    isPreviewSynced
+      ? (previewItem.lineSubtotal - previewItem.lineDiscount) / previewQuantity
+      : localUnitPrice;
+  const listUnitPrice =
+    isPreviewSynced
+      ? previewItem.lineSubtotal / previewQuantity
+      : variant.originalSellingPrice != null
+        ? variant.originalSellingPrice + modifierTotal
+        : null;
+  const hasDiscount = previewHasDiscount || hasCatalogueDiscount;
+  const displayLineTotal =
+    isPreviewSynced ? previewItem.lineTotal : item.lineTotal;
 
   // Non-trackable inventory products are always considered unlimited stock
   const isUnlimitedStock = variant.inventoryTrackable === false;
@@ -153,9 +186,16 @@ export function CartItem({ item, currency, locale }: CartItemProps) {
             </p>
           ))}
 
-          <p className="text-sm font-semibold">
-            {formatCurrency(unitPrice, currency, locale)}
-          </p>
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <p className="text-sm font-semibold sf-price tabular-nums">
+              {formatCurrency(displayUnitPrice, currency, locale)}
+            </p>
+            {hasDiscount && listUnitPrice != null && listUnitPrice > displayUnitPrice && (
+              <p className="text-xs text-muted-foreground sf-price line-through tabular-nums">
+                {formatCurrency(listUnitPrice, currency, locale)}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Stock Warning */}
@@ -254,8 +294,8 @@ export function CartItem({ item, currency, locale }: CartItemProps) {
               )}
               {formatCurrency(
                 quantityExceedsStock || quantityExceedsMaxPerOrder
-                  ? validQuantity * unitPrice
-                  : item.lineTotal,
+                  ? validQuantity * displayUnitPrice
+                  : displayLineTotal,
                 currency,
                 locale,
               )}

@@ -98,8 +98,26 @@ export interface OrderPreviewCouponDiscount {
 }
 
 /**
+ * Order preview catalogue discount snapshot
+ */
+export interface OrderPreviewCatalogueDiscount {
+  discountId: string;
+  name: string;
+  type: string;
+  value: number;
+  unitDiscount: number;
+}
+
+/**
  * Order preview item response
  */
+export interface OrderPreviewItemModifier {
+  modifierId: string;
+  groupName: string;
+  name: string;
+  priceDelta: number;
+}
+
 export interface OrderPreviewItem {
   variantId: string;
   quantity: number;
@@ -112,6 +130,8 @@ export interface OrderPreviewItem {
   variantName: string;
   productSku: string;
   variantAttributes?: Record<string, unknown>;
+  modifiers?: OrderPreviewItemModifier[];
+  catalogueDiscount?: OrderPreviewCatalogueDiscount;
 }
 
 /**
@@ -123,6 +143,7 @@ export interface OrderPreviewResponse {
   fulfillmentMethod: FulfillmentMethod;
   subtotal: number;
   totalDiscount: number;
+  catalogueDiscountTotal: number;
   totalTax: number;
   serviceFees: number;
   deliveryFees: number;

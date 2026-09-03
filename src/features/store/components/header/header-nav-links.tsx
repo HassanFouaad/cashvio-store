@@ -6,13 +6,17 @@ import Link from "next/link";
 interface HeaderNavLinksProps {
   /** Editorial uppercase micro-labels (MINIMAL header) */
   isUppercase?: boolean;
+  showSaleNav?: boolean;
 }
 
 /**
  * Home / Collections / Products navigation shared by header variants
  * (desktop only — mobile navigation lives in the bottom bar).
  */
-export function HeaderNavLinks({ isUppercase }: HeaderNavLinksProps) {
+export function HeaderNavLinks({
+  isUppercase,
+  showSaleNav = false,
+}: HeaderNavLinksProps) {
   const t = useTranslations();
   const linkClass = isUppercase
     ? "text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:text-primary whitespace-nowrap"
@@ -29,6 +33,11 @@ export function HeaderNavLinks({ isUppercase }: HeaderNavLinksProps) {
       <Link href="/products" className={linkClass}>
         {t("common.products")}
       </Link>
+      {showSaleNav && (
+        <Link href="/sale" className={linkClass}>
+          {t("common.sale")}
+        </Link>
+      )}
     </>
   );
 }

@@ -14,6 +14,7 @@ import {
   PublicProductDto,
   PublicProductVariantDto,
 } from "@/features/products/types/product.types";
+import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
 import { formatCurrency } from "@/lib/utils/formatters";
 import {
   AlertCircle,
@@ -301,13 +302,22 @@ export function AddToCartSection({
     removeItem(selectedVariantLine.id);
   }, [selectedVariantLine, removeItem]);
 
+  const selectedHasDiscount =
+    selectedVariant != null &&
+    CatalogueDiscountUtils.hasVariantDiscount(selectedVariant);
+  const selectedOriginalUnitPrice = selectedVariant?.originalSellingPrice ?? null;
+  const selectedSavingPerUnit =
+    selectedOriginalUnitPrice != null && selectedVariant
+      ? Math.max(0, selectedOriginalUnitPrice - selectedVariant.sellingPrice)
+      : 0;
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Dynamic Price & Stock — updates with variant and add-on selection */}
       {selectedVariant && (
         <div className="space-y-3">
           {/* Price */}
-          <div className="flex items-baseline gap-3">
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <span className="sf-price text-2xl sm:text-3xl font-semibold tabular-nums">
               {formatCurrency(
                 selectedVariant.sellingPrice + modifiersTotal,
@@ -315,6 +325,26 @@ export function AddToCartSection({
                 locale,
               )}
             </span>
+            {selectedHasDiscount && selectedOriginalUnitPrice != null && (
+              <span className="sf-price text-sm text-muted-foreground line-through tabular-nums">
+                {formatCurrency(
+                  selectedOriginalUnitPrice + modifiersTotal,
+                  currency,
+                  locale,
+                )}
+              </span>
+            )}
+            {selectedHasDiscount && selectedSavingPerUnit > 0 && (
+              <span className="text-sm font-medium text-success tabular-nums">
+                {t("discount.saveAmount", {
+                  amount: formatCurrency(
+                    selectedSavingPerUnit,
+                    currency,
+                    locale,
+                  ),
+                })}
+              </span>
+            )}
             {hasModifiers && modifiersTotal > 0 && (
               <span className="text-sm text-muted-foreground">
                 {tModifiers("includesAddOns", {
@@ -328,6 +358,16 @@ export function AddToCartSection({
               </span>
             )}
           </div>
+
+          {selectedVariant.discount?.endsAt && (
+            <p className="text-sm text-muted-foreground">
+              {t("discount.endsOn", {
+                date: new Date(selectedVariant.discount.endsAt).toLocaleDateString(
+                  locale,
+                ),
+              })}
+            </p>
+          )}
 
           {/* Stock Status */}
           <div className="flex items-center gap-2">
@@ -394,7 +434,23 @@ export function AddToCartSection({
                   <div
                     className={`text-xs ${isOos ? "line-through text-muted-foreground/70" : "text-muted-foreground"}`}
                   >
-                    {formatCurrency(variant.sellingPrice, currency, locale)}
+                    {variant.originalSellingPrice != null &&
+                    CatalogueDiscountUtils.hasVariantDiscount(variant) ? (
+                      <span className="inline-flex flex-col items-start gap-0.5">
+                        <span className="sf-price tabular-nums">
+                          {formatCurrency(variant.sellingPrice, currency, locale)}
+                        </span>
+                        <span className="sf-price line-through tabular-nums">
+                          {formatCurrency(
+                            variant.originalSellingPrice,
+                            currency,
+                            locale,
+                          )}
+                        </span>
+                      </span>
+                    ) : (
+                      formatCurrency(variant.sellingPrice, currency, locale)
+                    )}
                   </div>
                   {isOos && (
                     <span className="mt-0.5 inline-block text-xs font-semibold uppercase tracking-[0.08em] text-destructive">

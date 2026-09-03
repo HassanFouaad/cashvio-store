@@ -1,6 +1,8 @@
+import { DiscountBadge } from "@/features/products/components/discount-badge";
+import { PriceDisplay } from "@/features/products/components/price-display";
 import { PublicProductDto } from "@/features/products/types/product.types";
+import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
 import {
-  formatProductPrice,
   getPrimaryImage,
   isProductInStock,
   ProductCardTranslations,
@@ -28,7 +30,7 @@ export function ProductCardTile({
 }: ProductCardTileProps) {
   const primaryImage = getPrimaryImage(product);
   const inStock = isProductInStock(product);
-  const priceDisplay = formatProductPrice(product, currency, locale);
+  const discountBadge = CatalogueDiscountUtils.pickProductDiscountBadge(product);
 
   return (
     <Link
@@ -51,6 +53,18 @@ export function ProductCardTile({
             </div>
           )}
 
+          {discountBadge && (
+            <div className="absolute top-2 start-2 z-10">
+              <DiscountBadge
+                discount={discountBadge.discount}
+                savingsAmount={discountBadge.savingsAmount}
+                isPartialProduct={discountBadge.isPartialProduct}
+                currency={currency}
+                locale={locale}
+              />
+            </div>
+          )}
+
           {/* Out of stock badge */}
           {!inStock && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-[1px]">
@@ -62,11 +76,12 @@ export function ProductCardTile({
         </div>
 
         <div className="p-2 sm:p-2.5 space-y-0.5">
-          {priceDisplay && (
-            <p className="sf-price text-sm font-semibold tabular-nums text-foreground">
-              {priceDisplay}
-            </p>
-          )}
+          <PriceDisplay
+            product={product}
+            currency={currency}
+            locale={locale}
+            effectiveClassName="text-sm font-semibold"
+          />
           <h3 className="line-clamp-2 text-xs text-muted-foreground leading-snug">
             {product.name}
           </h3>

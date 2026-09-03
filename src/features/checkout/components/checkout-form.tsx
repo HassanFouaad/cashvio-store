@@ -46,6 +46,7 @@ import {
     normalizeCouponCode,
     persistPendingCoupon,
 } from "@/lib/coupon-deep-link";
+import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { getOrCreateVisitorId } from "@/lib/visitor/visitor-id";
 import {
@@ -722,6 +723,15 @@ export function CheckoutForm({
   const isBelowMinimumOrder = useMemo(() => {
     return preview?.isBelowMinimumOrder === true;
   }, [preview?.isBelowMinimumOrder]);
+
+  const {
+    catalogueDiscountTotal,
+    additionalDiscountTotal,
+    catalogueDiscountLabel,
+  } = CatalogueDiscountUtils.getPreviewDiscountBreakdown(
+    preview,
+    tCart("catalogueDiscount"),
+  );
 
   // Whether the store has any active storefront payment methods
   const hasPaymentMethods = sortedPaymentMethods.length > 0;
@@ -1554,8 +1564,38 @@ export function CheckoutForm({
                       </span>
                     </div>
 
-                    {/* Discount */}
-                    {preview.totalDiscount > 0 && (
+                    {preview.totalTax > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {tCart("tax")}
+                        </span>
+                        <span className="font-medium">
+                          {formatCurrency(
+                            preview.totalTax,
+                            currency,
+                            locale,
+                          )}
+                        </span>
+                      </div>
+                    )}
+
+                    {catalogueDiscountTotal > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {catalogueDiscountLabel}
+                        </span>
+                        <span className="font-medium text-success">
+                          -
+                          {formatCurrency(
+                            catalogueDiscountTotal,
+                            currency,
+                            locale,
+                          )}
+                        </span>
+                      </div>
+                    )}
+
+                    {additionalDiscountTotal > 0 && (
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">
                           {t("discount")}
@@ -1563,7 +1603,7 @@ export function CheckoutForm({
                         <span className="font-medium text-success">
                           -
                           {formatCurrency(
-                            preview.totalDiscount,
+                            additionalDiscountTotal,
                             currency,
                             locale,
                           )}
@@ -1635,18 +1675,6 @@ export function CheckoutForm({
                           })}
                         </p>
                       )}
-
-                    {/* Tax */}
-                    {preview.totalTax > 0 && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          {tCart("tax")}
-                        </span>
-                        <span className="font-medium">
-                          {formatCurrency(preview.totalTax, currency, locale)}
-                        </span>
-                      </div>
-                    )}
 
                     {/* Online payment fee (surcharge) or discount */}
                     {(preview.paymentFees ?? 0) > 0 && (

@@ -27,6 +27,9 @@ export const getProducts = cache(
         ...(filters.inStock !== undefined && {
           inStock: filters.inStock.toString(),
         }),
+        ...(filters.hasDiscount !== undefined && {
+          hasDiscount: filters.hasDiscount.toString(),
+        }),
       });
 
       const response = await apiClient.getPaginated<PublicProductDto>(

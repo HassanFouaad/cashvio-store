@@ -3,12 +3,13 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FulfillmentMethod } from "@/features/checkout/types/checkout.types";
+import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useMemo } from "react";
-import { useCartOrderPreview } from "../hooks";
+import { useSharedCartPreview } from "./cart-preview-provider";
 import {
   computeCartValidation,
   useCanCheckout,
@@ -18,7 +19,6 @@ import {
 } from "../store";
 
 interface CartSummaryProps {
-  storeId: string;
   currency: string;
   locale: string;
 }
@@ -33,7 +33,7 @@ const METHOD_LABEL_KEY: Record<FulfillmentMethod, string> = {
  * Cart order summary — totals come from public order preview (same source
  * as checkout / POS ticket), not from local cart math.
  */
-export function CartSummary({ storeId, currency, locale }: CartSummaryProps) {
+export function CartSummary({ currency, locale }: CartSummaryProps) {
   const t = useTranslations("cart");
   const tCheckout = useTranslations("checkout");
   const { cart, isInitialized, fetchCart } = useCartStore();
@@ -48,7 +48,7 @@ export function CartSummary({ storeId, currency, locale }: CartSummaryProps) {
     fulfillmentMethod,
     availableMethods,
     setFulfillmentMethod,
-  } = useCartOrderPreview(storeId);
+  } = useSharedCartPreview();
 
   const validation = useMemo(() => computeCartValidation(cart), [cart]);
 
@@ -75,6 +75,14 @@ export function CartSummary({ storeId, currency, locale }: CartSummaryProps) {
   const merchandiseTotal = preview
     ? preview.subtotal - preview.totalDiscount + preview.totalTax
     : 0;
+  const {
+    catalogueDiscountTotal,
+    additionalDiscountTotal,
+    catalogueDiscountLabel,
+  } = CatalogueDiscountUtils.getPreviewDiscountBreakdown(
+    preview,
+    t("catalogueDiscount"),
+  );
   const remainingToFreeDelivery = Math.max(
     freeDeliveryThreshold - merchandiseTotal,
     0,
@@ -190,10 +198,19 @@ export function CartSummary({ storeId, currency, locale }: CartSummaryProps) {
             </div>
           )}
 
-          {preview && preview.totalDiscount > 0 && (
+          {preview && catalogueDiscountTotal > 0 && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                {catalogueDiscountLabel}
+              </span>
+              {renderAmount(catalogueDiscountTotal, true)}
+            </div>
+          )}
+
+          {preview && additionalDiscountTotal > 0 && (
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">{t("discount")}</span>
-              {renderAmount(preview.totalDiscount, true)}
+              {renderAmount(additionalDiscountTotal, true)}
             </div>
           )}
 

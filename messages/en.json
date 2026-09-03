@@ -19,6 +19,7 @@
     "home": "Home",
     "collections": "Collections",
     "products": "Products",
+    "sale": "Sale",
     "cart": "Cart",
     "menu": "Menu",
     "settings": "Settings",
@@ -94,6 +95,12 @@
     "specialProducts": {
       "title": "Special Products"
     },
+    "sale": {
+      "pageTitle": "Sale",
+      "pageDescription": "Browse products on sale right now",
+      "emptyTitle": "No sale items right now",
+      "emptyDescription": "Check back soon for new deals on your favorite products."
+    },
     "products": {
       "title": "Latest Products",
       "viewAll": "View All",
@@ -165,7 +172,15 @@
       "outOf": "out of",
       "review": "review",
       "reviewsCount": "reviews",
-      "reviewDate": "Date"
+      "reviewDate": "Date",
+      "discount": {
+        "percentOff": "{percent}% off",
+        "fixedOff": "{amount} off",
+        "upToPercentOff": "Up to {percent}% off",
+        "upToFixedOff": "Up to {amount} off",
+        "saveAmount": "Save {amount}",
+        "endsOn": "Offer ends {date}"
+      }
     }
   },
   "errors": {
@@ -233,6 +248,12 @@
       "titleWithStore": "Products - {storeName}",
       "descriptionWithStore": "Browse all products at {storeName}"
     },
+    "sale": {
+      "title": "Sale",
+      "description": "Products on sale",
+      "titleWithStore": "Sale - {storeName}",
+      "descriptionWithStore": "Browse sale products at {storeName}"
+    },
     "productDetail": {
       "title": "Product Not Found",
       "titleWithStore": "{productName} - {storeName}",
@@ -286,6 +307,7 @@
     "calculatedAtCheckout": "Calculated at checkout",
     "tax": "Tax",
     "discount": "Discount",
+    "catalogueDiscount": "Sale savings",
     "serviceFees": "Service Fees",
     "deliveryFees": "Delivery Fees",
     "free": "Free",

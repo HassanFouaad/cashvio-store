@@ -1,7 +1,9 @@
+import { DiscountBadge } from "@/features/products/components/discount-badge";
+import { PriceDisplay } from "@/features/products/components/price-display";
 import { StarRatingDisplay } from "@/features/products/components/star-rating";
 import { PublicProductDto } from "@/features/products/types/product.types";
+import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
 import {
-  formatProductPrice,
   getPrimaryImage,
   isProductInStock,
   ProductCardTranslations,
@@ -28,7 +30,7 @@ export function ProductCardOverlay({
 }: ProductCardOverlayProps) {
   const primaryImage = getPrimaryImage(product);
   const inStock = isProductInStock(product);
-  const priceDisplay = formatProductPrice(product, currency, locale);
+  const discountBadge = CatalogueDiscountUtils.pickProductDiscountBadge(product);
   const reviewCount = product.reviewCount ?? 0;
   const hasRating = reviewCount > 0 && product.averageRating != null;
 
@@ -51,6 +53,18 @@ export function ProductCardOverlay({
         </div>
       )}
 
+      {discountBadge && (
+        <div className="absolute top-2 start-2 z-10">
+          <DiscountBadge
+            discount={discountBadge.discount}
+            savingsAmount={discountBadge.savingsAmount}
+            isPartialProduct={discountBadge.isPartialProduct}
+            currency={currency}
+            locale={locale}
+          />
+        </div>
+      )}
+
       {/* Legibility gradient + product info */}
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 pt-12 space-y-1">
         <h3 className="line-clamp-2 text-sm font-semibold leading-tight text-white">
@@ -65,11 +79,13 @@ export function ProductCardOverlay({
             <span className="text-xs text-white/75">({reviewCount})</span>
           </div>
         )}
-        {priceDisplay && (
-          <p className="sf-price text-sm font-semibold tabular-nums text-white">
-            {priceDisplay}
-          </p>
-        )}
+        <PriceDisplay
+          product={product}
+          currency={currency}
+          locale={locale}
+          overlay
+          effectiveClassName="text-sm font-semibold"
+        />
       </div>
 
       {/* Out of stock badge */}
