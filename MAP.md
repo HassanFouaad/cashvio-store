@@ -9,6 +9,7 @@
 │  ├── 📄 en.json
 ├── 📄 next-env.d.ts
 ├── 📄 next.config.ts
+├── 📄 nixpacks.toml
 ├── 📄 package.json
 ├── 📄 postcss.config.mjs
 └── 📂 public/

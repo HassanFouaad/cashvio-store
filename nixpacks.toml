@@ -1,0 +1,14 @@
+# Nixpacks maps Node 24 to nixpkgs 23f9169... (24.10.0). isomorphic-dompurify@4 requires >=24.15.0.
+# Pinning a newer nixpkgsArchive compiles Node from source on ARM (30-60+ min). Skip engine checks instead.
+[variables]
+NIXPACKS_NODE_VERSION = "24"
+
+[phases.install]
+cmds = ["yarn install --frozen-lockfile --ignore-engines"]
+
+[phases.build]
+cmds = ["yarn run build"]
+cacheDirectories = [".next/cache", "node_modules/.cache"]
+
+[start]
+cmd = "yarn run start"
