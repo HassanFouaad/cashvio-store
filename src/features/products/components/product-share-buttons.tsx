@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, Facebook, Link2, MessageCircle } from "lucide-react";
+import { FacebookIcon } from "@/components/icons";
+import { Check, Link2, MessageCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -62,7 +63,7 @@ export function ProductShareButtons({
         aria-label={t("facebook")}
         className={shareButtonClasses}
       >
-        <Facebook className="h-4 w-4" />
+        <FacebookIcon className="h-4 w-4" />
       </a>
       <button
         type="button"

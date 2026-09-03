@@ -1,12 +1,10 @@
+import { FacebookIcon, InstagramIcon, YoutubeIcon } from "@/components/icons";
 import { buildStoreWhatsAppLink } from "@/lib/utils";
 import {
-  Facebook,
   Globe,
-  Instagram,
   Mail,
   MessageCircle,
   Music2,
-  Youtube,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { StoreFrontSocialMediaDto } from "../../types/store.types";
@@ -61,7 +59,7 @@ export async function FooterSocialRow({
           className={linkClass}
           aria-label="Facebook"
         >
-          <Facebook className="h-5 w-5" />
+          <FacebookIcon className="h-5 w-5" />
         </a>
       )}
       {socialMedia.instagram && (
@@ -72,7 +70,7 @@ export async function FooterSocialRow({
           className={linkClass}
           aria-label="Instagram"
         >
-          <Instagram className="h-5 w-5" />
+          <InstagramIcon className="h-5 w-5" />
         </a>
       )}
       {socialMedia.tiktok && (
@@ -94,7 +92,7 @@ export async function FooterSocialRow({
           className={linkClass}
           aria-label="YouTube"
         >
-          <Youtube className="h-5 w-5" />
+          <YoutubeIcon className="h-5 w-5" />
         </a>
       )}
       {socialMedia.website && (

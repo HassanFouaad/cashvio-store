@@ -5,17 +5,15 @@ import {
     buildStoreWhatsAppLink,
     resolveWhatsAppNumber,
 } from '@/lib/utils/whatsapp';
+import { FacebookIcon, InstagramIcon, YoutubeIcon } from '@/components/icons';
 import {
     ExternalLink,
-    Facebook,
     Globe,
-    Instagram,
     Mail,
     MessageCircle,
     Music2,
     Phone,
     X,
-    Youtube
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Drawer } from 'vaul';
@@ -71,13 +69,13 @@ export function MobileContactSheet({
       isDirectContact: true,
     },
     {
-      icon: Facebook,
+      icon: FacebookIcon,
       label: 'Facebook',
       value: socialMedia.facebook,
       href: socialMedia.facebook || undefined,
     },
     {
-      icon: Instagram,
+      icon: InstagramIcon,
       label: 'Instagram',
       value: socialMedia.instagram,
       href: socialMedia.instagram || undefined,
@@ -89,7 +87,7 @@ export function MobileContactSheet({
       href: socialMedia.tiktok || undefined,
     },
     {
-      icon: Youtube,
+      icon: YoutubeIcon,
       label: 'YouTube',
       value: socialMedia.youtube,
       href: socialMedia.youtube || undefined,
