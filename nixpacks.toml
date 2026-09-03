@@ -7,8 +7,8 @@ NIXPACKS_NODE_VERSION = "24"
 cmds = ["yarn install --frozen-lockfile --ignore-engines"]
 
 [phases.build]
-cmds = ["yarn run build"]
+cmds = ["yarn run --ignore-engines build"]
 cacheDirectories = [".next/cache", "node_modules/.cache"]
 
 [start]
-cmd = "yarn run start"
+cmd = "yarn run --ignore-engines start"
