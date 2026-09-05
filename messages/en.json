@@ -180,6 +180,13 @@
         "upToFixedOff": "Up to {amount} off",
         "saveAmount": "Save {amount}",
         "endsOn": "Offer ends {date}"
+      },
+      "bundle": {
+        "badge": "Bundle",
+        "whatsInside": "What's inside",
+        "componentLine": "{quantity} × {name}",
+        "savings": "Save {amount} versus buying separately",
+        "contains": "Contains {count} items"
       }
     }
   },

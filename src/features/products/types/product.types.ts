@@ -3,6 +3,7 @@
  */
 
 import { PaginationMeta } from "@/lib/api/types";
+import { PublicVariantBundleDto } from "./product-bundle.types";
 import { ProductDiscountDto } from "./product-discount.types";
 
 export enum ProductStatus {
@@ -24,10 +25,11 @@ export interface PublicProductVariantDto {
   sellingPrice: number;
   originalSellingPrice?: number | null;
   discount?: ProductDiscountDto | null;
-  availableQuantity: number;
+  availableQuantity: number | null;
   inStock: boolean;
   inventoryTrackable: boolean;
   maxQuantityPerOrder?: number | null;
+  bundle?: PublicVariantBundleDto | null;
 }
 
 export interface PublicProductImageDto {

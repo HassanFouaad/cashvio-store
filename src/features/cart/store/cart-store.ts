@@ -20,6 +20,7 @@ import {
     updateCartItemQuantity as apiUpdateQuantity,
 } from '../api/cart.service';
 import { ApiCart, ApiCartItem, ApiCartItemModifier } from '../api/cart.types';
+import { BundleUtils } from "@/features/products/utils/bundle.utils";
 import { getOrCreateVisitorId } from '@/lib/visitor/visitor-id';
 
 // Debounce delay in ms
@@ -497,7 +498,12 @@ export function computeCartValidation(cart: ApiCart | null): CartValidationResul
   }
 
   for (const { item, quantity } of requestedByVariant.values()) {
-    if (!item.variant.inStock && item.variant.inventoryTrackable) {
+    const isUnlimitedStock = BundleUtils.isUnlimitedStock(item.variant);
+    const effectiveAvailable = BundleUtils.getEffectiveAvailableQuantity(
+      item.variant,
+    );
+
+    if (!item.variant.inStock && !isUnlimitedStock) {
       hasOutOfStockItems = true;
       itemsWithIssues.push({
         variantId: item.variant.id,
@@ -505,12 +511,16 @@ export function computeCartValidation(cart: ApiCart | null): CartValidationResul
         requested: quantity,
         available: 0,
       });
-    } else if (quantity > item.variant.availableQuantity && item.variant.inventoryTrackable) {
+    } else if (
+      !isUnlimitedStock &&
+      effectiveAvailable != null &&
+      quantity > effectiveAvailable
+    ) {
       itemsWithIssues.push({
         variantId: item.variant.id,
         productName: item.productName || item.variant.name,
         requested: quantity,
-        available: item.variant.availableQuantity,
+        available: effectiveAvailable,
       });
     } else if (
       item.variant.maxQuantityPerOrder != null &&

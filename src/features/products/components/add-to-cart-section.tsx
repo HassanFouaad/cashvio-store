@@ -15,6 +15,7 @@ import {
   PublicProductVariantDto,
 } from "@/features/products/types/product.types";
 import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
+import { BundleUtils } from "@/features/products/utils/bundle.utils";
 import { formatCurrency } from "@/lib/utils/formatters";
 import {
   AlertCircle,
@@ -121,11 +122,13 @@ export function AddToCartSection({
   // Derived state
   const selectedVariant = variants.find((v) => v.id === selectedVariantId);
   const isInStock = selectedVariant?.inStock ?? false;
-  const totalAvailable = selectedVariant?.availableQuantity ?? 0;
+  const totalAvailable = selectedVariant
+    ? BundleUtils.getEffectiveAvailableQuantity(selectedVariant)
+    : 0;
 
-  // Non-trackable inventory products - check variant-level flag
-  const isInventoryTrackable = selectedVariant?.inventoryTrackable !== false;
-  const isUnlimitedStock = !isInventoryTrackable;
+  const isUnlimitedStock = selectedVariant
+    ? BundleUtils.isUnlimitedStock(selectedVariant)
+    : false;
 
   // Max quantity per order (null = unlimited)
   const maxPerOrder = selectedVariant?.maxQuantityPerOrder ?? null;
@@ -142,10 +145,9 @@ export function AddToCartSection({
       : 0;
 
   // Calculate remaining available (total - already in cart)
-  // For unlimited stock, set a very high remaining value
   let remainingAvailable = isUnlimitedStock
-    ? 999999
-    : Math.max(0, totalAvailable - cartQuantity);
+    ? Number.MAX_SAFE_INTEGER
+    : Math.max(0, (totalAvailable ?? 0) - cartQuantity);
 
   // Also cap by max per order if set
   if (maxPerOrder !== null) {
@@ -167,7 +169,9 @@ export function AddToCartSection({
 
   // Check if max is reached (not applicable for unlimited stock, but check maxPerOrder)
   const isMaxReached =
-    (!isUnlimitedStock && cartQuantity >= totalAvailable) ||
+    (!isUnlimitedStock &&
+      totalAvailable != null &&
+      cartQuantity >= totalAvailable) ||
     (maxPerOrder !== null && cartQuantity >= maxPerOrder);
 
   // Helper to get variant cart quantity (for variant selector) — combined
@@ -186,9 +190,7 @@ export function AddToCartSection({
 
   // Helper to check if variant has unlimited stock
   const isVariantUnlimitedStock = useCallback(
-    (variant: PublicProductVariantDto) => {
-      return variant.inventoryTrackable === false;
-    },
+    (variant: PublicProductVariantDto) => BundleUtils.isUnlimitedStock(variant),
     [],
   );
 
@@ -216,7 +218,8 @@ export function AddToCartSection({
         // Remove from cart
         removeItem(selectedVariantLine.id);
       } else if (
-        (isUnlimitedStock || newQuantity <= totalAvailable) &&
+        (isUnlimitedStock ||
+          (totalAvailable != null && newQuantity <= totalAvailable)) &&
         (maxPerOrder === null || newQuantity <= maxPerOrder)
       ) {
         // Update quantity in cart (unlimited stock allows any positive quantity, but respect maxPerOrder)
@@ -378,6 +381,7 @@ export function AddToCartSection({
                   {t("inStock")}
                 </span>
                 {!isUnlimitedStock &&
+                  totalAvailable != null &&
                   totalAvailable > 0 &&
                   totalAvailable < 5 && (
                     <span className="text-sm text-warning">
@@ -405,6 +409,7 @@ export function AddToCartSection({
               const variantUnlimited = isVariantUnlimitedStock(variant);
               const variantMaxReached =
                 (!variantUnlimited &&
+                  variant.availableQuantity != null &&
                   variantCartQty >= variant.availableQuantity) ||
                 (variant.maxQuantityPerOrder != null &&
                   variantCartQty >= variant.maxQuantityPerOrder);
@@ -510,7 +515,9 @@ export function AddToCartSection({
                     {cartQuantity} {tCart("inCart")}
                   </span>
                   <div className="flex gap-2">
-                    {!isUnlimitedStock && totalAvailable < 5 && (
+                    {!isUnlimitedStock &&
+                      totalAvailable != null &&
+                      totalAvailable < 5 && (
                       <span>
                         {Math.max(0, totalAvailable - cartQuantity)}{" "}
                         {t("available")}
@@ -525,7 +532,9 @@ export function AddToCartSection({
                 </>
               ) : (
                 <div className="flex gap-2">
-                  {!isUnlimitedStock && totalAvailable < 5 && (
+                  {!isUnlimitedStock &&
+                    totalAvailable != null &&
+                    totalAvailable < 5 && (
                     <span>
                       {totalAvailable} {t("available")}
                     </span>

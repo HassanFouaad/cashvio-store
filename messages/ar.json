@@ -180,6 +180,13 @@
         "upToFixedOff": "خصم حتى {amount}",
         "saveAmount": "وفر {amount}",
         "endsOn": "ينتهي العرض {date}"
+      },
+      "bundle": {
+        "badge": "طقم",
+        "whatsInside": "محتويات الطقم",
+        "componentLine": "{quantity} × {name}",
+        "savings": "وفر {amount} مقارنة بالشراء منفصل",
+        "contains": "يحتوي على {count} عناصر"
       }
     }
   },

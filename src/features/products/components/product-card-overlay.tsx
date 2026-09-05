@@ -1,8 +1,10 @@
 import { DiscountBadge } from "@/features/products/components/discount-badge";
+import { BundleBadge } from "@/features/products/components/bundle-badge";
 import { PriceDisplay } from "@/features/products/components/price-display";
 import { StarRatingDisplay } from "@/features/products/components/star-rating";
 import { PublicProductDto } from "@/features/products/types/product.types";
 import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
+import { BundleUtils } from "@/features/products/utils/bundle.utils";
 import {
   getPrimaryImage,
   isProductInStock,
@@ -31,6 +33,7 @@ export function ProductCardOverlay({
   const primaryImage = getPrimaryImage(product);
   const inStock = isProductInStock(product);
   const discountBadge = CatalogueDiscountUtils.pickProductDiscountBadge(product);
+  const isBundle = BundleUtils.isProductBundle(product);
   const reviewCount = product.reviewCount ?? 0;
   const hasRating = reviewCount > 0 && product.averageRating != null;
 
@@ -53,15 +56,18 @@ export function ProductCardOverlay({
         </div>
       )}
 
-      {discountBadge && (
-        <div className="absolute top-2 start-2 z-10">
-          <DiscountBadge
-            discount={discountBadge.discount}
-            savingsAmount={discountBadge.savingsAmount}
-            isPartialProduct={discountBadge.isPartialProduct}
-            currency={currency}
-            locale={locale}
-          />
+      {(discountBadge || isBundle) && (
+        <div className="absolute top-2 start-2 z-10 flex flex-col items-start gap-1">
+          {discountBadge && (
+            <DiscountBadge
+              discount={discountBadge.discount}
+              savingsAmount={discountBadge.savingsAmount}
+              isPartialProduct={discountBadge.isPartialProduct}
+              currency={currency}
+              locale={locale}
+            />
+          )}
+          {isBundle && <BundleBadge />}
         </div>
       )}
 

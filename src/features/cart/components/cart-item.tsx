@@ -10,6 +10,7 @@ import { useMemo } from "react";
 import { ApiCartItem } from "../api/cart.types";
 import { OrderPreviewItem } from "@/features/checkout/types/checkout.types";
 import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
+import { BundleUtils } from "@/features/products/utils/bundle.utils";
 import { getLineUnitPrice, useCartStore, useIsItemPending } from "../store";
 
 interface CartItemProps {
@@ -31,6 +32,7 @@ export function CartItem({
   previewItem,
 }: CartItemProps) {
   const t = useTranslations("cart");
+  const tBundle = useTranslations("store.products.bundle");
   const { updateQuantity, removeItem } = useCartStore();
   const isPending = useIsItemPending(item);
   const { variant } = item;
@@ -62,8 +64,8 @@ export function CartItem({
   const displayLineTotal =
     isPreviewSynced ? previewItem.lineTotal : item.lineTotal;
 
-  // Non-trackable inventory products are always considered unlimited stock
-  const isUnlimitedStock = variant.inventoryTrackable === false;
+  // Non-trackable inventory products and unlimited bundles skip stock caps
+  const isUnlimitedStock = BundleUtils.isUnlimitedStock(variant);
 
   // Max quantity per order (null = unlimited)
   const maxPerOrder = variant.maxQuantityPerOrder ?? null;
@@ -71,7 +73,8 @@ export function CartItem({
   // Check if quantity exceeds available stock (not applicable for unlimited stock)
   const quantityExceedsStock = useMemo(() => {
     if (isUnlimitedStock) return false;
-    return item.quantity > variant.availableQuantity;
+    const available = variant.availableQuantity ?? 0;
+    return item.quantity > available;
   }, [item.quantity, variant.availableQuantity, isUnlimitedStock]);
 
   // Check if quantity exceeds max per order
@@ -84,13 +87,17 @@ export function CartItem({
   const validQuantity = useMemo(() => {
     let qty = item.quantity;
     if (!isUnlimitedStock) {
-      qty = Math.min(qty, variant.availableQuantity);
+      const effectiveAvailable =
+        BundleUtils.getEffectiveAvailableQuantity(variant);
+      if (effectiveAvailable != null) {
+        qty = Math.min(qty, effectiveAvailable);
+      }
     }
     if (maxPerOrder !== null) {
       qty = Math.min(qty, maxPerOrder);
     }
     return qty;
-  }, [item.quantity, variant.availableQuantity, isUnlimitedStock, maxPerOrder]);
+  }, [item.quantity, variant, isUnlimitedStock, maxPerOrder]);
 
   const handleIncrease = () => {
     // Check max per order limit
@@ -98,7 +105,12 @@ export function CartItem({
       return;
     }
     // For unlimited stock, always allow increase
-    if (isUnlimitedStock || item.quantity < variant.availableQuantity) {
+    if (isUnlimitedStock) {
+      updateQuantity(item.id, item.quantity + 1);
+      return;
+    }
+    const available = variant.availableQuantity ?? 0;
+    if (item.quantity < available) {
       updateQuantity(item.id, item.quantity + 1);
     }
   };
@@ -114,7 +126,7 @@ export function CartItem({
   };
 
   const handleReduceToAvailable = () => {
-    let targetQty = variant.availableQuantity;
+    let targetQty = variant.availableQuantity ?? 0;
     if (maxPerOrder !== null) {
       targetQty = Math.min(targetQty, maxPerOrder);
     }
@@ -127,8 +139,13 @@ export function CartItem({
 
   // Max reached is never true for unlimited stock products, but also check maxPerOrder
   const maxReached =
-    (!isUnlimitedStock && item.quantity >= variant.availableQuantity) ||
+    (!isUnlimitedStock &&
+      variant.availableQuantity != null &&
+      item.quantity >= variant.availableQuantity) ||
     (maxPerOrder !== null && item.quantity >= maxPerOrder);
+
+  const bundleComponents = BundleUtils.getBundleComponents(variant);
+  const bundleItemCount = BundleUtils.getBundleItemCount(variant);
 
   return (
     <div
@@ -186,6 +203,12 @@ export function CartItem({
             </p>
           ))}
 
+          {bundleComponents.length > 0 && (
+            <p className="text-xs text-muted-foreground">
+              {tBundle("contains", { count: bundleItemCount })}
+            </p>
+          )}
+
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <p className="text-sm font-semibold sf-price tabular-nums">
               {formatCurrency(displayUnitPrice, currency, locale)}
@@ -204,7 +227,8 @@ export function CartItem({
             <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-destructive">
-                {variant.availableQuantity < 5
+                {variant.availableQuantity != null &&
+                variant.availableQuantity < 5
                   ? t("quantityExceeded", {
                       available: variant.availableQuantity,
                     })
@@ -217,7 +241,7 @@ export function CartItem({
               className="h-7 text-xs shrink-0 border-destructive/50 text-destructive hover:bg-destructive/10"
               onClick={handleReduceToAvailable}
             >
-              {variant.availableQuantity > 0
+              {(variant.availableQuantity ?? 0) > 0
                 ? t("reduceQuantity")
                 : t("remove")}
             </Button>

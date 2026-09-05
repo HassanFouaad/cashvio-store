@@ -4,6 +4,7 @@ import {
   PublicProductDto,
 } from "@/features/products/types/product.types";
 import { sortProductImages } from "@/features/products/utils/product-helpers";
+import { BundleUtils } from "@/features/products/utils/bundle.utils";
 import { StoreFrontThemeProductPageVariant } from "@/features/store/types/store.types";
 import { resolveRequestTheme } from "@/lib/theme";
 import { ChevronRight } from "lucide-react";
@@ -11,6 +12,7 @@ import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
 import { AddToCartSection } from "./add-to-cart-section";
+import { BundleContents } from "./bundle-contents";
 import { ProductImageGallery } from "./product-image-gallery";
 import { ProductReviews } from "./product-reviews";
 import { ProductShareButtons } from "./product-share-buttons";
@@ -47,6 +49,9 @@ export async function ProductDetails({
 
   // Server-side data preparation
   const sortedImages = sortProductImages(product.images);
+  const bundleVariant = (product.variants ?? []).find((variant) =>
+    BundleUtils.hasBundle(variant),
+  );
 
   const breadcrumb = (
     <nav aria-label="Breadcrumb" className="mb-4 sm:mb-6">
@@ -88,6 +93,17 @@ export async function ProductDetails({
           locale={locale}
           storeId={storeId}
         />
+      )}
+
+      {bundleVariant && (
+        <>
+          <hr className="border-border" />
+          <BundleContents
+            variant={bundleVariant}
+            currency={currency}
+            locale={locale}
+          />
+        </>
       )}
 
       {/* Divider */}
