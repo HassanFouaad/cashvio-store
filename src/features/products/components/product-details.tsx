@@ -49,9 +49,10 @@ export async function ProductDetails({
 
   // Server-side data preparation
   const sortedImages = sortProductImages(product.images);
-  const bundleVariant = (product.variants ?? []).find((variant) =>
-    BundleUtils.hasBundle(variant),
-  );
+  // Bundle products always ship exactly one variant (backend invariant).
+  const bundleVariant = BundleUtils.isProductBundle(product)
+    ? (product.variants ?? [])[0]
+    : undefined;
 
   const breadcrumb = (
     <nav aria-label="Breadcrumb" className="mb-4 sm:mb-6">

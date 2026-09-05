@@ -14,12 +14,16 @@ export async function BundleContents({
   currency,
   locale,
 }: BundleContentsProps) {
-  if (!BundleUtils.hasBundle(variant)) {
+  if (!BundleUtils.isBundleVariant(variant)) {
     return null;
   }
 
   const t = await getTranslations("store.products.bundle");
   const components = BundleUtils.getBundleComponents(variant);
+  if (components.length === 0) {
+    return null;
+  }
+
   const savings = BundleUtils.getBundleSavings(variant);
 
   return (
@@ -27,10 +31,10 @@ export async function BundleContents({
       <h2 className="text-base font-semibold text-foreground">{t("whatsInside")}</h2>
       <ul className="space-y-1.5 text-sm text-muted-foreground">
         {components.map((component, index) => (
-          <li key={`${component.productName}-${component.variantName}-${index}`}>
+          <li key={`bundle-component-${index}`}>
             {t("componentLine", {
               quantity: component.quantity,
-              name: BundleUtils.formatComponentName(component),
+              name: component.displayName,
             })}
           </li>
         ))}

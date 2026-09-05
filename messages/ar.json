@@ -186,7 +186,7 @@
         "whatsInside": "محتويات الطقم",
         "componentLine": "{quantity} × {name}",
         "savings": "وفر {amount} مقارنة بالشراء منفصل",
-        "contains": "يحتوي على {count} عناصر"
+        "contains": "{count, plural, =1 {يحتوي على عنصر واحد} =2 {يحتوي على عنصرين} few {يحتوي على # عناصر} many {يحتوي على # عنصرًا} other {يحتوي على # عناصر}}"
       }
     }
   },

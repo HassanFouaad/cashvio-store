@@ -186,7 +186,7 @@
         "whatsInside": "What's inside",
         "componentLine": "{quantity} × {name}",
         "savings": "Save {amount} versus buying separately",
-        "contains": "Contains {count} items"
+        "contains": "{count, plural, =1 {Contains 1 item} other {Contains # items}}"
       }
     }
   },

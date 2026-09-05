@@ -144,8 +144,9 @@ export function CartItem({
       item.quantity >= variant.availableQuantity) ||
     (maxPerOrder !== null && item.quantity >= maxPerOrder);
 
-  const bundleComponents = BundleUtils.getBundleComponents(variant);
   const bundleItemCount = BundleUtils.getBundleItemCount(variant);
+  const showBundleLabel =
+    BundleUtils.isBundleVariant(variant) && bundleItemCount > 0;
 
   return (
     <div
@@ -203,7 +204,7 @@ export function CartItem({
             </p>
           ))}
 
-          {bundleComponents.length > 0 && (
+          {showBundleLabel && (
             <p className="text-xs text-muted-foreground">
               {tBundle("contains", { count: bundleItemCount })}
             </p>
