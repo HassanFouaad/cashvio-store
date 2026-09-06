@@ -1,13 +1,8 @@
-import { PublicProductVariantDto } from "@/features/products/types/product.types";
+import { BundleComponentRow } from "@/features/products/components/bundle-component-row";
+import type { BundleContentsProps } from "@/features/products/types/BundleContentsProps";
 import { BundleUtils } from "@/features/products/utils/bundle.utils";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { getTranslations } from "next-intl/server";
-
-interface BundleContentsProps {
-  variant: PublicProductVariantDto;
-  currency: string;
-  locale: string;
-}
 
 export async function BundleContents({
   variant,
@@ -29,14 +24,17 @@ export async function BundleContents({
   return (
     <section className="space-y-3">
       <h2 className="text-base font-semibold text-foreground">{t("whatsInside")}</h2>
-      <ul className="space-y-1.5 text-sm text-muted-foreground">
-        {components.map((component, index) => (
-          <li key={`bundle-component-${index}`}>
-            {t("componentLine", {
-              quantity: component.quantity,
+      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {components.map((component) => (
+          <BundleComponentRow
+            key={`${component.productId ?? component.displayName}-${component.quantity}`}
+            component={component}
+            noImageLabel={t("noImage")}
+            quantityLabel={t("quantityLabel", { quantity: component.quantity })}
+            viewProductLabel={t("viewComponent", {
               name: component.displayName,
             })}
-          </li>
+          />
         ))}
       </ul>
       {savings != null && savings > 0 && (

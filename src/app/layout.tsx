@@ -1,4 +1,5 @@
 import { CouponDeepLinkCapture } from "@/components/coupon-deep-link-capture";
+import { ElasticApmInit } from "@/components/elastic-apm-init";
 import { LocaleInitializer } from "@/components/locale-initializer";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { VisitorTracker } from "@/components/visitor-tracker";
@@ -279,6 +280,7 @@ export default async function RootLayout({
                       }
                       tiktokPixelId={store.storeFront?.webEvents?.tiktokPixelId}
                     />
+                    <ElasticApmInit />
                     <StoreAnnouncementBar store={store} />
                     <StoreHeader
                       store={store}

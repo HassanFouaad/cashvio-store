@@ -14,6 +14,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@elastic/apm-rum": "^5.17.0",
     "@fingerprintjs/fingerprintjs": "^5.2.0",
     "@next/third-parties": "^16.3.4",
     "@tailwindcss/postcss": "^4.3.3",
@@ -35,13 +36,13 @@
     "@types/node": "^26.4.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
+    "@typescript/native": "npm:typescript@^7.0.2",
     "autoprefixer": "^10.5.4",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.3.4",
     "husky": "^9.1.7",
     "postcss": "^8.5.27",
     "tailwindcss": "^4.3.3",
-    "@typescript/native": "npm:typescript@^7.0.2",
     "typescript": "npm:@typescript/typescript6@^6.0.2"
   },
   "engines": {

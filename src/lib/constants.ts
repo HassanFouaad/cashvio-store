@@ -76,9 +76,12 @@ export const RESERVED_SUBDOMAINS: readonly string[] = [
   "api",
   "admin",
   "app",
+  "ai",
+  "ai-coding",
   "infra-monitor",
   "helpdesk",
   "infra-management",
+  "infra-elk",
   "console",
   "cdn",
 ] as const;

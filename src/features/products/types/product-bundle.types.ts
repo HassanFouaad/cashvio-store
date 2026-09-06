@@ -6,6 +6,10 @@
 export interface PublicBundleComponentDto {
   displayName: string;
   quantity: number;
+  productId?: string;
+  imageUrl?: string;
+  thumbnailUrl?: string;
+  altText?: string;
 }
 
 export interface PublicVariantBundleDto {
