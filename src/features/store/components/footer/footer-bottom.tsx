@@ -44,7 +44,7 @@ export async function FooterBottom({ store }: FooterBottomProps) {
           rel="noopener noreferrer"
           className="font-semibold text-muted-foreground hover:text-foreground transition-colors"
         >
-          Cashvio
+          {t("footer.platformName")}
         </a>
         {" · "}
         <a

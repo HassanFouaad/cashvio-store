@@ -11,31 +11,31 @@ import { StoreErrorComponent } from "@/features/store/components/store-error";
 import { StoreFooter } from "@/features/store/components/store-footer";
 import { StoreHeader } from "@/features/store/components/store-header";
 import {
-  StoreErrorType,
-  StoreFrontStatus,
-  StoreFrontThemeButtonVariant,
-  StoreFrontThemeIconStyle,
-  StoreFrontThemeOrderPagesVariant,
-  StoreFrontThemeTypography,
+    StoreErrorType,
+    StoreFrontStatus,
+    StoreFrontThemeButtonVariant,
+    StoreFrontThemeIconStyle,
+    StoreFrontThemeOrderPagesVariant,
+    StoreFrontThemeTypography,
 } from "@/features/store/types/store.types";
 import { AnalyticsProvider } from "@/lib/analytics";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { setApiLocale } from "@/lib/api/types";
 import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/lib/constants";
 import {
-  buildThemeStyle,
-  getThemeFontClassNames,
-  resolveRequestTheme,
+    buildThemeStyle,
+    getThemeFontClassNames,
+    resolveRequestTheme,
 } from "@/lib/theme";
 import { toAbsoluteUrl } from "@/lib/utils";
 import { StoreProvider } from "@/providers/store-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { VisitorProvider } from "@/providers/visitor-provider";
 import {
-  getDirectionForLocale,
-  isValidLocale,
-  Locale,
-  Theme,
+    getDirectionForLocale,
+    isValidLocale,
+    Locale,
+    Theme,
 } from "@/types/enums";
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
@@ -62,9 +62,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
   // If no store subdomain, return default metadata
   if (!subdomain) {
+    const tMeta = await getTranslations("metadata.default");
     return {
-      title: appConfig.name,
-      description: "Multi-tenant e-commerce storefront",
+      title: tMeta("title"),
+      description: tMeta("description"),
       icons: {
         icon: "/favicon.svg",
       },

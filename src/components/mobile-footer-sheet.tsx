@@ -1,8 +1,8 @@
 'use client';
 
-import { buildPoweredByUrl } from '@/lib/utils';
 import { getStaticPages } from '@/features/store/api/get-static-pages';
 import { StaticPageListItem } from '@/features/store/types/store.types';
+import { buildPoweredByUrl } from '@/lib/utils';
 import { ChevronRight, FileText, PackageSearch, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -151,7 +151,7 @@ export function MobileFooterSheet({
                     className="font-semibold text-muted-foreground hover:text-foreground transition-colors"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    Cashvio
+                    {t('footer.platformName')}
                   </a>
                   {' · '}
                   <a

@@ -34,7 +34,7 @@ export const appConfig = {
   /**
    * Application name
    */
-  name: process.env.NEXT_PUBLIC_APP_NAME ?? "Cashvio",
+  name: process.env.NEXT_PUBLIC_APP_NAME ?? "Online Store",
 
   /**
    * Application environment

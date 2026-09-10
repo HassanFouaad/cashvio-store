@@ -228,6 +228,10 @@
     }
   },
   "metadata": {
+    "default": {
+      "title": "متجر إلكتروني",
+      "description": "تصفح المنتجات وتسوق أونلاين"
+    },
     "cart": {
       "title": "السلة",
       "description": "سلة التسوق الخاصة بك",
@@ -283,6 +287,7 @@
     "connectWithUs": "تواصل معنا",
     "copyright": "© {year} {storeName}. جميع الحقوق محفوظة.",
     "poweredBy": "مدعوم من",
+    "platformName": "Cashvio",
     "poweredByCta": "أنشئ متجرك الإلكتروني مجاناً",
     "information": "المعلومات",
     "noPagesAvailable": "لا توجد صفحات معلومات متاحة"

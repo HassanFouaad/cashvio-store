@@ -228,6 +228,10 @@
     }
   },
   "metadata": {
+    "default": {
+      "title": "Online Store",
+      "description": "Browse products and shop online"
+    },
     "cart": {
       "title": "Cart",
       "description": "Your shopping cart",
@@ -283,6 +287,7 @@
     "connectWithUs": "Connect With Us",
     "copyright": "© {year} {storeName}. All rights reserved.",
     "poweredBy": "Powered by",
+    "platformName": "Cashvio",
     "poweredByCta": "Create your free online store",
     "information": "Information",
     "noPagesAvailable": "No information pages available"
