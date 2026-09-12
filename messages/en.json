@@ -47,7 +47,7 @@
   "store": {
     "welcome": "Welcome to {storeName}",
     "browseProducts": "Browse Products",
-    "description": "Discover our amazing collection of products",
+    "description": "Browse our products and place an order.",
     "shoppingCart": "Shopping cart",
     "emptyStore": {
       "title": "{storeName} is opening soon",
@@ -59,7 +59,7 @@
       "previousImage": "Previous image",
       "nextImage": "Next image",
       "goToImage": "Go to image {index}",
-      "tagline": "Discover our latest products and offers",
+      "tagline": "Browse our latest products and offers",
       "shopNow": "Shop now"
     },
     "gallery": {
@@ -77,7 +77,7 @@
       "title": "Shop by Collection",
       "viewAll": "View All",
       "pageTitle": "All Collections",
-      "pageDescription": "Browse our complete collection of collections",
+      "pageDescription": "Browse all product collections",
       "searchPlaceholder": "Search collections...",
       "noCategories": "No collections available",
       "noResultsOnPage": "No collections on this page. Please navigate to another page.",
@@ -99,7 +99,7 @@
       "pageTitle": "Sale & Offers",
       "pageDescription": "Browse products currently on sale",
       "emptyTitle": "No sale items right now",
-      "emptyDescription": "Check back soon for new deals and promotions on your favorite products."
+      "emptyDescription": "Check back later for new deals and promotions."
     },
     "products": {
       "title": "Latest Products",
@@ -155,13 +155,13 @@
       },
       "resultsCount": "{count} products",
       "customerReviews": "Customer Reviews",
-      "noReviews": "No reviews yet. Be the first to share your experience!",
+      "noReviews": "No customer reviews yet.",
       "writeReview": "Write a Review",
       "yourRating": "Your Rating",
       "reviewerName": "Your Name",
       "reviewerNamePlaceholder": "Enter your name",
       "yourComment": "Your Comment",
-      "commentPlaceholder": "Share your experience with this product...",
+      "commentPlaceholder": "Write your review...",
       "submitReview": "Submit Review",
       "submitting": "Submitting...",
       "reviewSubmitted": "Thank you for your review!",
@@ -208,7 +208,7 @@
     },
     "unknown": {
       "title": "Something Went Wrong",
-      "description": "An unexpected error occurred. Please try again later."
+      "description": "Could not complete the request. Please try again."
     },
     "generic": "Something went wrong",
     "categories": {
@@ -310,7 +310,7 @@
     "pageDescription": "Review your items before checkout",
     "yourCart": "Your Cart",
     "emptyTitle": "Your cart is empty",
-    "emptyDescription": "Looks like you haven't added anything to your cart yet. Start browsing our products!",
+    "emptyDescription": "Your cart is empty. Browse the store to add items.",
     "startShopping": "Start Shopping",
     "continueShopping": "Continue Shopping",
     "clearAll": "Clear All",
@@ -453,7 +453,7 @@
     "orderNumber": "Order Number",
     "copy": "Copy",
     "copied": "Copied",
-    "saveNumberHint": "Keep this number — you'll need it to track your order.",
+    "saveNumberHint": "Keep this number to track your order.",
     "pickupLocation": "Pickup location",
     "pickupLocationFallback": "Contact the store for the pickup address and directions.",
     "tableNumber": "Table number",
@@ -506,7 +506,7 @@
     "statusExpectation": {
       "pending": "The store has received your order and will start preparing it soon.",
       "preparing": "The store is preparing your order right now.",
-      "readyPickup": "Your order is ready — you can pick it up from the store.",
+      "readyPickup": "Your order is ready for pickup at the store.",
       "readyDelivery": "Your order is packed and will be handed to the courier shortly.",
       "readyDineIn": "Your order is ready and will be brought to your table.",
       "delivering": "Your order is with the courier and on its way to you.",

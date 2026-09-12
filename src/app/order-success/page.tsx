@@ -227,7 +227,7 @@ function OrderSuccessContent() {
                       {item.variant && item.variant !== item.name && (
                         <span className="text-muted-foreground">
                           {" "}
-                          — {item.variant}
+                          ({item.variant})
                         </span>
                       )}
                     </span>

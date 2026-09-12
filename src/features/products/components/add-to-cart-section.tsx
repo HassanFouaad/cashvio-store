@@ -3,29 +3,29 @@
 import { Button } from "@/components/ui/button";
 import { ApiCartItemModifier } from "@/features/cart/api/cart.types";
 import {
-  useCanCheckout,
-  useCartStore,
-  useIsCartSyncing,
-  usePendingChangesCount,
+    useCanCheckout,
+    useCartStore,
+    useIsCartSyncing,
+    usePendingChangesCount,
 } from "@/features/cart/store";
 import { ModifierGroupsPicker } from "@/features/products/components/modifier-groups-picker";
 import { useModifierSelection } from "@/features/products/hooks/use-modifier-selection";
 import {
-  PublicProductDto,
-  PublicProductVariantDto,
+    PublicProductDto,
+    PublicProductVariantDto,
 } from "@/features/products/types/product.types";
-import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
 import { BundleUtils } from "@/features/products/utils/bundle.utils";
+import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
 import { formatCurrency } from "@/lib/utils/formatters";
 import {
-  AlertCircle,
-  Check,
-  Loader2,
-  Minus,
-  Plus,
-  ShoppingCart,
-  Trash2,
-  Zap,
+    AlertCircle,
+    Check,
+    Loader2,
+    Minus,
+    Plus,
+    ShoppingCart,
+    Trash2,
+    Zap,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -385,7 +385,7 @@ export function AddToCartSection({
                   totalAvailable > 0 &&
                   totalAvailable < 5 && (
                     <span className="text-sm text-warning">
-                      — {t("leftInStock", { count: totalAvailable })}
+                      · {t("leftInStock", { count: totalAvailable })}
                     </span>
                   )}
               </>

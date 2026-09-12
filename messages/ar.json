@@ -47,7 +47,7 @@
   "store": {
     "welcome": "مرحباً بك في {storeName}",
     "browseProducts": "تصفح المنتجات",
-    "description": "اكتشف مجموعتنا الرائعة من المنتجات",
+    "description": "تصفح منتجاتنا واطلب مباشرة.",
     "shoppingCart": "عربة التسوق",
     "emptyStore": {
       "title": "{storeName} يفتح قريباً",
@@ -59,7 +59,7 @@
       "previousImage": "الصورة السابقة",
       "nextImage": "الصورة التالية",
       "goToImage": "الانتقال إلى الصورة {index}",
-      "tagline": "اكتشف أحدث منتجاتنا وعروضنا",
+      "tagline": "تصفح أحدث منتجاتنا وعروضنا",
       "shopNow": "تسوق الآن"
     },
     "gallery": {
@@ -77,7 +77,7 @@
       "title": "تسوق حسب المجموعة",
       "viewAll": "عرض الكل",
       "pageTitle": "جميع المجموعات",
-      "pageDescription": "تصفح مجموعتنا الكاملة من المجموعات",
+      "pageDescription": "تصفح جميع مجموعات المنتجات",
       "searchPlaceholder": "ابحث عن المجموعات...",
       "noCategories": "لا توجد مجموعات متاحة",
       "noResultsOnPage": "لا توجد مجموعات في هذه الصفحة. يرجى الانتقال إلى صفحة أخرى.",
@@ -99,7 +99,7 @@
       "pageTitle": "العروض والتخفيضات",
       "pageDescription": "تصفح أحدث المنتجات المخفضة والعروض الحالية",
       "emptyTitle": "لا توجد عروض حالياً",
-      "emptyDescription": "تابعنا قريباً للاطلاع على أحدث العروض والخصومات على منتجاتك المفضلة."
+      "emptyDescription": "تابعنا لاحقاً للاطلاع على أحدث العروض والتخفيضات."
     },
     "products": {
       "title": "أحدث المنتجات",
@@ -155,13 +155,13 @@
       },
       "resultsCount": "{count} منتج",
       "customerReviews": "تقييمات العملاء",
-      "noReviews": "لا توجد تقييمات بعد. كن أول من يشارك تجربته!",
+      "noReviews": "لا توجد تقييمات حتى الآن.",
       "writeReview": "اكتب تقييم",
       "yourRating": "تقييمك",
       "reviewerName": "اسمك",
       "reviewerNamePlaceholder": "أدخل اسمك",
       "yourComment": "تعليقك",
-      "commentPlaceholder": "شارك تجربتك مع هذا المنتج...",
+      "commentPlaceholder": "اكتب تعليقك هنا...",
       "submitReview": "إرسال التقييم",
       "submitting": "جاري الإرسال...",
       "reviewSubmitted": "شكراً لتقييمك!",
@@ -208,7 +208,7 @@
     },
     "unknown": {
       "title": "حدث خطأ ما",
-      "description": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقاً."
+      "description": "تعذر إكمال الطلب. يرجى المحاولة مرة أخرى."
     },
     "generic": "حدث خطأ ما",
     "categories": {
@@ -310,7 +310,7 @@
     "pageDescription": "راجع منتجاتك قبل الدفع",
     "yourCart": "سلتك",
     "emptyTitle": "سلتك فارغة",
-    "emptyDescription": "يبدو أنك لم تضف أي شيء إلى سلتك بعد. ابدأ بتصفح منتجاتنا!",
+    "emptyDescription": "سلتك فارغة. تصفح المتجر لإضافة المنتجات.",
     "startShopping": "ابدأ التسوق",
     "continueShopping": "متابعة التسوق",
     "clearAll": "إزالة الكل",
@@ -453,7 +453,7 @@
     "orderNumber": "رقم الطلب",
     "copy": "نسخ",
     "copied": "تم النسخ",
-    "saveNumberHint": "احتفظ بهذا الرقم — ستحتاجه لتتبع طلبك.",
+    "saveNumberHint": "احتفظ بهذا الرقم لتتبع طلبك.",
     "pickupLocation": "مكان الاستلام",
     "pickupLocationFallback": "تواصل مع المتجر لمعرفة عنوان الاستلام وكيفية الوصول.",
     "tableNumber": "رقم الطاولة",
@@ -506,7 +506,7 @@
     "statusExpectation": {
       "pending": "استلم المتجر طلبك وسيبدأ في تحضيره قريباً.",
       "preparing": "يقوم المتجر بتحضير طلبك الآن.",
-      "readyPickup": "طلبك جاهز — يمكنك استلامه من المتجر.",
+      "readyPickup": "طلبك جاهز للاستلام من المتجر.",
       "readyDelivery": "تم تجهيز طلبك وسيتم تسليمه للمندوب قريباً.",
       "readyDineIn": "طلبك جاهز وسيتم إحضاره إلى طاولتك.",
       "delivering": "طلبك مع المندوب وفي الطريق إليك.",
