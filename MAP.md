@@ -23,6 +23,7 @@
 └── 📂 scripts/
 │  ├── 📄 generate-code-index.js
 │  ├── 📄 husky-sync-map.sh
+│  ├── 📄 test-ts-loader.mjs
 └── 📂 src/
 │  └── 📂 app/
 │    └── 📂 cart/
@@ -236,7 +237,9 @@
 │          ├── 📄 header-nav-links.tsx
 │        └── 📂 hero/
 │          ├── 📄 hero-carousel.tsx
+│          ├── 📄 hero-controls.tsx
 │          ├── 📄 hero-full-bleed.tsx
+│          ├── 📄 hero-link.tsx
 │          ├── 📄 hero-split.tsx
 │        ├── 📄 store-announcement-bar.tsx
 │        ├── 📄 store-empty-state.tsx
@@ -245,9 +248,12 @@
 │        ├── 📄 store-header.tsx
 │        ├── 📄 store-hero.tsx
 │        ├── 📄 store-loading.tsx
+│      └── 📂 hooks/
+│        ├── 📄 use-hero-carousel.ts
 │      └── 📂 types/
 │        ├── 📄 store.types.ts
 │      └── 📂 utils/
+│        ├── 📄 hero-image-props.ts
 │        ├── 📄 store-resolver.ts
 │    └── 📂 visitors/
 │      └── 📂 api/
@@ -288,6 +294,7 @@
 │      ├── 📄 resolve-theme.ts
 │      ├── 📄 theme-constants.ts
 │      ├── 📄 theme-personality.ts
+│      ├── 📄 theme-preview.ts
 │      ├── 📄 theme-validation.ts
 │    └── 📂 utils/
 │      ├── 📄 cn.ts
@@ -306,13 +313,18 @@
 │      ├── 📄 whatsapp.ts
 │    └── 📂 visitor/
 │      ├── 📄 visitor-id.ts
-│  ├── 📄 middleware.ts
 │  └── 📂 providers/
 │    ├── 📄 store-provider.tsx
 │    ├── 📄 theme-provider.tsx
 │    ├── 📄 visitor-provider.tsx
+│  ├── 📄 proxy.ts
 │  └── 📂 types/
 │    ├── 📄 enums.ts
+└── 📂 test/
+│  ├── 📄 hero-images.test.ts
+│  ├── 📄 storefront-messages.test.ts
+│  ├── 📄 theme-palette.test.ts
+│  ├── 📄 theme-preview.test.ts
 ├── 📄 tsconfig.json
 ├── 📄 tsconfig.tsbuildinfo
 └── 📄 yarn.lock

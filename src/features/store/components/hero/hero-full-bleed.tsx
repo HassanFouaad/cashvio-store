@@ -1,118 +1,86 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { useTranslations } from "next-intl";
 import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { StoreFrontHeroImageDto } from "../../types/store.types";
+import { useTranslations } from "next-intl";
+
+import { buttonVariants } from "@/components/ui/button";
+import { useHeroCarousel } from "@/features/store/hooks/use-hero-carousel";
+import type { StoreFrontHeroImageDto } from "@/features/store/types/store.types";
+import { getHeroImageLoadingProps } from "@/features/store/utils/hero-image-props";
+
+import { HeroControls } from "./hero-controls";
+import { HeroLink } from "./hero-link";
 
 interface HeroFullBleedProps {
   heroImages: StoreFrontHeroImageDto[];
   storeName: string;
-  /** Display-title classes from the theme's typography personality */
   titleClassName?: string;
 }
 
-/**
- * FULL_BLEED hero — immersive edge-to-edge imagery with the store name,
- * tagline, and shop CTA overlaid. Rotates gently through banners.
- */
+/** Immersive imagery with legible content and the current banner's real CTA. */
 export function HeroFullBleed({
   heroImages,
   storeName,
   titleClassName = "text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight",
 }: HeroFullBleedProps) {
   const t = useTranslations("store.hero");
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const sortedImages = [...heroImages].sort(
-    (a, b) => a.displayOrder - b.displayOrder,
-  );
-
-  useEffect(() => {
-    if (sortedImages.length <= 1) return;
-
-    // Respect users who prefer reduced motion — no auto-rotation
-    if (
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % sortedImages.length);
-    }, 6000);
-
-    return () => clearInterval(timer);
-  }, [sortedImages.length]);
-
-  if (sortedImages.length === 0) {
-    return null;
-  }
+  const carousel = useHeroCarousel(heroImages);
+  if (!carousel.images.length) return null;
+  const activeImage = carousel.images[carousel.currentIndex];
 
   return (
-    <section className="relative w-full max-w-full h-[380px] sm:h-[460px] md:h-[560px] overflow-hidden">
-      {/* Rotating background imagery */}
-      {sortedImages.map((image, index) => (
-        <div
-          key={image.id}
-          className={`absolute inset-0 transition-opacity duration-1000 ${
-            index === currentIndex
-              ? "opacity-100"
-              : "opacity-0 pointer-events-none"
-          }`}
-          aria-hidden={index !== currentIndex}
-        >
-          <Image
-            src={image.imageUrl}
-            alt={t("imageAlt", { storeName, index: index + 1 })}
-            fill
-            sizes="100vw"
-            className="object-cover"
-            priority={index === 0}
-            loading={index === 0 ? "eager" : "lazy"}
-            fetchPriority={index === 0 ? "high" : "low"}
-          />
-        </div>
-      ))}
-
-      {/* Legibility overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/15" />
-
-      {/* Overlaid content */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 sm:gap-5 px-4 text-center">
-        <h1
-          className={`max-w-3xl ${titleClassName} text-white drop-shadow-sm`}
-        >
+    <section
+      role="region"
+      aria-roledescription={t("carouselRole")}
+      aria-label={t("carouselLabel", { storeName })}
+      className="relative h-[380px] w-full max-w-full overflow-hidden sm:h-[460px] md:h-[560px]"
+      {...carousel.interactionProps}
+    >
+      {carousel.images.map((image, index) => {
+        const isActive = index === carousel.currentIndex;
+        return (
+          <div
+            key={image.id}
+            role="group"
+            aria-roledescription={t("slideRole")}
+            aria-label={t("slidePosition", {
+              index: index + 1,
+              total: carousel.images.length,
+            })}
+            aria-hidden={!isActive}
+            className={`absolute inset-0 transition-opacity duration-700 motion-reduce:transition-none ${isActive ? "opacity-100" : "pointer-events-none opacity-0"}`}
+          >
+            {carousel.shouldRenderImage(index) && (
+              <Image
+                src={image.imageUrl}
+                alt={t("imageAlt", { storeName, index: index + 1 })}
+                fill
+                sizes="100vw"
+                className="object-cover"
+                {...getHeroImageLoadingProps(index, carousel.currentIndex)}
+              />
+            )}
+          </div>
+        );
+      })}
+      <div className="absolute inset-0 bg-media-scrim/60" aria-hidden="true" />
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4 pb-16 text-center sm:gap-5">
+        <h1 className={`max-w-3xl ${titleClassName} text-media-foreground`}>
           {storeName}
         </h1>
-        <p className="max-w-xl text-sm text-white/85 sm:text-lg">
+        <p className="max-w-xl text-sm text-media-foreground/90 sm:text-lg">
           {t("tagline")}
         </p>
-        <Link href="/products">
-          <Button size="lg">{t("shopNow")}</Button>
-        </Link>
-      </div>
-
-      {/* Dots Indicator */}
-      {sortedImages.length > 1 && (
-        <div className="absolute bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 z-10">
-          {sortedImages.map((_, index) => (
-            <button
-              key={index}
-              className={`h-1.5 sm:h-2 rounded-full transition-all ${
-                index === currentIndex
-                  ? "w-6 sm:w-8 bg-white"
-                  : "w-1.5 sm:w-2 bg-white/50 hover:bg-white/75"
-              }`}
-              onClick={() => setCurrentIndex(index)}
-              aria-label={t("goToImage", { index: index + 1 })}
-            />
-          ))}
+        <div className="rounded-md bg-background">
+          <HeroLink
+            href={activeImage.linkUrl || "/products"}
+            className={buttonVariants({ size: "lg" })}
+          >
+            {t("shopNow")}
+          </HeroLink>
         </div>
-      )}
+      </div>
+      <HeroControls {...carousel} count={carousel.images.length} />
     </section>
   );
 }

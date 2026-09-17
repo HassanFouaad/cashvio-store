@@ -58,6 +58,7 @@ export const LOCALE_OVERRIDE_HEADER = "x-sf-locale";
  * and forwarded to the render via THEME_PREVIEW_HEADER (layouts cannot read
  * query params). Cosmetic-only: previews never bypass storefront gating.
  */
+export const THEME_PREVIEW_DRAFT_PARAM = "preview_draft";
 export const THEME_PREVIEW_THEME_PARAM = "preview_theme";
 export const THEME_PREVIEW_PALETTE_PARAM = "preview_palette";
 export const THEME_PREVIEW_CUSTOM_PARAM = "preview_custom";

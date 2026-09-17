@@ -59,6 +59,12 @@
       "previousImage": "الصورة السابقة",
       "nextImage": "الصورة التالية",
       "goToImage": "الانتقال إلى الصورة {index}",
+      "carouselLabel": "عروض {storeName}",
+      "carouselRole": "عارض شرائح",
+      "slideRole": "شريحة",
+      "slidePosition": "البانر {index} من {total}",
+      "pauseRotation": "إيقاف تبديل البانرات",
+      "resumeRotation": "استئناف تبديل البانرات",
       "tagline": "تصفح أحدث منتجاتنا وعروضنا",
       "shopNow": "تسوق الآن"
     },
@@ -303,7 +309,7 @@
     "arabic": "العربية",
     "changeLanguage": "تغيير اللغة",
     "selectLanguage": "اختر اللغة",
-    "switchTo": "التبديل إلى {{language}}"
+    "switchTo": "التبديل إلى {language}"
   },
   "cart": {
     "pageTitle": "سلة التسوق",

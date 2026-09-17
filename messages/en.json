@@ -59,6 +59,12 @@
       "previousImage": "Previous image",
       "nextImage": "Next image",
       "goToImage": "Go to image {index}",
+      "carouselLabel": "{storeName} promotions",
+      "carouselRole": "carousel",
+      "slideRole": "slide",
+      "slidePosition": "Banner {index} of {total}",
+      "pauseRotation": "Pause banner rotation",
+      "resumeRotation": "Resume banner rotation",
       "tagline": "Browse our latest products and offers",
       "shopNow": "Shop now"
     },
@@ -303,7 +309,7 @@
     "arabic": "Arabic",
     "changeLanguage": "Change language",
     "selectLanguage": "Select language",
-    "switchTo": "Switch to {{language}}"
+    "switchTo": "Switch to {language}"
   },
   "cart": {
     "pageTitle": "Shopping Cart",

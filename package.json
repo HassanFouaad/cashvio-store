@@ -6,6 +6,7 @@
     "dev": "next dev --turbopack --port 4000",
     "build": "next build",
     "typecheck": "tsc --noEmit",
+    "test:theme": "node --import ./scripts/test-ts-loader.mjs --test test/theme-preview.test.ts test/theme-palette.test.ts test/storefront-messages.test.ts test/hero-images.test.ts",
     "verify": "yarn lint && yarn typecheck && yarn build",
     "start": "next start",
     "lint": "eslint",

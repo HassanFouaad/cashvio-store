@@ -1,30 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-    StoreFrontFontPreset,
-    StoreFrontRadiusPreset,
-} from "./features/store/types/store.types";
 import { getStoreSubdomain } from "./features/store/utils/store-resolver";
 import {
-    LANG_QUERY_PARAM,
-    LOCALE_COOKIE_MAX_AGE_SECONDS,
-    LOCALE_OVERRIDE_HEADER,
-    THEME_PREVIEW_CUSTOM_PARAM,
-    THEME_PREVIEW_FONT_PARAM,
-    THEME_PREVIEW_HEADER,
-    THEME_PREVIEW_PALETTE_PARAM,
-    THEME_PREVIEW_RADIUS_PARAM,
-    THEME_PREVIEW_THEME_PARAM,
-    VISITOR_COOKIE_MAX_AGE_SECONDS,
-    VISITOR_ID_COOKIE_NAME,
+  LANG_QUERY_PARAM,
+  LOCALE_COOKIE_MAX_AGE_SECONDS,
+  LOCALE_OVERRIDE_HEADER,
+  THEME_PREVIEW_HEADER,
+  VISITOR_COOKIE_MAX_AGE_SECONDS,
+  VISITOR_ID_COOKIE_NAME,
 } from "./lib/constants";
 import {
-    THEME_PREVIEW_CUSTOM_HEX_REGEX,
-    THEME_PREVIEW_UUID_REGEX,
-} from "./lib/theme/theme-constants";
+  parseThemePreviewParams,
+  serializeThemePreview,
+} from "./lib/theme/theme-preview";
 import { CookieName, isValidLocale, Locale } from "./types/enums";
 
 /**
- * Middleware Cookie Configuration
+ * Proxy Cookie Configuration
  *
  * Store-front uses store-specific cookies for:
  * - Locale (NEXT_LOCALE): Specific to each store
@@ -44,7 +35,7 @@ const DEFAULT_LOCALE = Locale.ARABIC;
 
 /**
  * Generate a UUID v4 for visitor ID.
- * crypto.randomUUID is available in the middleware runtime; the manual
+ * crypto.randomUUID is available in the proxy runtime; the manual
  * fallback only guards exotic self-hosted environments.
  */
 function generateVisitorId(): string {
@@ -59,7 +50,7 @@ function generateVisitorId(): string {
   });
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest): NextResponse {
   const hostname = request.headers.get("host") || "";
   const storeSubdomain = getStoreSubdomain(hostname);
 
@@ -89,53 +80,12 @@ export function middleware(request: NextRequest) {
  * silently dropped — preview params are cosmetic-only and never trusted.
  */
 function buildThemePreviewHeader(request: NextRequest): string | null {
-  const themeParam = request.nextUrl.searchParams.get(
-    THEME_PREVIEW_THEME_PARAM,
+  return serializeThemePreview(
+    parseThemePreviewParams(request.nextUrl.searchParams),
   );
-  const paletteParam = request.nextUrl.searchParams.get(
-    THEME_PREVIEW_PALETTE_PARAM,
-  );
-  const customParam = request.nextUrl.searchParams.get(
-    THEME_PREVIEW_CUSTOM_PARAM,
-  );
-  const fontParam = request.nextUrl.searchParams.get(THEME_PREVIEW_FONT_PARAM);
-  const radiusParam = request.nextUrl.searchParams.get(
-    THEME_PREVIEW_RADIUS_PARAM,
-  );
-
-  const preview: { t?: string; p?: string; c?: string; f?: string; r?: string } =
-    {};
-
-  if (themeParam && THEME_PREVIEW_UUID_REGEX.test(themeParam)) {
-    preview.t = themeParam;
-  }
-  if (paletteParam && THEME_PREVIEW_UUID_REGEX.test(paletteParam)) {
-    preview.p = paletteParam;
-  }
-  if (customParam && THEME_PREVIEW_CUSTOM_HEX_REGEX.test(customParam)) {
-    preview.c = customParam;
-  }
-  if (
-    fontParam &&
-    Object.values(StoreFrontFontPreset).includes(
-      fontParam as StoreFrontFontPreset,
-    )
-  ) {
-    preview.f = fontParam;
-  }
-  if (
-    radiusParam &&
-    Object.values(StoreFrontRadiusPreset).includes(
-      radiusParam as StoreFrontRadiusPreset,
-    )
-  ) {
-    preview.r = radiusParam;
-  }
-
-  return Object.keys(preview).length > 0 ? JSON.stringify(preview) : null;
 }
 
-function handleLocaleAndVisitor(request: NextRequest) {
+function handleLocaleAndVisitor(request: NextRequest): NextResponse {
   // Track whether we need to set cookies
   let needsLocaleCookie = false;
   let needsVisitorCookie = false;
@@ -145,8 +95,7 @@ function handleLocaleAndVisitor(request: NextRequest) {
   // ?lang=en|ar forces the language for THIS request and persists it.
   // Powers hreflang alternate URLs and language-specific shared links.
   const langParam = request.nextUrl.searchParams.get(LANG_QUERY_PARAM);
-  const langOverride =
-    langParam && isValidLocale(langParam) ? langParam : null;
+  const langOverride = langParam && isValidLocale(langParam) ? langParam : null;
 
   // Theme preview draft (portal editor iframe) — request-scoped only,
   // never persisted in cookies.

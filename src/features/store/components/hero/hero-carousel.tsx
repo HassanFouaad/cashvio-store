@@ -1,200 +1,74 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useTranslations } from "next-intl";
 import Image from "next/image";
-import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { StoreFrontHeroImageDto } from "../../types/store.types";
+import { useTranslations } from "next-intl";
+
+import { useHeroCarousel } from "@/features/store/hooks/use-hero-carousel";
+import type { StoreFrontHeroImageDto } from "@/features/store/types/store.types";
+import { getHeroImageLoadingProps } from "@/features/store/utils/hero-image-props";
+
+import { HeroControls } from "./hero-controls";
+import { HeroLink } from "./hero-link";
 
 interface HeroCarouselProps {
   heroImages: StoreFrontHeroImageDto[];
   storeName: string;
 }
 
-const AUTO_ROTATE_MS = 5000;
-/** Resume autoplay if touchend/touchcancel never fires (common on scroll). */
-const TOUCH_PAUSE_FAILSAFE_MS = 4000;
-
-/**
- * Determines if a URL is an internal path (starts with /).
- * Internal links use Next.js Link for client-side navigation.
- * External links open in a new tab.
- */
-function isInternalUrl(url: string): boolean {
-  return url.startsWith("/");
-}
-
-/**
- * CAROUSEL hero — auto-rotating banner slider. This is the storefront's
- * original hero, byte-compatible for stores without a theme.
- */
+/** Image-led carousel preserves the merchant's uncropped banner artwork. */
 export function HeroCarousel({ heroImages, storeName }: HeroCarouselProps) {
   const t = useTranslations("store.hero");
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const touchFailsafeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Sort images by display order
-  const sortedImages = [...heroImages].sort(
-    (a, b) => a.displayOrder - b.displayOrder,
-  );
-
-  const clearTouchFailsafe = useCallback(() => {
-    if (touchFailsafeRef.current !== null) {
-      clearTimeout(touchFailsafeRef.current);
-      touchFailsafeRef.current = null;
-    }
-  }, []);
-
-  const resumeAutoplay = useCallback(() => {
-    clearTouchFailsafe();
-    setIsPaused(false);
-  }, [clearTouchFailsafe]);
-
-  const pauseFromTouch = useCallback(() => {
-    setIsPaused(true);
-    clearTouchFailsafe();
-    // Scrolling often cancels the gesture with touchcancel (not touchend).
-    // Without a failsafe, isPaused stays true and the carousel never rotates.
-    touchFailsafeRef.current = setTimeout(() => {
-      touchFailsafeRef.current = null;
-      setIsPaused(false);
-    }, TOUCH_PAUSE_FAILSAFE_MS);
-  }, [clearTouchFailsafe]);
-
-  useEffect(() => () => clearTouchFailsafe(), [clearTouchFailsafe]);
-
-  useEffect(() => {
-    if (sortedImages.length <= 1 || isPaused) return;
-
-    // Respect users who prefer reduced motion — no auto-rotation
-    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (motionQuery.matches) return;
-
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % sortedImages.length);
-    }, AUTO_ROTATE_MS);
-
-    return () => clearInterval(timer);
-  }, [sortedImages.length, isPaused]);
-
-  const goToPrevious = () => {
-    setCurrentIndex((prev) =>
-      prev === 0 ? sortedImages.length - 1 : prev - 1,
-    );
-  };
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % sortedImages.length);
-  };
-
-  if (sortedImages.length === 0) {
-    return null;
-  }
+  const carousel = useHeroCarousel(heroImages);
+  if (!carousel.images.length) return null;
 
   return (
-    <div
-      className="relative w-full max-w-full h-[250px] sm:h-[350px] md:h-[450px] overflow-hidden group bg-background"
-      onTouchStart={pauseFromTouch}
-      onTouchEnd={resumeAutoplay}
-      onTouchCancel={resumeAutoplay}
+    <section
+      role="region"
+      aria-roledescription={t("carouselRole")}
+      aria-label={t("carouselLabel", { storeName })}
+      className="relative h-[250px] w-full max-w-full overflow-hidden bg-background sm:h-[350px] md:h-[450px]"
+      {...carousel.interactionProps}
     >
-      {/* Images */}
-      {sortedImages.map((image, index) => {
-        const imageContent = (
+      {carousel.images.map((image, index) => {
+        const isActive = index === carousel.currentIndex;
+        const imageContent = carousel.shouldRenderImage(index) ? (
           <Image
-            key={image.id}
             src={image.imageUrl}
             alt={t("imageAlt", { storeName, index: index + 1 })}
             fill
             sizes="100vw"
             className="object-contain"
-            priority={index === 0}
-            loading={index === 0 ? "eager" : "lazy"}
-            fetchPriority={index === 0 ? "high" : "low"}
+            {...getHeroImageLoadingProps(index, carousel.currentIndex)}
           />
-        );
-
-        const isActive = index === currentIndex;
-
+        ) : null;
         return (
           <div
             key={image.id}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              isActive ? "opacity-100" : "opacity-0 pointer-events-none"
-            }`}
+            role="group"
+            aria-roledescription={t("slideRole")}
+            aria-label={t("slidePosition", {
+              index: index + 1,
+              total: carousel.images.length,
+            })}
             aria-hidden={!isActive}
+            className={`absolute inset-0 transition-opacity duration-700 motion-reduce:transition-none ${isActive ? "opacity-100" : "pointer-events-none opacity-0"}`}
           >
             {image.linkUrl ? (
-              isInternalUrl(image.linkUrl) ? (
-                <Link
-                  href={image.linkUrl}
-                  className="block absolute inset-0 cursor-pointer"
-                  aria-label={t("promotionLabel", { storeName })}
-                  tabIndex={isActive ? 0 : -1}
-                >
-                  {imageContent}
-                </Link>
-              ) : (
-                <a
-                  href={image.linkUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block absolute inset-0 cursor-pointer"
-                  aria-label={t("promotionLabel", { storeName })}
-                  tabIndex={isActive ? 0 : -1}
-                >
-                  {imageContent}
-                </a>
-              )
+              <HeroLink
+                href={image.linkUrl}
+                className="absolute inset-0 block"
+                label={t("promotionLabel", { storeName })}
+                tabIndex={isActive ? 0 : -1}
+              >
+                {imageContent}
+              </HeroLink>
             ) : (
               imageContent
             )}
           </div>
         );
       })}
-
-      {/* Navigation Buttons */}
-      {sortedImages.length > 1 && (
-        <>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute start-2 sm:start-4 top-1/2 -translate-y-1/2 rounded-full bg-black/35 text-white hover:bg-black/55 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 sm:h-10 sm:w-10 z-10"
-            onClick={goToPrevious}
-            aria-label={t("previousImage")}
-          >
-            <ChevronLeft className="h-4 w-4 sm:h-6 sm:w-6 rtl:rotate-180" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute end-2 sm:end-4 top-1/2 -translate-y-1/2 rounded-full bg-black/35 text-white hover:bg-black/55 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 sm:h-10 sm:w-10 z-10"
-            onClick={goToNext}
-            aria-label={t("nextImage")}
-          >
-            <ChevronRight className="h-4 w-4 sm:h-6 sm:w-6 rtl:rotate-180" />
-          </Button>
-
-          {/* Dots Indicator */}
-          <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 z-10">
-            {sortedImages.map((_, index) => (
-              <button
-                key={index}
-                className={`h-1.5 sm:h-2 rounded-full transition-all ${
-                  index === currentIndex
-                    ? "w-6 sm:w-8 bg-white"
-                    : "w-1.5 sm:w-2 bg-white/50 hover:bg-white/75"
-                }`}
-                onClick={() => setCurrentIndex(index)}
-                aria-label={t("goToImage", { index: index + 1 })}
-              />
-            ))}
-          </div>
-        </>
-      )}
-    </div>
+      <HeroControls {...carousel} count={carousel.images.length} />
+    </section>
   );
 }

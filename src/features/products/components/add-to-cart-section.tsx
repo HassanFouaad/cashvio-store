@@ -3,29 +3,29 @@
 import { Button } from "@/components/ui/button";
 import { ApiCartItemModifier } from "@/features/cart/api/cart.types";
 import {
-    useCanCheckout,
-    useCartStore,
-    useIsCartSyncing,
-    usePendingChangesCount,
+  useCanCheckout,
+  useCartStore,
+  useIsCartSyncing,
+  usePendingChangesCount,
 } from "@/features/cart/store";
 import { ModifierGroupsPicker } from "@/features/products/components/modifier-groups-picker";
 import { useModifierSelection } from "@/features/products/hooks/use-modifier-selection";
 import {
-    PublicProductDto,
-    PublicProductVariantDto,
+  PublicProductDto,
+  PublicProductVariantDto,
 } from "@/features/products/types/product.types";
 import { BundleUtils } from "@/features/products/utils/bundle.utils";
 import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
 import { formatCurrency } from "@/lib/utils/formatters";
 import {
-    AlertCircle,
-    Check,
-    Loader2,
-    Minus,
-    Plus,
-    ShoppingCart,
-    Trash2,
-    Zap,
+  AlertCircle,
+  Check,
+  Loader2,
+  Minus,
+  Plus,
+  ShoppingCart,
+  Trash2,
+  Zap,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -308,7 +308,8 @@ export function AddToCartSection({
   const selectedHasDiscount =
     selectedVariant != null &&
     CatalogueDiscountUtils.hasVariantDiscount(selectedVariant);
-  const selectedOriginalUnitPrice = selectedVariant?.originalSellingPrice ?? null;
+  const selectedOriginalUnitPrice =
+    selectedVariant?.originalSellingPrice ?? null;
   const selectedSavingPerUnit =
     selectedOriginalUnitPrice != null && selectedVariant
       ? Math.max(0, selectedOriginalUnitPrice - selectedVariant.sellingPrice)
@@ -365,9 +366,9 @@ export function AddToCartSection({
           {selectedVariant.discount?.endsAt && (
             <p className="text-sm text-muted-foreground">
               {t("discount.endsOn", {
-                date: new Date(selectedVariant.discount.endsAt).toLocaleDateString(
-                  locale,
-                ),
+                date: new Date(
+                  selectedVariant.discount.endsAt,
+                ).toLocaleDateString(locale),
               })}
             </p>
           )}
@@ -443,7 +444,11 @@ export function AddToCartSection({
                     CatalogueDiscountUtils.hasVariantDiscount(variant) ? (
                       <span className="inline-flex flex-col items-start gap-0.5">
                         <span className="sf-price tabular-nums">
-                          {formatCurrency(variant.sellingPrice, currency, locale)}
+                          {formatCurrency(
+                            variant.sellingPrice,
+                            currency,
+                            locale,
+                          )}
                         </span>
                         <span className="sf-price line-through tabular-nums">
                           {formatCurrency(
@@ -518,11 +523,11 @@ export function AddToCartSection({
                     {!isUnlimitedStock &&
                       totalAvailable != null &&
                       totalAvailable < 5 && (
-                      <span>
-                        {Math.max(0, totalAvailable - cartQuantity)}{" "}
-                        {t("available")}
-                      </span>
-                    )}
+                        <span>
+                          {Math.max(0, totalAvailable - cartQuantity)}{" "}
+                          {t("available")}
+                        </span>
+                      )}
                     {maxPerOrder !== null && (
                       <span>
                         ({tCart("maxPerOrder", { max: maxPerOrder })})
@@ -535,10 +540,10 @@ export function AddToCartSection({
                   {!isUnlimitedStock &&
                     totalAvailable != null &&
                     totalAvailable < 5 && (
-                    <span>
-                      {totalAvailable} {t("available")}
-                    </span>
-                  )}
+                      <span>
+                        {totalAvailable} {t("available")}
+                      </span>
+                    )}
                   {maxPerOrder !== null && (
                     <span>({tCart("maxPerOrder", { max: maxPerOrder })})</span>
                   )}
@@ -675,7 +680,7 @@ export function AddToCartSection({
       {/* Sticky mobile CTA — appears when inline controls scroll away */}
       {selectedVariant && isInStock && showStickyBar && (
         <div className="fixed-bottom-cta fixed inset-x-0 z-40 px-3 md:hidden">
-          <div className="flex items-center gap-3 rounded-xl border border-border bg-background/95 backdrop-blur p-2.5">
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-background/95 backdrop-blur p-2.5">
             <div className="min-w-0 flex-1">
               <p className="text-xs text-muted-foreground truncate">
                 {selectedVariant.name || product.name}
@@ -727,22 +732,28 @@ export function AddToCartSection({
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5">
+              <div className="grid w-full grid-cols-2 gap-2">
                 <Button
+                  type="button"
                   variant="outline"
-                  className="h-10 gap-1 touch-manipulation px-2.5"
+                  className="h-11 w-full gap-1.5 touch-manipulation px-2"
                   disabled={!canAddMore || isBuyNowPending}
                   onClick={handleBuyNow}
-                  aria-label={t("buyNow")}
+                  aria-label={
+                    isBuyNowPending ? t("buyNowLoading") : t("buyNow")
+                  }
+                  aria-busy={isBuyNowPending}
                 >
-                  {isBuyNowPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Zap className="h-4 w-4" />
+                  {isBuyNowPending && (
+                    <Loader2
+                      className="h-4 w-4 animate-spin"
+                      aria-hidden="true"
+                    />
                   )}
+                  {t("buyNow")}
                 </Button>
                 <Button
-                  className="h-10 gap-1.5 touch-manipulation"
+                  className="h-11 w-full gap-1.5 touch-manipulation px-2"
                   disabled={!canAddMore || isBuyNowPending}
                   onClick={handleAddToCart}
                 >

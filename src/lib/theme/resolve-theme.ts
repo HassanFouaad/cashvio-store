@@ -1,21 +1,23 @@
 import {
-    StoreFrontDto,
-    StoreFrontFontPreset,
-    StoreFrontPaletteDto,
-    StoreFrontRadiusPreset,
-    StoreFrontThemeDto,
-    StoreFrontThemeLayout,
-    StoreFrontThemeTokens,
+  StoreFrontDto,
+  StoreFrontFontPreset,
+  StoreFrontPaletteDto,
+  StoreFrontRadiusPreset,
+  StoreFrontThemeDto,
+  StoreFrontThemeLayout,
+  StoreFrontThemeTokens,
 } from "@/features/store/types/store.types";
 import { RADIUS_PRESET_REM } from "./theme-constants";
 import {
-    SafeThemeTokenSet,
-    sanitizeThemeLayout,
-    sanitizeTokenSet,
+  SafeThemeTokenSet,
+  sanitizeThemeLayout,
+  sanitizeTokenSet,
 } from "./theme-validation";
 
 /** Draft overrides carried by the preview header (already enum-validated) */
 export interface ThemePreviewOverrides {
+  /** Complete builder draft: null means clear, not keep the saved setting. */
+  isDraft: boolean;
   themeId: string | null;
   paletteId: string | null;
   /** Bare 6-digit hex seed of a draft custom palette */
@@ -55,7 +57,10 @@ export function resolveStoreTheme(
   previewCustomTokens: StoreFrontThemeTokens | null,
   previewOverrides: ThemePreviewOverrides | null,
 ): ResolvedStoreTheme {
-  const theme = previewTheme ?? storeFront?.theme ?? null;
+  const theme =
+    previewOverrides?.isDraft && !previewOverrides.themeId
+      ? null
+      : (previewTheme ?? storeFront?.theme ?? null);
 
   // Color source precedence. An explicit preview choice (custom seed or
   // catalog palette) always wins. When a design is being previewed WITHOUT
@@ -66,8 +71,8 @@ export function resolveStoreTheme(
     ? previewCustomTokens
     : previewPalette
       ? previewPalette.tokens
-      : previewTheme
-        ? (previewTheme.defaultPalette?.tokens ?? null)
+      : previewOverrides?.isDraft || previewTheme
+        ? (theme?.defaultPalette?.tokens ?? null)
         : (storeFront?.palette?.tokens ??
           storeFront?.customTokens ??
           theme?.defaultPalette?.tokens ??
@@ -81,7 +86,8 @@ export function resolveStoreTheme(
     : null;
 
   const fontPreset = resolvePreset(
-    previewOverrides?.fontPreset,
+    previewOverrides?.fontPreset ??
+      (previewOverrides?.isDraft ? StoreFrontFontPreset.DEFAULT : null),
     storeFront?.fontPreset,
     theme?.fontPreset,
     StoreFrontFontPreset.DEFAULT,
@@ -89,7 +95,8 @@ export function resolveStoreTheme(
   );
 
   const radiusPreset = resolvePreset(
-    previewOverrides?.radiusPreset,
+    previewOverrides?.radiusPreset ??
+      (previewOverrides?.isDraft ? StoreFrontRadiusPreset.DEFAULT : null),
     storeFront?.radiusPreset,
     theme?.radiusPreset,
     StoreFrontRadiusPreset.DEFAULT,
@@ -98,7 +105,8 @@ export function resolveStoreTheme(
 
   // SOFT is the globals.css default — no override needed
   const radiusRem =
-    radiusPreset === StoreFrontRadiusPreset.SOFT
+    radiusPreset === StoreFrontRadiusPreset.SOFT ||
+    radiusPreset === StoreFrontRadiusPreset.DEFAULT
       ? null
       : (RADIUS_PRESET_REM[radiusPreset] ?? null);
 
@@ -112,8 +120,8 @@ export function resolveStoreTheme(
 }
 
 /**
- * Pick the first concrete (non-DEFAULT) value along the chain
- * preview -> merchant setting -> theme default -> fallback.
+ * An explicit DEFAULT selection clears the merchant override. Only an
+ * absent preview value falls back to the saved selection.
  */
 function resolvePreset<T extends string>(
   previewValue: T | null | undefined,
@@ -121,11 +129,10 @@ function resolvePreset<T extends string>(
   themeValue: T | null | undefined,
   defaultMarker: T,
   fallback: T,
-): Exclude<T, typeof defaultMarker> {
-  for (const value of [previewValue, merchantValue, themeValue]) {
-    if (value && value !== defaultMarker) {
-      return value as Exclude<T, typeof defaultMarker>;
-    }
+): T {
+  const selectedValue = previewValue ?? merchantValue;
+  if (selectedValue && selectedValue !== defaultMarker) {
+    return selectedValue;
   }
-  return fallback as Exclude<T, typeof defaultMarker>;
+  return themeValue && themeValue !== defaultMarker ? themeValue : fallback;
 }

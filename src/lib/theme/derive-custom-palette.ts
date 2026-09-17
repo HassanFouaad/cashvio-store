@@ -1,6 +1,6 @@
 import {
-    StoreFrontThemeTokens,
-    StoreFrontThemeTokenSet,
+  StoreFrontThemeTokens,
+  StoreFrontThemeTokenSet,
 } from "@/features/store/types/store.types";
 
 /**
@@ -17,7 +17,7 @@ import {
  * - light mode sits on white with very light tints of the brand hue
  * - dark mode sits on a near-black brand-tinted surface, primary lightened
  *   to at least 62 lightness for contrast
- * - primaryForeground flips white/dark by the seed's relative luminance
+ * - primaryForeground is selected using WCAG text contrast, not a brightness guess
  * - destructive stays the platform red (never derived)
  */
 export function deriveCustomPalette(primaryHex: string): StoreFrontThemeTokens {
@@ -29,13 +29,17 @@ export function deriveCustomPalette(primaryHex: string): StoreFrontThemeTokens {
 
   const lightForeground = tint(30, 12);
   const primaryLight = seed;
-  const primaryLightForeground =
-    relativeLuminance(primaryLight) > 0.42 ? tint(35, 10) : "#ffffff";
+  const primaryLightForeground = getReadablePrimaryText(
+    primaryLight,
+    tint(35, 10),
+  );
 
   const darkForeground = tint(20, 95);
   const primaryDark = hslToHex(h, s, Math.max(l, 62));
-  const primaryDarkForeground =
-    relativeLuminance(primaryDark) > 0.42 ? tint(35, 10) : "#ffffff";
+  const primaryDarkForeground = getReadablePrimaryText(
+    primaryDark,
+    tint(35, 10),
+  );
 
   const light: StoreFrontThemeTokenSet = {
     background: "#ffffff",
@@ -49,7 +53,13 @@ export function deriveCustomPalette(primaryHex: string): StoreFrontThemeTokens {
     secondary: tint(40, 96),
     secondaryForeground: tint(35, 20),
     muted: tint(30, 96),
-    mutedForeground: tint(25, 42),
+    mutedForeground: getReadableMutedText(
+      h,
+      Math.min(s, 25),
+      42,
+      tint(45, 93),
+      false,
+    ),
     accent: tint(45, 93),
     accentForeground: tint(35, 20),
     destructive: "#dc2626",
@@ -71,7 +81,13 @@ export function deriveCustomPalette(primaryHex: string): StoreFrontThemeTokens {
     secondary: tint(30, 16),
     secondaryForeground: darkForeground,
     muted: tint(30, 16),
-    mutedForeground: tint(20, 65),
+    mutedForeground: getReadableMutedText(
+      h,
+      Math.min(s, 20),
+      65,
+      tint(30, 20),
+      true,
+    ),
     accent: tint(30, 20),
     accentForeground: darkForeground,
     destructive: "#b91c1c",
@@ -150,11 +166,45 @@ function hslToHex(h: number, s: number, l: number): string {
   return `#${toChannel(r)}${toChannel(g)}${toChannel(b)}`;
 }
 
+/** AA for normal text, including middle-luminance brand colors. */
+function getReadablePrimaryText(background: string, darkText: string): string {
+  if (contrastRatio(background, "#ffffff") >= 4.5) return "#ffffff";
+  return contrastRatio(background, darkText) >= 4.5 ? darkText : "#000000";
+}
+
+/** Keep the intended tint, moving only as far as legibility requires. */
+function getReadableMutedText(
+  hue: number,
+  saturation: number,
+  initialLightness: number,
+  background: string,
+  shouldLighten: boolean,
+): string {
+  for (
+    let lightness = initialLightness;
+    lightness >= 0 && lightness <= 100;
+    lightness += shouldLighten ? 1 : -1
+  ) {
+    const candidate = hslToHex(hue, saturation, lightness);
+    if (contrastRatio(background, candidate) >= 4.5) return candidate;
+  }
+  return shouldLighten ? "#ffffff" : "#000000";
+}
+
+function contrastRatio(first: string, second: string): number {
+  const firstLuminance = relativeLuminance(first);
+  const secondLuminance = relativeLuminance(second);
+  return (
+    (Math.max(firstLuminance, secondLuminance) + 0.05) /
+    (Math.min(firstLuminance, secondLuminance) + 0.05)
+  );
+}
+
 /** WCAG relative luminance (0 = black, 1 = white). */
 function relativeLuminance(hex: string): number {
   const channel = (raw: number): number => {
     const value = raw / 255;
-    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
   };
 
   const r = channel(parseInt(hex.slice(1, 3), 16));
