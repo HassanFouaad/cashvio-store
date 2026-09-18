@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useSharedCartPreview } from "./cart-preview-provider";
 import { CartPreviewMatchUtils } from "../utils/cart-preview-match.utils";
+import { CartErrorBanner } from "@/features/cart/components/cart-error-banner";
 import { useCartStore, useIsCartSyncing } from "../store";
 import { CartEmpty } from "./cart-empty";
 import { CartItem } from "./cart-item";
@@ -25,7 +26,8 @@ const CLEAR_CONFIRM_TIMEOUT_MS = 4000;
  */
 export function CartList({ currency, locale }: CartListProps) {
   const t = useTranslations("cart");
-  const { cart, clearCart, isInitialized, isLoading } = useCartStore();
+  const { cart, clearCart, isInitialized, isLoading, error, clearError } =
+    useCartStore();
   const isSyncing = useIsCartSyncing();
   const { preview } = useSharedCartPreview();
 
@@ -118,6 +120,8 @@ export function CartList({ currency, locale }: CartListProps) {
       </Link>
 
       {removedNotice}
+
+      {error ? <CartErrorBanner error={error} onDismiss={clearError} /> : null}
 
       {/* Header with clear button */}
       <div className="flex items-center justify-between">

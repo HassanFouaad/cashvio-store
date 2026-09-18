@@ -8,6 +8,7 @@ import type {
 export enum CartPreviewError {
   LOAD_FAILED = "previewError",
   NO_METHODS = "noFulfillmentMethods",
+  TOO_MANY_ITEMS = "orderItemLimitExceeded",
 }
 
 export interface CartPreviewState {

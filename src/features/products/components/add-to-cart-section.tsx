@@ -2,12 +2,18 @@
 
 import { Button } from "@/components/ui/button";
 import { ApiCartItemModifier } from "@/features/cart/api/cart.types";
+import { CART_MAX_DISTINCT_LINES } from "@/features/cart/constants";
+import { CartErrorBanner } from "@/features/cart/components/cart-error-banner";
 import {
   useCanCheckout,
   useCartStore,
   useIsCartSyncing,
   usePendingChangesCount,
 } from "@/features/cart/store";
+import {
+  isAtDistinctLineLimit,
+  isBlockedNewLineAdd,
+} from "@/features/cart/utils/cart-limit.utils";
 import { ModifierGroupsPicker } from "@/features/products/components/modifier-groups-picker";
 import { useModifierSelection } from "@/features/products/hooks/use-modifier-selection";
 import {
@@ -118,6 +124,8 @@ export function AddToCartSection({
   const addItem = useCartStore((state) => state.addItem);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
+  const cartError = useCartStore((state) => state.error);
+  const clearError = useCartStore((state) => state.clearError);
 
   // Derived state
   const selectedVariant = variants.find((v) => v.id === selectedVariantId);
@@ -159,13 +167,21 @@ export function AddToCartSection({
   // one cart line — products with modifiers always use the Add button
   const isInCart = cartQuantity > 0 && !hasModifiers;
 
+  const wouldBlockNewLine =
+    selectedVariantId != null &&
+    isInitialized &&
+    isBlockedNewLineAdd(cart, selectedVariantId, selectedModifierIds);
+
+  const isCartFull = isInitialized && isAtDistinctLineLimit(cart);
+
   // Check if can add more to cart
   const canAddMore =
     isInStock &&
     remainingAvailable > 0 &&
     selectedVariant !== undefined &&
     !isLoading &&
-    (!hasModifiers || allMinimumsMet);
+    (!hasModifiers || allMinimumsMet) &&
+    !wouldBlockNewLine;
 
   // Check if max is reached (not applicable for unlimited stock, but check maxPerOrder)
   const isMaxReached =
@@ -494,6 +510,31 @@ export function AddToCartSection({
           currency={currency}
           locale={locale}
         />
+      )}
+
+      {cartError ? (
+        <CartErrorBanner error={cartError} onDismiss={clearError} />
+      ) : null}
+
+      {isInitialized && isInStock && wouldBlockNewLine && (
+        <div className="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2.5 text-sm text-destructive sm:p-3">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>
+            {tCart("lineLimitExceeded", { max: CART_MAX_DISTINCT_LINES })}
+          </span>
+        </div>
+      )}
+
+      {isInitialized && isInStock && isCartFull && !wouldBlockNewLine && (
+        <div className="flex items-center gap-2 rounded-lg border border-border p-2.5 text-sm text-muted-foreground sm:p-3">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>
+            {tCart("lineLimitNear", {
+              count: cart?.items.length ?? 0,
+              max: CART_MAX_DISTINCT_LINES,
+            })}
+          </span>
+        </div>
       )}
 
       {/* Max Reached Warning - More compact on mobile */}

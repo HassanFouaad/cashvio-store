@@ -15,6 +15,7 @@ import {
   type CartPreviewResult,
   type UseCartOrderPreviewResult,
 } from "@/features/cart/types/cart-preview.types";
+import { MAX_PUBLIC_ORDER_ITEMS } from "@/features/cart/constants";
 import { resolveCartPreviewState } from "@/features/cart/utils/cart-preview-state";
 import {
   getFulfillmentMethods,
@@ -141,6 +142,16 @@ export function useCartOrderPreview(
     if (!request) return;
     let cancelled = false;
     const timer = setTimeout(async () => {
+      if ((cartItems?.length ?? 0) > MAX_PUBLIC_ORDER_ITEMS) {
+        if (!cancelled)
+          setResult({
+            request,
+            preview: null,
+            error: CartPreviewError.TOO_MANY_ITEMS,
+          });
+        return;
+      }
+
       try {
         const preview = await previewOrder(request.body);
         if (!cancelled) setResult({ request, preview, error: null });
@@ -157,7 +168,7 @@ export function useCartOrderPreview(
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [request]);
+  }, [request, cartItems]);
 
   const setFulfillmentMethod = useCallback(
     (method: FulfillmentMethod): void => setSelection({ storeId, method }),

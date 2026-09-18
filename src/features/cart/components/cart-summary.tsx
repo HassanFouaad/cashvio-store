@@ -2,6 +2,8 @@
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CartErrorBanner } from "@/features/cart/components/cart-error-banner";
+import { CART_MAX_DISTINCT_LINES } from "@/features/cart/constants";
 import { FulfillmentMethod } from "@/features/checkout/types/checkout.types";
 import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
 import { formatCurrency } from "@/lib/utils/formatters";
@@ -9,14 +11,14 @@ import { AlertTriangle, Loader2, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useMemo } from "react";
-import { useSharedCartPreview } from "./cart-preview-provider";
 import {
-  computeCartValidation,
-  useCanCheckout,
-  useCartStore,
-  useIsCartSyncing,
-  usePendingChangesCount,
+    computeCartValidation,
+    useCanCheckout,
+    useCartStore,
+    useIsCartSyncing,
+    usePendingChangesCount,
 } from "../store";
+import { useSharedCartPreview } from "./cart-preview-provider";
 
 interface CartSummaryProps {
   currency: string;
@@ -36,7 +38,8 @@ const METHOD_LABEL_KEY: Record<FulfillmentMethod, string> = {
 export function CartSummary({ currency, locale }: CartSummaryProps) {
   const t = useTranslations("cart");
   const tCheckout = useTranslations("checkout");
-  const { cart, isInitialized, fetchCart } = useCartStore();
+  const { cart, isInitialized, fetchCart, error: cartError, clearError } =
+    useCartStore();
   const isSyncing = useIsCartSyncing();
   const pendingChangesCount = usePendingChangesCount();
   const canCheckout = useCanCheckout();
@@ -71,6 +74,7 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
     (isPreviewLoading || isSyncing || hasPendingChanges || !preview);
   const canProceed =
     canCheckout &&
+    !validation.exceedsOrderItemLimit &&
     !isPreviewLoading &&
     !isSyncing &&
     !hasPendingChanges &&
@@ -151,6 +155,30 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
           })}
         </div>
       )}
+
+      {cartError ? (
+        <CartErrorBanner error={cartError} onDismiss={clearError} />
+      ) : null}
+
+      {validation.exceedsOrderItemLimit && (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3">
+          <p className="text-sm font-medium text-destructive">
+            {t("orderItemLimitExceeded", { max: CART_MAX_DISTINCT_LINES })}
+          </p>
+        </div>
+      )}
+
+      {validation.isAtDistinctLineLimit &&
+        !validation.exceedsOrderItemLimit && (
+          <div className="rounded-lg border border-border p-3">
+            <p className="text-sm text-muted-foreground">
+              {t("lineLimitNear", {
+                count: validation.distinctLineCount,
+                max: CART_MAX_DISTINCT_LINES,
+              })}
+            </p>
+          </div>
+        )}
 
       {validation.hasStockIssues && (
         <div className="p-3 rounded-lg border border-destructive/50 bg-destructive/5">
@@ -345,7 +373,11 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
         </Link>
       ) : (
         <Button className="w-full min-h-11" disabled>
-          {showPreviewSkeleton ? t("calculating") : t("proceedToCheckout")}
+          {validation.exceedsOrderItemLimit
+            ? t("orderItemLimitExceeded", { max: CART_MAX_DISTINCT_LINES })
+            : showPreviewSkeleton
+              ? t("calculating")
+              : t("proceedToCheckout")}
         </Button>
       )}
     </div>

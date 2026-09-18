@@ -20,30 +20,32 @@ import {
     updateCartItemQuantity as apiUpdateQuantity,
 } from '../api/cart.service';
 import { ApiCart, ApiCartItem, ApiCartItemModifier } from '../api/cart.types';
+import { CART_MAX_DISTINCT_LINES } from '../constants';
+import type { CartStoreError } from '../types/cart-error.types';
+import { resolveCartMutationError } from '../utils/cart-api-error.utils';
+import {
+  exceedsOrderItemLimit,
+  isAtDistinctLineLimit,
+  isBlockedNewLineAdd,
+} from '../utils/cart-limit.utils';
+import {
+  findLineBySelection,
+  getLineModifierIds,
+  getSelectionKey,
+} from '../utils/cart-line.utils';
 import { BundleUtils } from "@/features/products/utils/bundle.utils";
 import { getOrCreateVisitorId } from '@/lib/visitor/visitor-id';
+
+export {
+  getModifierSignature,
+  getSelectionKey,
+} from '../utils/cart-line.utils';
 
 // Debounce delay in ms
 const DEBOUNCE_DELAY = 300;
 
 // Map to track pending operations per cart line
 const pendingOperations = new Map<string, NodeJS.Timeout>();
-
-/** Stable identity of a modifier selection: sorted unique ids joined */
-export function getModifierSignature(modifierIds?: string[] | null): string {
-  if (!modifierIds || modifierIds.length === 0) return '';
-  return [...new Set(modifierIds)].sort().join('|');
-}
-
-/** Selection key used before a server line id exists (adds) */
-export function getSelectionKey(variantId: string, modifierIds?: string[]): string {
-  return `${variantId}::${getModifierSignature(modifierIds)}`;
-}
-
-/** Modifier ids stored on a cart line */
-function getLineModifierIds(item: ApiCartItem): string[] {
-  return (item.modifiers ?? []).map((modifier) => modifier.modifierId);
-}
 
 /** Effective unit price of a line: variant price + modifier deltas */
 export function getLineUnitPrice(item: ApiCartItem): number {
@@ -54,28 +56,13 @@ export function getLineUnitPrice(item: ApiCartItem): number {
   return item.variant.sellingPrice + modifiersTotal;
 }
 
-/** Find the line matching a variant + exact modifier selection */
-function findLineBySelection(
-  cart: ApiCart | null,
-  variantId: string,
-  modifierIds?: string[]
-): ApiCartItem | undefined {
-  if (!cart) return undefined;
-  const signature = getModifierSignature(modifierIds);
-  return cart.items.find(
-    (item) =>
-      item.variant.id === variantId &&
-      getModifierSignature(getLineModifierIds(item)) === signature
-  );
-}
-
 interface CartStore {
   // State
   cart: ApiCart | null;
   isLoading: boolean;
   isInitialized: boolean;
   isSyncing: boolean;
-  error: string | null;
+  error: CartStoreError | null;
   pendingChanges: Map<string, number>;
   /** Store currency — used for analytics revenue attribution */
   currency: string;
@@ -201,7 +188,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
       const cart = await apiGetCart(visitorId);
       set({ cart, isInitialized: true });
     } catch {
-      set({ error: 'Failed to load cart', isInitialized: true });
+      set({ error: { key: 'loadFailed' }, isInitialized: true });
     } finally {
       set({ isLoading: false });
     }
@@ -217,6 +204,16 @@ export const useCartStore = create<CartStore>((set, get) => ({
     const selectionKey = getSelectionKey(variantId, modifierIds);
     const existingLine = findLineBySelection(cart, variantId, modifierIds);
     const newQuantity = (existingLine?.quantity ?? 0) + quantity;
+
+    if (isBlockedNewLineAdd(cart, variantId, modifierIds)) {
+      set({
+        error: {
+          key: 'lineLimitExceeded',
+          values: { max: CART_MAX_DISTINCT_LINES },
+        },
+      });
+      return;
+    }
 
     // Track add_to_cart analytics event
     try {
@@ -258,10 +255,14 @@ export const useCartStore = create<CartStore>((set, get) => ({
         set({ isSyncing: true });
         const freshCart = await apiGetCart(visitorId);
         set({ cart: freshCart, isSyncing: false });
-      } catch {
+      } catch (error) {
         const rollbackPending = new Map(get().pendingChanges);
         rollbackPending.delete(selectionKey);
-        set({ pendingChanges: rollbackPending, error: 'Failed to add item', isSyncing: true });
+        set({
+          pendingChanges: rollbackPending,
+          error: resolveCartMutationError(error, 'add'),
+          isSyncing: true,
+        });
         
         try {
           const visitorId = getOrCreateVisitorId();
@@ -299,10 +300,14 @@ export const useCartStore = create<CartStore>((set, get) => ({
         set({ isSyncing: true });
         const freshCart = await apiGetCart(visitorId);
         set({ cart: freshCart, isSyncing: false });
-      } catch {
+      } catch (error) {
         const rollbackPending = new Map(get().pendingChanges);
         rollbackPending.delete(itemId);
-        set({ pendingChanges: rollbackPending, error: 'Failed to update quantity', isSyncing: true });
+        set({
+          pendingChanges: rollbackPending,
+          error: resolveCartMutationError(error, 'update'),
+          isSyncing: true,
+        });
         
         try {
           const visitorId = getOrCreateVisitorId();
@@ -358,10 +363,14 @@ export const useCartStore = create<CartStore>((set, get) => ({
         set({ isSyncing: true });
         const freshCart = await apiGetCart(visitorId);
         set({ cart: freshCart, isSyncing: false });
-      } catch {
+      } catch (error) {
         const rollbackPending = new Map(get().pendingChanges);
         rollbackPending.delete(itemId);
-        set({ pendingChanges: rollbackPending, error: 'Failed to remove item', isSyncing: true });
+        set({
+          pendingChanges: rollbackPending,
+          error: resolveCartMutationError(error, 'remove'),
+          isSyncing: true,
+        });
         
         try {
           const visitorId = getOrCreateVisitorId();
@@ -392,8 +401,11 @@ export const useCartStore = create<CartStore>((set, get) => ({
       set({ isSyncing: true });
       const freshCart = await apiGetCart(visitorId);
       set({ cart: freshCart, isSyncing: false });
-    } catch {
-      set({ cart: previousCart, error: 'Failed to clear cart' });
+    } catch (error) {
+      set({
+        cart: previousCart,
+        error: resolveCartMutationError(error, 'clear'),
+      });
     }
   },
 
@@ -458,6 +470,9 @@ export interface CartValidationResult {
   isValid: boolean;
   hasStockIssues: boolean;
   hasOutOfStockItems: boolean;
+  isAtDistinctLineLimit: boolean;
+  exceedsOrderItemLimit: boolean;
+  distinctLineCount: number;
   itemsWithIssues: Array<{
     variantId: string;
     productName: string;
@@ -478,9 +493,16 @@ export function computeCartValidation(cart: ApiCart | null): CartValidationResul
       isValid: true,
       hasStockIssues: false,
       hasOutOfStockItems: false,
+      isAtDistinctLineLimit: false,
+      exceedsOrderItemLimit: false,
+      distinctLineCount: 0,
       itemsWithIssues: [],
     };
   }
+
+  const distinctLineCount = cart.items.length;
+  const atLineLimit = isAtDistinctLineLimit(cart);
+  const overOrderItemLimit = exceedsOrderItemLimit(cart);
 
   const itemsWithIssues: CartValidationResult['itemsWithIssues'] = [];
   let hasOutOfStockItems = false;
@@ -536,9 +558,14 @@ export function computeCartValidation(cart: ApiCart | null): CartValidationResul
   }
 
   return {
-    isValid: itemsWithIssues.length === 0,
+    isValid:
+      itemsWithIssues.length === 0 &&
+      !overOrderItemLimit,
     hasStockIssues: itemsWithIssues.length > 0,
     hasOutOfStockItems,
+    isAtDistinctLineLimit: atLineLimit,
+    exceedsOrderItemLimit: overOrderItemLimit,
+    distinctLineCount,
     itemsWithIssues,
   };
 }
@@ -554,6 +581,7 @@ export function useCanCheckout(): boolean {
   if (!cart || cart.items.length === 0 || isSyncing || pendingSize > 0) {
     return false;
   }
-  
-  return computeCartValidation(cart).isValid;
+
+  const validation = computeCartValidation(cart);
+  return validation.isValid && !validation.exceedsOrderItemLimit;
 }

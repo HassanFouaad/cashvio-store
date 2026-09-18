@@ -5,77 +5,82 @@ import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MAX_PUBLIC_ORDER_ITEMS } from "@/features/cart/constants";
 import { computeCartValidation, useCartStore } from "@/features/cart/store";
 import {
-  createOrder,
-  getCitiesByCountry,
-  getReceiptUploadUrl,
-  groupDeliveryZonesByCountry,
-  previewOrder,
-  uploadReceiptToPresignedUrl,
+    createOrder,
+    getCitiesByCountry,
+    getReceiptUploadUrl,
+    groupDeliveryZonesByCountry,
+    previewOrder,
+    uploadReceiptToPresignedUrl,
 } from "@/features/checkout/api/checkout-api";
 import { PickupLocationCard } from "@/features/checkout/components/pickup-location-card";
 import { PlaceOrderButton } from "@/features/checkout/components/place-order-button";
 import { ReceiptTransferDetails } from "@/features/checkout/components/receipt-transfer-details";
 import {
-  CommonCityDto,
-  CommonCountryDto,
-  CreateOrderRequest,
-  FulfillmentMethod,
-  GroupedDeliveryZoneCityDto,
-  GroupedDeliveryZoneCountryDto,
-  GroupedDeliveryZonesDto,
-  OrderPreviewDeliveryAddress,
-  OrderPreviewResponse,
-  PaymentMethod,
-  PublicDeliveryZonesResponseDto,
-  PublicFulfillmentMethodDto,
-  PublicStorefrontPaymentMethodDto,
+    CommonCityDto,
+    CommonCountryDto,
+    CreateOrderRequest,
+    FulfillmentMethod,
+    GroupedDeliveryZoneCityDto,
+    GroupedDeliveryZoneCountryDto,
+    GroupedDeliveryZonesDto,
+    OrderPreviewDeliveryAddress,
+    OrderPreviewResponse,
+    PaymentMethod,
+    PublicDeliveryZonesResponseDto,
+    PublicFulfillmentMethodDto,
+    PublicStorefrontPaymentMethodDto,
 } from "@/features/checkout/types/checkout.types";
+import {
+    resolveCheckoutPreviewErrorMessage,
+    resolveCheckoutSubmitErrorMessage,
+} from "@/features/checkout/utils/checkout-error.utils";
 import { formatDeliveryZoneCityOptionLabel } from "@/features/checkout/utils/delivery-zone-fee-label";
 import {
-  buildOrderSuccessRecap,
-  saveOrderSuccessRecap,
+    buildOrderSuccessRecap,
+    saveOrderSuccessRecap,
 } from "@/features/checkout/utils/order-success-recap";
 import { savePendingPayment } from "@/features/checkout/utils/pending-payment";
 import type { StorePickupLocation } from "@/features/checkout/utils/pickup-location";
+import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
 import { analytics } from "@/lib/analytics";
 import {
-  clearPendingCoupon,
-  consumePendingCoupon,
-  normalizeCouponCode,
-  persistPendingCoupon,
+    clearPendingCoupon,
+    consumePendingCoupon,
+    normalizeCouponCode,
+    persistPendingCoupon,
 } from "@/lib/coupon-deep-link";
-import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { getOrCreateVisitorId } from "@/lib/visitor/visitor-id";
 import {
-  AlertCircle,
-  AlertTriangle,
-  Banknote,
-  Check,
-  ChevronDown,
-  CreditCard,
-  Globe,
-  Loader2,
-  Package,
-  Receipt,
-  Store,
-  TicketPercent,
-  Upload,
-  UtensilsCrossed,
-  X,
+    AlertCircle,
+    AlertTriangle,
+    Banknote,
+    Check,
+    ChevronDown,
+    CreditCard,
+    Globe,
+    Loader2,
+    Package,
+    Receipt,
+    Store,
+    TicketPercent,
+    Upload,
+    UtensilsCrossed,
+    X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  FormEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+    FormEvent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
 } from "react";
 
 interface CheckoutFormProps {
@@ -335,8 +340,7 @@ export function CheckoutForm({
         router.push("/cart");
         return;
       }
-      // If cart has stock issues after refresh, redirect to cart to resolve
-      if (validation.hasStockIssues) {
+      if (validation.hasStockIssues || validation.exceedsOrderItemLimit) {
         router.push("/cart");
       }
     }
@@ -344,6 +348,7 @@ export function CheckoutForm({
     isInitialized,
     items.length,
     validation.hasStockIssues,
+    validation.exceedsOrderItemLimit,
     isSyncing,
     router,
   ]);
@@ -602,6 +607,13 @@ export function CheckoutForm({
       return;
     }
 
+    if (items.length > MAX_PUBLIC_ORDER_ITEMS) {
+      setPreviewError(
+        tCart("orderItemLimitExceeded", { max: MAX_PUBLIC_ORDER_ITEMS }),
+      );
+      return;
+    }
+
     const seq = ++previewSeqRef.current;
     setIsLoadingPreview(true);
     setPreviewError(null);
@@ -630,7 +642,14 @@ export function CheckoutForm({
     } catch (error) {
       if (seq !== previewSeqRef.current) return;
       console.error("Failed to preview order:", error);
-      setPreviewError(t("previewError"));
+      setPreviewError(
+        resolveCheckoutPreviewErrorMessage(
+          error,
+          items.length,
+          t,
+          tCart,
+        ),
+      );
     } finally {
       if (seq === previewSeqRef.current) {
         setIsLoadingPreview(false);
@@ -645,6 +664,7 @@ export function CheckoutForm({
     previewDeliveryAddress,
     appliedCouponCode,
     t,
+    tCart,
   ]);
 
   // Coupon handlers
@@ -759,6 +779,8 @@ export function CheckoutForm({
       isLoadingPreview ||
       isSubmitting ||
       isBelowMinimumOrder ||
+      validation.exceedsOrderItemLimit ||
+      items.length > MAX_PUBLIC_ORDER_ITEMS ||
       !hasPaymentMethods
     );
   }, [
@@ -766,6 +788,8 @@ export function CheckoutForm({
     isLoadingPreview,
     isSubmitting,
     isBelowMinimumOrder,
+    validation.exceedsOrderItemLimit,
+    items.length,
     hasPaymentMethods,
   ]);
 
@@ -895,7 +919,14 @@ export function CheckoutForm({
       );
     } catch (error) {
       console.error("Failed to place order:", error);
-      setSubmitError(t("orderError"));
+      setSubmitError(
+        resolveCheckoutSubmitErrorMessage(
+          error,
+          items.length,
+          t,
+          tCart,
+        ),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -914,6 +945,7 @@ export function CheckoutForm({
     currency,
     router,
     t,
+    tCart,
     selectedPaymentMethod,
     receiptFileKey,
     pickupLocation,
