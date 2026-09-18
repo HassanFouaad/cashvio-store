@@ -1,94 +1,95 @@
-'use client';
+"use client";
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { PaginationMeta } from '@/lib/api/types';
-import { isFirstPage, isLastPage, isValidPage, normalizePagination } from '@/lib/utils/pagination';
-import { buildPaginationUrl } from '@/lib/utils/pagination-redirect';
+import { useTransition, type ReactElement } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useFormatter, useTranslations } from "next-intl";
+
+import { Button } from "@/components/ui/button";
+import type { PaginationMeta } from "@/lib/api/types";
+import {
+  buildPaginationUrl,
+  isFirstPage,
+  isLastPage,
+  isValidPage,
+  normalizePagination,
+} from "@/lib/utils/pagination";
 
 interface PaginationControlsProps {
   pagination: PaginationMeta;
   baseUrl: string;
 }
 
-/**
- * Reusable client-side pagination controls
- * Handles page navigation via URL query params
- * Uses shared pagination utilities for consistent behavior
- */
 export function PaginationControls({
   pagination,
   baseUrl,
-}: PaginationControlsProps) {
+}: PaginationControlsProps): ReactElement | null {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const t = useTranslations('store.categories');
+  const t = useTranslations("store.categories");
+  const tCommon = useTranslations("common");
+  const format = useFormatter();
+  const [isPending, startTransition] = useTransition();
+  const normalized = normalizePagination(pagination);
+  const { page: currentPage, totalPages } = normalized;
 
-  // Normalize pagination to ensure all values are numbers
-  const normalizedPagination = normalizePagination(pagination);
-  const { page: currentPage, totalPages } = normalizedPagination;
-  
-  // Check pagination state using shared utilities
-  const isFirst = isFirstPage(normalizedPagination);
-  const isLast = isLastPage(normalizedPagination);
-
-  const handlePageChange = (newPage: number) => {
-    // Validate page number using shared utility
-    if (!isValidPage(newPage, totalPages)) {
-      return;
-    }
-
-    // Get current search params (excluding page)
-    const currentParams: Record<string, string> = {};
+  const handlePageChange = (page: number): void => {
+    if (!isValidPage(page, totalPages) || isPending) return;
+    const preserved: Record<string, string> = {};
     searchParams.forEach((value, key) => {
-      if (key !== 'page') {
-        currentParams[key] = value;
-      }
+      if (key !== "page") preserved[key] = value;
     });
-
-    // Build URL - automatically omits page=1
-    const url = buildPaginationUrl(baseUrl, newPage, currentParams);
-    router.push(url);
+    startTransition(() =>
+      router.push(buildPaginationUrl(baseUrl, page, preserved)),
+    );
   };
-
-  // Hide pagination if only one page
-  if (totalPages <= 1) {
-    return null;
-  }
+  if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-center gap-2 pt-4">
+    <nav
+      aria-label={tCommon("pagination")}
+      className="flex items-center justify-center gap-2 pt-4"
+    >
       <Button
+        type="button"
         variant="outline"
-        size="sm"
+        disabled={isFirstPage(normalized) || isPending}
         onClick={() => handlePageChange(currentPage - 1)}
-        disabled={isFirst}
-        className="gap-1 sm:gap-2"
-        aria-label={t('previous')}
+        className="h-11 min-w-11 gap-2 px-3"
+        aria-label={t("previous")}
       >
-        <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
-        <span className="hidden sm:inline">{t('previous')}</span>
+        <ChevronLeft aria-hidden="true" className="h-4 w-4 rtl:rotate-180" />
+        <span className="hidden sm:inline">{t("previous")}</span>
       </Button>
-
-      <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-        <span className="font-medium">{currentPage}</span>
-        <span className="text-muted-foreground">{t('of')}</span>
-        <span className="font-medium">{totalPages}</span>
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="min-w-20 text-center text-sm tabular-nums"
+      >
+        {isPending ? (
+          tCommon("loading")
+        ) : (
+          <>
+            <span aria-current="page" className="font-medium">
+              {format.number(currentPage)}
+            </span>
+            <span className="mx-1.5 text-muted-foreground">{t("of")}</span>
+            <span className="font-medium">{format.number(totalPages)}</span>
+          </>
+        )}
       </div>
-
       <Button
+        type="button"
         variant="outline"
-        size="sm"
+        disabled={isLastPage(normalized) || isPending}
         onClick={() => handlePageChange(currentPage + 1)}
-        disabled={isLast}
-        className="gap-1 sm:gap-2"
-        aria-label={t('next')}
+        className="h-11 min-w-11 gap-2 px-3"
+        aria-label={t("next")}
       >
-        <span className="hidden sm:inline">{t('next')}</span>
-        <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+        <span className="hidden sm:inline">{t("next")}</span>
+        <ChevronRight aria-hidden="true" className="h-4 w-4 rtl:rotate-180" />
       </Button>
-    </div>
+    </nav>
   );
 }

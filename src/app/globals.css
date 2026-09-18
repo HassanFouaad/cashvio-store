@@ -263,6 +263,16 @@ p {
   transform: scale(1.015);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .sf-img-zoom {
+    transition: none;
+  }
+  .group:hover .sf-img-zoom,
+  .group:active .sf-img-zoom {
+    transform: none;
+  }
+}
+
 /* Floating action button positioning for mobile (above the bottom nav) */
 @media (max-width: 767px) {
   .fixed-bottom-cta {

@@ -1,167 +1,183 @@
 "use client";
 
+import {
+  useCallback,
+  useState,
+  useTransition,
+  type FormEvent,
+  type ReactElement,
+} from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Loader2, Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { analytics } from "@/lib/analytics";
-import { Search, X } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useCallback, useState } from "react";
+import { cn } from "@/lib/utils/cn";
+import { updateQueryUrl } from "@/lib/utils/query-params";
 
 interface SearchInputProps {
   placeholder?: string;
   searchKey?: string;
-  /** Rounded full-width style (product listing) vs compact default */
   rounded?: boolean;
-  /** Fire the analytics `search` event on submit */
   trackAnalytics?: boolean;
+  disabled?: boolean;
+  /** A containing filter bar can share one pending navigation state. */
+  onNavigate?: (url: string) => void;
 }
 
-/**
- * THE search input — single implementation for every search surface.
- * - URL-synced: updates the query param on submit, resets pagination
- * - RTL-safe (logical properties only)
- * - Optional rounded variant and analytics tracking
- */
 export function SearchInput({
   placeholder,
   searchKey = "search",
   rounded = false,
   trackAnalytics = false,
-}: SearchInputProps) {
+  disabled = false,
+  onNavigate,
+}: SearchInputProps): ReactElement {
   const t = useTranslations("common");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
-  // Get current search value from URL
+  const [isNavigating, startTransition] = useTransition();
   const urlSearch = searchParams.get(searchKey) || "";
-
-  // Local state for input value
+  const sourceKey = JSON.stringify([pathname, searchKey, urlSearch]);
+  const [syncedSource, setSyncedSource] = useState(sourceKey);
   const [inputValue, setInputValue] = useState(urlSearch);
 
-  // Create query string helper
-  const createQueryString = useCallback(
-    (value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("page"); // Reset to page 1 on new search
+  // Back/forward, chip removal and route changes must update the textbox.
+  // Unrelated filter changes do not erase text the shopper is still typing.
+  if (syncedSource !== sourceKey) {
+    setSyncedSource(sourceKey);
+    setInputValue(urlSearch);
+  }
 
-      if (value.trim()) {
-        params.set(searchKey, value.trim());
-      } else {
-        params.delete(searchKey);
-      }
-
-      return params.toString();
-    },
-    [searchParams, searchKey]
-  );
-
+  const isDisabled = disabled || isNavigating;
   const navigate = useCallback(
-    (value: string) => {
-      const queryString = createQueryString(value);
-      const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
-      router.push(newUrl);
+    (value: string): void => {
+      const query = searchParams.toString();
+      const nextUrl = updateQueryUrl(pathname, query, {
+        [searchKey]: value.trim() || null,
+      });
+      const currentUrl = query ? `${pathname}?${query}` : pathname;
+      if (nextUrl === currentUrl) return;
+      if (onNavigate) onNavigate(nextUrl);
+      else startTransition(() => router.push(nextUrl, { scroll: false }));
     },
-    [createQueryString, pathname, router]
+    [searchParams, pathname, searchKey, onNavigate, router],
   );
 
-  // Handle search submission
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
+  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    if (isDisabled) return;
     const trimmed = inputValue.trim();
+    setInputValue(trimmed);
     if (trackAnalytics && trimmed) {
       try {
         analytics.trackSearch({ search_term: trimmed });
       } catch {
-        // Analytics errors must never affect the store
+        /* Tracking cannot block shopping. */
       }
     }
-
-    navigate(inputValue);
+    navigate(trimmed);
   };
 
-  // Handle clear button
-  const handleClear = () => {
+  const handleClear = (): void => {
     setInputValue("");
     navigate("");
   };
-
-  if (rounded) {
-    return (
-      <form onSubmit={handleSubmit} className="relative w-full">
-        <div className="relative flex items-center">
-          <Search className="absolute start-4 h-5 w-5 text-muted-foreground pointer-events-none" />
-          <Input
-            type="text"
-            placeholder={placeholder ?? `${t("search")}...`}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            className="w-full h-12 ps-12 pe-24 text-base rounded-full border border-input bg-muted/30 focus:border-primary focus:bg-background transition-all placeholder:text-muted-foreground/70"
-          />
-          <div className="absolute end-2 flex items-center gap-1">
-            {inputValue && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleClear}
-                className="h-8 w-8 p-0 rounded-full hover:bg-muted"
-                aria-label={t("close")}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-            <Button
-              type="submit"
-              size="sm"
-              className="h-8 px-4 rounded-full"
-              aria-label={t("search")}
-            >
-              <Search className="h-4 w-4" />
-              <span className="ms-1.5 hidden sm:inline">{t("search")}</span>
-            </Button>
-          </div>
-        </div>
-      </form>
-    );
-  }
+  const inputLabel = placeholder ?? t("search");
+  const submitIcon = isNavigating ? (
+    <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+  ) : (
+    <Search aria-hidden="true" className="h-4 w-4" />
+  );
 
   return (
-    <form onSubmit={handleSubmit} className="relative w-full max-w-sm">
-      <div className="relative flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder={placeholder ?? `${t("search")}...`}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            className="ps-10 pe-10"
+    <form
+      onSubmit={handleSubmit}
+      role="search"
+      aria-label={inputLabel}
+      aria-busy={isDisabled}
+      className={cn("relative w-full", !rounded && "max-w-sm")}
+    >
+      <div className="relative flex min-w-0 items-center gap-2">
+        <div className="relative min-w-0 flex-1">
+          <Search
+            aria-hidden="true"
+            className={cn(
+              "pointer-events-none absolute top-1/2 -translate-y-1/2 text-muted-foreground",
+              rounded ? "start-4 h-5 w-5" : "start-3 h-4 w-4",
+            )}
           />
-          {inputValue && (
+          <Input
+            name={searchKey}
+            type="search"
+            enterKeyHint="search"
+            aria-label={inputLabel}
+            placeholder={placeholder ?? `${t("search")}…`}
+            value={inputValue}
+            disabled={isDisabled}
+            onChange={(event) => setInputValue(event.target.value)}
+            className={cn(
+              "text-base [&::-webkit-search-cancel-button]:appearance-none",
+              rounded
+                ? "h-14 rounded-full bg-muted/30 ps-12 focus:bg-background"
+                : "h-11 ps-10 pe-12",
+              rounded && (inputValue ? "pe-28 sm:pe-40" : "pe-14 sm:pe-28"),
+            )}
+          />
+          {rounded && (
+            <div className="absolute end-1.5 top-1/2 flex -translate-y-1/2 items-center gap-1">
+              {inputValue && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  disabled={isDisabled}
+                  onClick={handleClear}
+                  className="h-11 w-11 rounded-full"
+                  aria-label={t("clearSearch")}
+                >
+                  <X aria-hidden="true" className="h-4 w-4" />
+                </Button>
+              )}
+              <Button
+                type="submit"
+                disabled={isDisabled}
+                className="h-11 min-w-11 rounded-full px-3"
+                aria-label={t("search")}
+              >
+                {submitIcon}
+                <span className="ms-1.5 hidden sm:inline">{t("search")}</span>
+              </Button>
+            </div>
+          )}
+          {!rounded && inputValue && (
             <Button
               type="button"
               variant="ghost"
-              size="sm"
+              size="icon"
+              disabled={isDisabled}
               onClick={handleClear}
-              className="absolute end-1 top-1/2 h-7 w-7 -translate-y-1/2 p-0 hover:bg-transparent"
-              aria-label={t("close")}
+              className="absolute end-0 top-1/2 h-11 w-11 -translate-y-1/2"
+              aria-label={t("clearSearch")}
             >
-              <X className="h-4 w-4" />
+              <X aria-hidden="true" className="h-4 w-4" />
             </Button>
           )}
         </div>
-
-        <Button
-          type="submit"
-          size="icon"
-          className="shrink-0"
-          aria-label={t("search")}
-        >
-          <Search className="h-4 w-4" />
-        </Button>
+        {!rounded && (
+          <Button
+            type="submit"
+            size="icon"
+            disabled={isDisabled}
+            className="h-11 w-11 shrink-0"
+            aria-label={t("search")}
+          >
+            {submitIcon}
+          </Button>
+        )}
       </div>
     </form>
   );

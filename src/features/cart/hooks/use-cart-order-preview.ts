@@ -1,20 +1,34 @@
 "use client";
 
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import {
+  useCartStore,
+  useIsCartSyncing,
+  usePendingChangesCount,
+} from "@/features/cart/store";
+import {
+  CartPreviewError,
+  type CartMethodSelection,
+  type CartMethodsResult,
+  type CartPreviewRequestSnapshot,
+  type CartPreviewResult,
+  type UseCartOrderPreviewResult,
+} from "@/features/cart/types/cart-preview.types";
+import { resolveCartPreviewState } from "@/features/cart/utils/cart-preview-state";
 import {
   getFulfillmentMethods,
   previewOrder,
 } from "@/features/checkout/api/checkout-api";
 import {
   FulfillmentMethod,
-  OrderPreviewResponse,
-  PublicFulfillmentMethodDto,
+  type PublicFulfillmentMethodDto,
 } from "@/features/checkout/types/checkout.types";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useCartStore, usePendingChangesCount } from "../store";
+
+export type { UseCartOrderPreviewResult } from "@/features/cart/types/cart-preview.types";
 
 const PREVIEW_DEBOUNCE_MS = 400;
-
-const FULFILLMENT_PRIORITY: FulfillmentMethod[] = [
+const FULFILLMENT_PRIORITY = [
   FulfillmentMethod.DELIVERY,
   FulfillmentMethod.PICKUP,
   FulfillmentMethod.DINE_IN,
@@ -23,171 +37,149 @@ const FULFILLMENT_PRIORITY: FulfillmentMethod[] = [
 function pickDefaultMethod(
   methods: PublicFulfillmentMethodDto[],
 ): FulfillmentMethod | null {
-  if (methods.length === 0) return null;
-  const sorted = [...methods].sort((a, b) => {
-    const priorityA = FULFILLMENT_PRIORITY.indexOf(a.fulfillmentMethod);
-    const priorityB = FULFILLMENT_PRIORITY.indexOf(b.fulfillmentMethod);
-    return (
-      (priorityA === -1 ? 99 : priorityA) - (priorityB === -1 ? 99 : priorityB)
-    );
-  });
-  return sorted[0]?.fulfillmentMethod ?? null;
+  return (
+    FULFILLMENT_PRIORITY.find((value) =>
+      methods.some((method) => method.fulfillmentMethod === value),
+    ) ??
+    methods[0]?.fulfillmentMethod ??
+    null
+  );
 }
 
-export interface UseCartOrderPreviewResult {
-  preview: OrderPreviewResponse | null;
-  isPreviewLoading: boolean;
-  previewError: string | null;
-  fulfillmentMethod: FulfillmentMethod | null;
-  availableMethods: PublicFulfillmentMethodDto[];
-  setFulfillmentMethod: (method: FulfillmentMethod) => void;
-  refetchPreview: () => void;
-}
-
-/**
- * Debounced public order preview for the cart summary — same source of truth
- * as checkout / POS ticket totals.
- */
+/** Quotes become stale immediately when inputs change, including during debounce. */
 export function useCartOrderPreview(
   storeId: string,
 ): UseCartOrderPreviewResult {
-  const cart = useCartStore((state) => state.cart);
+  const cartItems = useCartStore((state) => state.cart?.items);
   const isInitialized = useCartStore((state) => state.isInitialized);
+  const isCartSyncing = useIsCartSyncing();
   const pendingChangesCount = usePendingChangesCount();
-
-  const [availableMethods, setAvailableMethods] = useState<
-    PublicFulfillmentMethodDto[]
-  >([]);
-  const [fulfillmentMethod, setFulfillmentMethod] =
-    useState<FulfillmentMethod | null>(null);
-  const [preview, setPreview] = useState<OrderPreviewResponse | null>(null);
-  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
-  const [previewError, setPreviewError] = useState<string | null>(null);
-
-  const previewSeqRef = useRef(0);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const previewItems = useMemo(() => {
-    if (!cart?.items?.length) return [];
-    return cart.items.map((item) => ({
-      variantId: item.variant.id,
-      quantity: item.quantity,
-      modifierIds: item.modifiers?.map((modifier) => modifier.modifierId),
-    }));
-  }, [cart?.items]);
-
-  const itemsSignature = useMemo(
-    () =>
-      previewItems
-        .map(
-          (item) =>
-            `${item.variantId}:${item.quantity}:${(item.modifierIds ?? []).join(",")}`,
-        )
-        .join("|"),
-    [previewItems],
+  const [methodsRevision, setMethodsRevision] = useState(0);
+  const [previewRevision, setPreviewRevision] = useState(0);
+  const [methodsResult, setMethodsResult] = useState<CartMethodsResult | null>(
+    null,
   );
+  const [selection, setSelection] = useState<CartMethodSelection | null>(null);
+  const [result, setResult] = useState<CartPreviewResult | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-
-    async function loadMethods() {
+    async function loadMethods(): Promise<void> {
       try {
         const methods = await getFulfillmentMethods(storeId);
-        if (cancelled) return;
-        setAvailableMethods(methods);
-        setFulfillmentMethod((current) => {
-          if (
-            current &&
-            methods.some((method) => method.fulfillmentMethod === current)
-          ) {
-            return current;
-          }
-          return pickDefaultMethod(methods);
-        });
+        if (!cancelled)
+          setMethodsResult({
+            storeId,
+            revision: methodsRevision,
+            methods,
+            error: methods.length ? null : CartPreviewError.NO_METHODS,
+          });
       } catch {
-        if (!cancelled) {
-          setAvailableMethods([]);
-          setFulfillmentMethod(null);
-        }
+        if (!cancelled)
+          setMethodsResult({
+            storeId,
+            revision: methodsRevision,
+            methods: [],
+            error: CartPreviewError.LOAD_FAILED,
+          });
       }
     }
-
     void loadMethods();
     return () => {
       cancelled = true;
     };
-  }, [storeId]);
+  }, [storeId, methodsRevision]);
 
-  const runPreview = useCallback(async () => {
+  const areMethodsCurrent =
+    methodsResult?.storeId === storeId &&
+    methodsResult.revision === methodsRevision;
+  const availableMethods = areMethodsCurrent ? methodsResult.methods : [];
+  const methodsError = areMethodsCurrent ? methodsResult.error : null;
+  const fulfillmentMethod =
+    selection?.storeId === storeId &&
+    availableMethods.some(
+      (method) => method.fulfillmentMethod === selection.method,
+    )
+      ? selection.method
+      : pickDefaultMethod(availableMethods);
+  const hasItems = Boolean(cartItems?.length);
+
+  // A new cart snapshot also covers server-side price/stock corrections,
+  // even if its variant IDs and quantities happen to be unchanged.
+  const request = useMemo<CartPreviewRequestSnapshot | null>(() => {
     if (
       !isInitialized ||
       !fulfillmentMethod ||
-      previewItems.length === 0 ||
+      !cartItems?.length ||
+      isCartSyncing ||
       pendingChangesCount > 0
-    ) {
-      if (previewItems.length === 0) {
-        setPreview(null);
-        setPreviewError(null);
-        setIsPreviewLoading(false);
-      } else if (pendingChangesCount > 0) {
-        setPreview(null);
-        setIsPreviewLoading(true);
-      }
-      return;
-    }
-
-    const seq = ++previewSeqRef.current;
-    setIsPreviewLoading(true);
-    setPreviewError(null);
-
-    try {
-      const nextPreview = await previewOrder({
+    )
+      return null;
+    return {
+      revision: previewRevision,
+      body: {
         storeId,
         fulfillmentMethod,
-        items: previewItems,
-      });
-      if (seq !== previewSeqRef.current) return;
-      setPreview(nextPreview);
-    } catch {
-      if (seq !== previewSeqRef.current) return;
-      setPreview(null);
-      setPreviewError("previewError");
-    } finally {
-      if (seq === previewSeqRef.current) {
-        setIsPreviewLoading(false);
-      }
-    }
+        items: cartItems.map((item) => ({
+          variantId: item.variant.id,
+          quantity: item.quantity,
+          modifierIds: item.modifiers?.map((modifier) => modifier.modifierId),
+        })),
+      },
+    };
   }, [
+    cartItems,
     fulfillmentMethod,
     isInitialized,
+    isCartSyncing,
     pendingChangesCount,
-    previewItems,
+    previewRevision,
     storeId,
   ]);
 
   useEffect(() => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
-    debounceRef.current = setTimeout(() => {
-      void runPreview();
-    }, PREVIEW_DEBOUNCE_MS);
-
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
+    if (!request) return;
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const preview = await previewOrder(request.body);
+        if (!cancelled) setResult({ request, preview, error: null });
+      } catch {
+        if (!cancelled)
+          setResult({
+            request,
+            preview: null,
+            error: CartPreviewError.LOAD_FAILED,
+          });
       }
+    }, PREVIEW_DEBOUNCE_MS);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
     };
-  }, [runPreview, itemsSignature, fulfillmentMethod, pendingChangesCount]);
+  }, [request]);
+
+  const setFulfillmentMethod = useCallback(
+    (method: FulfillmentMethod): void => setSelection({ storeId, method }),
+    [storeId],
+  );
+  const refetchPreview = useCallback((): void => {
+    if (methodsError || !fulfillmentMethod)
+      setMethodsRevision((revision) => revision + 1);
+    else setPreviewRevision((revision) => revision + 1);
+  }, [methodsError, fulfillmentMethod]);
 
   return {
-    preview,
-    isPreviewLoading,
-    previewError,
+    ...resolveCartPreviewState({
+      request,
+      result,
+      hasItems,
+      isInitialized,
+      methodsError,
+    }),
     fulfillmentMethod,
     availableMethods,
     setFulfillmentMethod,
-    refetchPreview: runPreview,
+    refetchPreview,
   };
 }

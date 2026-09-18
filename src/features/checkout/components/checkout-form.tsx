@@ -1061,6 +1061,7 @@ export function CheckoutForm({
                     {t("country")}
                   </label>
                   <Select
+                    id="country"
                     value={selectedCountryId?.toString() || ""}
                     onChange={handleCountryChange}
                     placeholder={t("selectCountry")}
@@ -1094,6 +1095,7 @@ export function CheckoutForm({
                       </div>
                     ) : (
                       <Select
+                        id="city"
                         value={selectedCityId?.toString() || ""}
                         onChange={handleCityChange}
                         placeholder={t("selectCity")}
@@ -1106,6 +1108,7 @@ export function CheckoutForm({
                     )
                   ) : (
                     <Select
+                      id="city"
                       value=""
                       onChange={() => {}}
                       placeholder={t("selectCity")}
@@ -1157,6 +1160,7 @@ export function CheckoutForm({
                   ) : (
                     // Multiple countries - show select
                     <Select
+                      id="country"
                       value={selectedCountryId?.toString() || ""}
                       onChange={handleCountryChange}
                       placeholder={t("selectCountry")}
@@ -1194,6 +1198,7 @@ export function CheckoutForm({
                     ) : (
                       // Multiple cities - show select with fee in each option
                       <Select
+                        id="city"
                         value={selectedCityId?.toString() || ""}
                         onChange={handleCityChange}
                         placeholder={t("selectCity")}
@@ -1215,6 +1220,7 @@ export function CheckoutForm({
                   ) : (
                     // No country selected yet
                     <Select
+                      id="city"
                       value=""
                       onChange={() => {}}
                       placeholder={t("selectCity")}

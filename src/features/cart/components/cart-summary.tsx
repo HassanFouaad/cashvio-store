@@ -1,11 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FulfillmentMethod } from "@/features/checkout/types/checkout.types";
 import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
 import { formatCurrency } from "@/lib/utils/formatters";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -48,13 +48,14 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
     fulfillmentMethod,
     availableMethods,
     setFulfillmentMethod,
+    refetchPreview,
   } = useSharedCartPreview();
 
   const validation = useMemo(() => computeCartValidation(cart), [cart]);
 
   if (!isInitialized) {
     return (
-      <div className="p-4 sm:p-6 rounded-xl border bg-card space-y-4 animate-pulse">
+      <div className="sf-panel p-4 sm:p-6 rounded-xl border bg-card space-y-4 animate-pulse">
         <div className="h-5 bg-muted rounded w-1/2" />
         <div className="h-4 bg-muted rounded w-3/4" />
         <div className="h-10 bg-muted rounded w-full" />
@@ -65,7 +66,17 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
   const itemCount = cart?.itemCount ?? 0;
   const hasPendingChanges = pendingChangesCount > 0;
   const showPreviewSkeleton =
-    itemCount > 0 && (isPreviewLoading || (!preview && !previewError));
+    itemCount > 0 &&
+    !previewError &&
+    (isPreviewLoading || isSyncing || hasPendingChanges || !preview);
+  const canProceed =
+    canCheckout &&
+    !isPreviewLoading &&
+    !isSyncing &&
+    !hasPendingChanges &&
+    preview !== null &&
+    !previewError &&
+    !preview.isBelowMinimumOrder;
 
   const isBelowMinimum = preview?.isBelowMinimumOrder ?? false;
   const minimumOrderValue = preview?.minimumOrderValue ?? 0;
@@ -105,7 +116,7 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
     );
 
   return (
-    <div className="p-4 sm:p-6 rounded-xl border bg-card space-y-4">
+    <div className="sf-panel p-4 sm:p-6 rounded-xl border bg-card space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">{t("orderSummary")}</h2>
         <span className="text-muted-foreground text-sm flex items-center gap-1">
@@ -127,9 +138,10 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
                 key={value}
                 type="button"
                 onClick={() => setFulfillmentMethod(value)}
-                className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+                aria-pressed={isSelected}
+                className={`min-h-11 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                   isSelected
-                    ? "border-primary bg-primary/10 text-primary"
+                    ? "border-foreground bg-accent text-accent-foreground"
                     : "border-border text-muted-foreground hover:border-foreground/30"
                 }`}
               >
@@ -181,10 +193,25 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
       )}
 
       {previewError && itemCount > 0 && (
-        <div className="text-sm text-destructive">{t("previewError")}</div>
+        <div
+          role="alert"
+          className="space-y-3 rounded-lg border border-destructive/40 p-3"
+        >
+          <p className="text-sm text-destructive">{t(previewError)}</p>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={refetchPreview}
+            disabled={isPreviewLoading || isSyncing || hasPendingChanges}
+            className="min-h-11 w-full gap-2"
+          >
+            <RefreshCw aria-hidden="true" className="h-4 w-4" />
+            {t("retryTotals")}
+          </Button>
+        </div>
       )}
 
-      {itemCount > 0 && (
+      {itemCount > 0 && !previewError && (
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">{t("subtotal")}</span>
@@ -309,21 +336,15 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
             t("reviewChanges")
           )}
         </Button>
-      ) : canCheckout && !isBelowMinimum && preview && !previewError ? (
-        <Link href="/checkout" className="w-full">
-          <Button className="w-full">
-            {hasPendingChanges || isPreviewLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 me-2 animate-spin" />
-                {t("syncing")}
-              </>
-            ) : (
-              t("proceedToCheckout")
-            )}
-          </Button>
+      ) : canProceed ? (
+        <Link
+          href="/checkout"
+          className={buttonVariants({ className: "w-full min-h-11" })}
+        >
+          {t("proceedToCheckout")}
         </Link>
       ) : (
-        <Button className="w-full" disabled>
+        <Button className="w-full min-h-11" disabled>
           {showPreviewSkeleton ? t("calculating") : t("proceedToCheckout")}
         </Button>
       )}

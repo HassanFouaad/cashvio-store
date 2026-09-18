@@ -2,25 +2,22 @@ import { getCategoriesWithErrorHandling } from "@/features/categories/api/get-ca
 import { getProductsWithErrorHandling } from "@/features/products/api/get-products";
 import { ProductsFilterBar } from "@/features/products/components/products-filter-bar";
 import { ProductsGrid } from "@/features/products/components/products-grid";
+import { ProductsFeedback } from "@/features/products/components/products-feedback";
+import { ProductResultsStatus } from "@/features/products/types/product-results.types";
+import { parseProductSort } from "@/features/products/utils/catalog-filters";
 import { ProductSortBy } from "@/features/products/types/product.types";
 import { TrackViewItemList } from "@/lib/analytics/track-event";
 import { resolveRequestStore } from "@/lib/api/resolve-request-store";
 import { getThemePersonality, resolveRequestTheme } from "@/lib/theme";
 import { validatePaginationAndRedirect } from "@/lib/utils/pagination-redirect";
-import { parsePage } from "@/lib/utils/query-params";
+import { normalizeSearchParams, parsePage } from "@/lib/utils/query-params";
 import { buildLanguageAlternates } from "@/lib/utils/seo";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 
 interface ProductsPageProps {
-  searchParams: Promise<{
-    page?: string;
-    search?: string;
-    sortBy?: ProductSortBy;
-    inStock?: string;
-    categoryId?: string;
-  }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 /** Max categories offered in the filter dropdown */
@@ -60,32 +57,36 @@ export default async function ProductsPage({
     throw new Error("Invalid store subdomain");
   }
 
-  const resolvedSearchParams = await searchParams;
+  const resolvedSearchParams = normalizeSearchParams(await searchParams);
   const t = await getTranslations();
 
   // Parse query params
   const requestedPage = parsePage(resolvedSearchParams.page, 1);
-  const search = resolvedSearchParams.search || "";
-  const sortBy = resolvedSearchParams.sortBy || ProductSortBy.CREATED_AT;
+  const search = resolvedSearchParams.search?.trim() || "";
+  const sortBy = parseProductSort(resolvedSearchParams.sortBy);
   const inStock = resolvedSearchParams.inStock === "true";
   const categoryId = resolvedSearchParams.categoryId || "";
 
   // Products + category options in parallel
-  const [{ products: productsData, error }, { categories: categoriesData }] =
-    await Promise.all([
-      getProductsWithErrorHandling({
-        page: requestedPage,
-        limit: 18,
-        name: search || undefined,
-        sortBy,
-        inStock: inStock || undefined,
-        categoryId: categoryId || undefined,
-      }),
-      getCategoriesWithErrorHandling({
-        page: 1,
-        limit: CATEGORY_FILTER_LIMIT,
-      }),
-    ]);
+  const [
+    { products: productsData, error },
+    { categories: categoriesData },
+    resolvedTheme,
+  ] = await Promise.all([
+    getProductsWithErrorHandling({
+      page: requestedPage,
+      limit: 18,
+      name: search || undefined,
+      sortBy,
+      inStock: inStock || undefined,
+      categoryId: categoryId || undefined,
+    }),
+    getCategoriesWithErrorHandling({
+      page: 1,
+      limit: CATEGORY_FILTER_LIMIT,
+    }),
+    resolveRequestTheme(),
+  ]);
 
   const categories = categoriesData?.items ?? [];
 
@@ -95,48 +96,33 @@ export default async function ProductsPage({
     requestedPage,
     `/products`,
     {
-      search,
-      sortBy,
+      ...resolvedSearchParams,
+      search: search || undefined,
+      sortBy: sortBy === ProductSortBy.CREATED_AT ? undefined : sortBy,
       inStock: inStock ? "true" : undefined,
       categoryId: categoryId || undefined,
     },
   );
 
-  if (error || !productsData) {
-    return (
-      <div className="w-full max-w-full py-12 sm:py-16">
-        <div className="container">
-          <div className="text-center space-y-4">
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-              {t("errors.generic")}
-            </h1>
-            <p className="text-muted-foreground">
-              {t("errors.products.loadFailed")}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Prepare analytics items for view_item_list event
-  const analyticsItems = productsData.items.map((p) => ({
+  // Failed reads keep their filters and do not emit an empty-list view event.
+  const analyticsItems = (productsData?.items ?? []).map((p) => ({
     item_id: p.id,
     item_name: p.name,
     price: p.variants?.[0]?.sellingPrice ?? 0,
     quantity: 1,
   }));
 
-  const resolvedTheme = await resolveRequestTheme();
   const personality = getThemePersonality(resolvedTheme.layout);
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
-      <TrackViewItemList
-        listId="products"
-        listName="All Products"
-        items={analyticsItems}
-      />
+      {!error && productsData && (
+        <TrackViewItemList
+          listId="products"
+          listName="All Products"
+          items={analyticsItems}
+        />
+      )}
       {/* Page Header - band treatment follows the theme personality */}
       <section className={`w-full max-w-full ${personality.band}`}>
         <div className="container">
@@ -159,7 +145,7 @@ export default async function ProductsPage({
             <ProductsFilterBar
               currentSort={sortBy}
               inStockOnly={inStock}
-              totalItems={productsData.pagination.totalItems}
+              totalItems={productsData?.pagination.totalItems}
               categories={categories.map((category) => ({
                 id: category.id,
                 name: category.name,
@@ -169,12 +155,28 @@ export default async function ProductsPage({
           </Suspense>
 
           {/* Products Grid */}
-          <ProductsGrid
-            products={productsData.items}
-            pagination={productsData.pagination}
-            currency={store.currency}
-            baseUrl="/products"
-          />
+          {error || !productsData ? (
+            <Suspense
+              fallback={
+                <div
+                  className="h-52 animate-pulse rounded-xl bg-muted"
+                  aria-hidden="true"
+                />
+              }
+            >
+              <ProductsFeedback
+                status={ProductResultsStatus.ERROR}
+                baseUrl="/products"
+              />
+            </Suspense>
+          ) : (
+            <ProductsGrid
+              products={productsData.items}
+              pagination={productsData.pagination}
+              currency={store.currency}
+              baseUrl="/products"
+            />
+          )}
         </div>
       </section>
     </div>

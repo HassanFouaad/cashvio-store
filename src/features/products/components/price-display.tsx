@@ -1,7 +1,5 @@
 import { PublicProductDto } from "@/features/products/types/product.types";
-import {
-  formatProductPrice,
-} from "@/features/products/utils/product-helpers";
+import { formatProductPrice } from "@/features/products/utils/product-helpers";
 import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
 import { cn } from "@/lib/utils/cn";
 
@@ -38,12 +36,12 @@ export function PriceDisplay({
 
   const effectiveClasses = cn(
     "sf-price tabular-nums",
-    overlay ? "text-white" : "text-foreground",
+    overlay ? "text-media-foreground" : "text-foreground",
     effectiveClassName,
   );
   const originalClasses = cn(
     "sf-price text-xs tabular-nums line-through",
-    overlay ? "text-white/70" : "text-muted-foreground",
+    overlay ? "text-media-foreground/85" : "text-muted-foreground",
     originalClassName,
   );
 

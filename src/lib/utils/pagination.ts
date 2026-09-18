@@ -3,16 +3,18 @@
  * Shared logic for handling pagination across the application
  */
 
-import { PaginationMeta } from '@/lib/api/types';
+import { PaginationMeta } from "@/lib/api/types";
 
 /**
  * Normalize pagination meta to ensure all values are numbers
  * Prevents string concatenation issues (e.g., "1" + 1 = "11")
- * 
+ *
  * @param pagination - Raw pagination data that might have string values
  * @returns Normalized pagination with guaranteed number values
  */
-export function normalizePagination(pagination: PaginationMeta): PaginationMeta {
+export function normalizePagination(
+  pagination: PaginationMeta,
+): PaginationMeta {
   return {
     page: Number(pagination.page) || 1,
     limit: Number(pagination.limit) || 10,
@@ -23,7 +25,7 @@ export function normalizePagination(pagination: PaginationMeta): PaginationMeta 
 
 /**
  * Validate if a page number is within valid range
- * 
+ *
  * @param page - Page number to validate
  * @param totalPages - Total number of pages
  * @returns True if page is valid, false otherwise
@@ -36,7 +38,7 @@ export function isValidPage(page: number, totalPages: number): boolean {
 
 /**
  * Get safe page number (clamps to valid range)
- * 
+ *
  * @param page - Desired page number
  * @param totalPages - Total number of pages
  * @returns Page number clamped between 1 and totalPages
@@ -63,7 +65,7 @@ export function isLastPage(pagination: PaginationMeta): boolean {
 
 /**
  * Calculate offset for database queries
- * 
+ *
  * @param page - Current page (1-based)
  * @param limit - Items per page
  * @returns Zero-based offset for database queries
@@ -76,7 +78,7 @@ export function getOffset(page: number, limit: number): number {
 
 /**
  * Build pagination query parameters
- * 
+ *
  * @param page - Page number
  * @param limit - Items per page
  * @param additionalParams - Additional query parameters
@@ -85,13 +87,13 @@ export function getOffset(page: number, limit: number): number {
 export function buildPaginationParams(
   page?: number,
   limit?: number,
-  additionalParams?: Record<string, string | undefined>
+  additionalParams?: Record<string, string | undefined>,
 ): URLSearchParams {
   const params = new URLSearchParams();
-  
-  if (page) params.set('page', String(page));
-  if (limit) params.set('limit', String(limit));
-  
+
+  if (page) params.set("page", String(page));
+  if (limit) params.set("limit", String(limit));
+
   if (additionalParams) {
     Object.entries(additionalParams).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -99,13 +101,13 @@ export function buildPaginationParams(
       }
     });
   }
-  
+
   return params;
 }
 
 /**
  * Get pagination info text (e.g., "Showing 1-10 of 100 items")
- * 
+ *
  * @param pagination - Pagination metadata
  * @returns Object with pagination info
  */
@@ -113,14 +115,32 @@ export function getPaginationInfo(pagination: PaginationMeta) {
   const page = Number(pagination.page);
   const limit = Number(pagination.limit);
   const totalItems = Number(pagination.totalItems);
-  
+
   const startItem = (page - 1) * limit + 1;
   const endItem = Math.min(page * limit, totalItems);
-  
+
   return {
     startItem,
     endItem,
     totalItems,
     hasItems: totalItems > 0,
   };
+}
+
+/** Page selection is authoritative; a preserved old page param must not override it. */
+export function buildPaginationUrl(
+  baseUrl: string,
+  page?: number,
+  searchParams?: Record<string, string | undefined>,
+): string {
+  const params = new URLSearchParams();
+  const pageNumber = Math.floor(page ?? 1);
+  if (Number.isFinite(pageNumber) && pageNumber > 1)
+    params.set("page", String(pageNumber));
+  for (const [key, value] of Object.entries(searchParams ?? {})) {
+    if (key !== "page" && value !== undefined && value !== null && value !== "")
+      params.set(key, value);
+  }
+  const query = params.toString();
+  return query ? `${baseUrl}?${query}` : baseUrl;
 }

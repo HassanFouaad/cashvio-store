@@ -1,79 +1,32 @@
-import { DiscountBadge } from "@/features/products/components/discount-badge";
-import { BundleBadge } from "@/features/products/components/bundle-badge";
-import { PriceDisplay } from "@/features/products/components/price-display";
-import { StarRatingDisplay } from "@/features/products/components/star-rating";
-import { PublicProductDto } from "@/features/products/types/product.types";
-import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
-import { BundleUtils } from "@/features/products/utils/bundle.utils";
-import {
-  getPrimaryImage,
-  isProductInStock,
-  ProductCardTranslations,
-} from "@/features/products/utils";
-import Image from "next/image";
 import Link from "next/link";
+import type { ReactElement } from "react";
 
-interface ProductCardOverlayProps {
-  product: PublicProductDto;
-  currency: string;
-  locale: string;
-  translations: ProductCardTranslations;
-}
+import { PriceDisplay } from "@/features/products/components/price-display";
+import { ProductCardMedia } from "@/features/products/components/product-card-media";
+import { StarRatingDisplay } from "@/features/products/components/star-rating";
+import {
+  PRODUCT_CARD_LINK_CLASS,
+  PRODUCT_CARD_TITLE_CLASS,
+} from "@/features/products/constants/product-card";
+import type { ProductCardViewProps } from "@/features/products/types/product-card.types";
+import { cn } from "@/lib/utils/cn";
 
-/**
- * OVERLAY product card — full-image tile with the product info laid over
- * a bottom gradient. Bold, immersive feel (tech/premium themes).
- */
-export function ProductCardOverlay({
-  product,
-  currency,
-  locale,
-  translations,
-}: ProductCardOverlayProps) {
-  const primaryImage = getPrimaryImage(product);
-  const inStock = isProductInStock(product);
-  const discountBadge = CatalogueDiscountUtils.pickProductDiscountBadge(product);
-  const isBundle = BundleUtils.isProductBundle(product);
+/** A stable scrim keeps names and prices readable even over white photography. */
+export function ProductCardOverlay(props: ProductCardViewProps): ReactElement {
+  const { product, currency, locale } = props;
   const reviewCount = product.reviewCount ?? 0;
   const hasRating = reviewCount > 0 && product.averageRating != null;
-
   return (
     <Link
       href={`/products/${product.id}`}
-      className="group relative block aspect-[4/5] overflow-hidden rounded-xl bg-muted touch-manipulation active:scale-[0.98] transition-transform duration-150"
+      className={cn(
+        PRODUCT_CARD_LINK_CLASS,
+        "relative aspect-[4/5] overflow-hidden rounded-xl bg-muted",
+      )}
     >
-      {primaryImage ? (
-        <Image
-          src={primaryImage.thumbnailUrl || primaryImage.imageUrl}
-          alt={primaryImage.altText || product.name}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover sf-img-zoom"
-        />
-      ) : (
-        <div className="flex h-full items-center justify-center text-muted-foreground">
-          <span className="text-sm">{translations.noImageAvailable}</span>
-        </div>
-      )}
-
-      {(discountBadge || isBundle) && (
-        <div className="absolute top-2 start-2 z-10 flex flex-col items-start gap-1">
-          {discountBadge && (
-            <DiscountBadge
-              discount={discountBadge.discount}
-              savingsAmount={discountBadge.savingsAmount}
-              isPartialProduct={discountBadge.isPartialProduct}
-              currency={currency}
-              locale={locale}
-            />
-          )}
-          {isBundle && <BundleBadge />}
-        </div>
-      )}
-
-      {/* Legibility gradient + product info */}
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 pt-12 space-y-1">
-        <h3 className="line-clamp-2 text-sm font-semibold leading-tight text-white">
+      <ProductCardMedia {...props} isOverlay />
+      <div className="absolute start-0 end-0 bottom-0 space-y-1.5 bg-media-scrim/80 p-3 text-media-foreground">
+        <h3 className={cn(PRODUCT_CARD_TITLE_CLASS, "font-semibold")}>
           {product.name}
         </h3>
         {hasRating && (
@@ -82,7 +35,9 @@ export function ProductCardOverlay({
               rating={Math.round(product.averageRating ?? 0)}
               size="sm"
             />
-            <span className="text-xs text-white/75">({reviewCount})</span>
+            <span className="text-xs text-media-foreground/85">
+              ({reviewCount})
+            </span>
           </div>
         )}
         <PriceDisplay
@@ -93,15 +48,6 @@ export function ProductCardOverlay({
           effectiveClassName="text-sm font-semibold"
         />
       </div>
-
-      {/* Out of stock badge */}
-      {!inStock && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-[1px]">
-          <span className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-black shadow-sm">
-            {translations.outOfStock}
-          </span>
-        </div>
-      )}
     </Link>
   );
 }
