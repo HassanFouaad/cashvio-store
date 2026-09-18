@@ -22,8 +22,8 @@ export function hasProductSearchFilters(query: string): boolean {
   const params = new URLSearchParams(query);
   return Boolean(
     params.get("search")?.trim() ||
-    params.get("categoryId") ||
-    params.get("inStock") === "true",
+      params.get("categoryId") ||
+      params.get("inStock") === "true",
   );
 }
 

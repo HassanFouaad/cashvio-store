@@ -7,75 +7,75 @@ import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { computeCartValidation, useCartStore } from "@/features/cart/store";
 import {
-    createOrder,
-    getCitiesByCountry,
-    getReceiptUploadUrl,
-    groupDeliveryZonesByCountry,
-    previewOrder,
-    uploadReceiptToPresignedUrl,
+  createOrder,
+  getCitiesByCountry,
+  getReceiptUploadUrl,
+  groupDeliveryZonesByCountry,
+  previewOrder,
+  uploadReceiptToPresignedUrl,
 } from "@/features/checkout/api/checkout-api";
 import { PickupLocationCard } from "@/features/checkout/components/pickup-location-card";
 import { PlaceOrderButton } from "@/features/checkout/components/place-order-button";
 import { ReceiptTransferDetails } from "@/features/checkout/components/receipt-transfer-details";
 import {
-    CommonCityDto,
-    CommonCountryDto,
-    CreateOrderRequest,
-    FulfillmentMethod,
-    GroupedDeliveryZoneCityDto,
-    GroupedDeliveryZoneCountryDto,
-    GroupedDeliveryZonesDto,
-    OrderPreviewDeliveryAddress,
-    OrderPreviewResponse,
-    PaymentMethod,
-    PublicDeliveryZonesResponseDto,
-    PublicFulfillmentMethodDto,
-    PublicStorefrontPaymentMethodDto,
+  CommonCityDto,
+  CommonCountryDto,
+  CreateOrderRequest,
+  FulfillmentMethod,
+  GroupedDeliveryZoneCityDto,
+  GroupedDeliveryZoneCountryDto,
+  GroupedDeliveryZonesDto,
+  OrderPreviewDeliveryAddress,
+  OrderPreviewResponse,
+  PaymentMethod,
+  PublicDeliveryZonesResponseDto,
+  PublicFulfillmentMethodDto,
+  PublicStorefrontPaymentMethodDto,
 } from "@/features/checkout/types/checkout.types";
 import { formatDeliveryZoneCityOptionLabel } from "@/features/checkout/utils/delivery-zone-fee-label";
 import {
-    buildOrderSuccessRecap,
-    saveOrderSuccessRecap,
+  buildOrderSuccessRecap,
+  saveOrderSuccessRecap,
 } from "@/features/checkout/utils/order-success-recap";
 import { savePendingPayment } from "@/features/checkout/utils/pending-payment";
 import type { StorePickupLocation } from "@/features/checkout/utils/pickup-location";
 import { analytics } from "@/lib/analytics";
 import {
-    clearPendingCoupon,
-    consumePendingCoupon,
-    normalizeCouponCode,
-    persistPendingCoupon,
+  clearPendingCoupon,
+  consumePendingCoupon,
+  normalizeCouponCode,
+  persistPendingCoupon,
 } from "@/lib/coupon-deep-link";
 import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { getOrCreateVisitorId } from "@/lib/visitor/visitor-id";
 import {
-    AlertCircle,
-    AlertTriangle,
-    Banknote,
-    Check,
-    ChevronDown,
-    CreditCard,
-    Globe,
-    Loader2,
-    Package,
-    Receipt,
-    Store,
-    TicketPercent,
-    Upload,
-    UtensilsCrossed,
-    X,
+  AlertCircle,
+  AlertTriangle,
+  Banknote,
+  Check,
+  ChevronDown,
+  CreditCard,
+  Globe,
+  Loader2,
+  Package,
+  Receipt,
+  Store,
+  TicketPercent,
+  Upload,
+  UtensilsCrossed,
+  X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-    FormEvent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+  FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 
 interface CheckoutFormProps {
@@ -613,9 +613,7 @@ export function CheckoutForm({
         items: items.map((item) => ({
           variantId: item.variant.id,
           quantity: item.quantity,
-          modifierIds: item.modifiers?.map(
-            (modifier) => modifier.modifierId,
-          ),
+          modifierIds: item.modifiers?.map((modifier) => modifier.modifierId),
         })),
         // Don't include customer info in preview - it doesn't affect pricing
         deliveryAddress: previewDeliveryAddress,
@@ -789,9 +787,7 @@ export function CheckoutForm({
         items: items.map((item) => ({
           variantId: item.variant.id,
           quantity: item.quantity,
-          modifierIds: item.modifiers?.map(
-            (modifier) => modifier.modifierId,
-          ),
+          modifierIds: item.modifiers?.map((modifier) => modifier.modifierId),
         })),
         customerName: customerName || undefined,
         customerPhone: customerPhone || undefined,
@@ -1322,90 +1318,90 @@ export function CheckoutForm({
                     </label>
 
                     {/* Hidden file input */}
-                  <input
-                    ref={receiptInputRef}
-                    id="receipt-upload"
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={handleReceiptFileChange}
-                    disabled={receiptUploadProgress === "uploading"}
-                    className="sr-only"
-                  />
+                    <input
+                      ref={receiptInputRef}
+                      id="receipt-upload"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleReceiptFileChange}
+                      disabled={receiptUploadProgress === "uploading"}
+                      className="sr-only"
+                    />
 
-                  {receiptUploadProgress === "success" ? (
-                    /* Success state */
-                    <div className="flex items-center justify-between rounded-lg border border-success/30 px-4 py-3">
-                      <div className="flex items-center gap-2.5">
-                        <Check className="h-4 w-4 text-success shrink-0" />
-                        <span className="text-sm font-medium text-success">
-                          {t("receiptUploadSuccess")}
+                    {receiptUploadProgress === "success" ? (
+                      /* Success state */
+                      <div className="flex items-center justify-between rounded-lg border border-success/30 px-4 py-3">
+                        <div className="flex items-center gap-2.5">
+                          <Check className="h-4 w-4 text-success shrink-0" />
+                          <span className="text-sm font-medium text-success">
+                            {t("receiptUploadSuccess")}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleReceiptRemove}
+                          className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                          {t("receiptRemove")}
+                        </button>
+                      </div>
+                    ) : receiptUploadProgress === "uploading" ? (
+                      /* Uploading state */
+                      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-primary/40 py-8 gap-3">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <span className="text-sm text-muted-foreground">
+                          {t("receiptUploading")}
                         </span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={handleReceiptRemove}
-                        className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    ) : (
+                      /* Idle / Error state - drag-and-drop area */
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => receiptInputRef.current?.click()}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            receiptInputRef.current?.click();
+                          }
+                        }}
+                        onDragOver={handleReceiptDragOver}
+                        onDragLeave={handleReceiptDragLeave}
+                        onDrop={handleReceiptDrop}
+                        className={`flex flex-col items-center justify-center rounded-lg border border-dashed py-8 gap-2 cursor-pointer transition-colors ${
+                          isDraggingReceipt
+                            ? "border-primary bg-primary/5"
+                            : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/30"
+                        }`}
                       >
-                        <X className="h-3.5 w-3.5" />
-                        {t("receiptRemove")}
-                      </button>
-                    </div>
-                  ) : receiptUploadProgress === "uploading" ? (
-                    /* Uploading state */
-                    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-primary/40 py-8 gap-3">
-                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      <span className="text-sm text-muted-foreground">
-                        {t("receiptUploading")}
-                      </span>
-                    </div>
-                  ) : (
-                    /* Idle / Error state - drag-and-drop area */
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => receiptInputRef.current?.click()}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          receiptInputRef.current?.click();
-                        }
-                      }}
-                      onDragOver={handleReceiptDragOver}
-                      onDragLeave={handleReceiptDragLeave}
-                      onDrop={handleReceiptDrop}
-                      className={`flex flex-col items-center justify-center rounded-lg border border-dashed py-8 gap-2 cursor-pointer transition-colors ${
-                        isDraggingReceipt
-                          ? "border-primary bg-primary/5"
-                          : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/30"
-                      }`}
-                    >
-                      <Upload
-                        className="h-6 w-6 text-muted-foreground"
-                        strokeWidth={1.5}
-                        aria-hidden
-                      />
-                      <p className="text-sm font-medium">
-                        {t("receiptDragDrop")}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {t("receiptAcceptedFormats")}
-                      </p>
-                      {receiptUploadError && (
-                        <p className="text-xs text-destructive mt-1">
-                          {receiptUploadError}
+                        <Upload
+                          className="h-6 w-6 text-muted-foreground"
+                          strokeWidth={1.5}
+                          aria-hidden
+                        />
+                        <p className="text-sm font-medium">
+                          {t("receiptDragDrop")}
                         </p>
-                      )}
-                      {/* This branch only renders while no receipt is uploaded */}
-                      {showValidation && !receiptUploadError && (
-                        <p
-                          className="text-xs text-destructive mt-1"
-                          data-checkout-error="true"
-                        >
-                          {t("receiptRequired")}
+                        <p className="text-xs text-muted-foreground">
+                          {t("receiptAcceptedFormats")}
                         </p>
-                      )}
-                    </div>
-                  )}
+                        {receiptUploadError && (
+                          <p className="text-xs text-destructive mt-1">
+                            {receiptUploadError}
+                          </p>
+                        )}
+                        {/* This branch only renders while no receipt is uploaded */}
+                        {showValidation && !receiptUploadError && (
+                          <p
+                            className="text-xs text-destructive mt-1"
+                            data-checkout-error="true"
+                          >
+                            {t("receiptRequired")}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1524,9 +1520,7 @@ export function CheckoutForm({
               className="flex items-center justify-between w-full lg:cursor-default"
               onClick={() => setMobileSummaryOpen((v) => !v)}
             >
-              <h2 className="text-lg font-semibold">
-                {tCart("orderSummary")}
-              </h2>
+              <h2 className="text-lg font-semibold">{tCart("orderSummary")}</h2>
               <div className="flex items-center gap-2">
                 {preview && (
                   <span className="text-sm font-semibold tabular-nums lg:hidden">
@@ -1576,11 +1570,7 @@ export function CheckoutForm({
                           {tCart("tax")}
                         </span>
                         <span className="font-medium">
-                          {formatCurrency(
-                            preview.totalTax,
-                            currency,
-                            locale,
-                          )}
+                          {formatCurrency(preview.totalTax, currency, locale)}
                         </span>
                       </div>
                     )}

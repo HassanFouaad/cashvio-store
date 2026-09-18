@@ -13,14 +13,14 @@ import { PaginationMeta } from "@/lib/api/types";
  * @returns Normalized pagination with guaranteed number values
  */
 export function normalizePagination(
-  pagination: PaginationMeta,
+ pagination: PaginationMeta,
 ): PaginationMeta {
-  return {
-    page: Number(pagination.page) || 1,
-    limit: Number(pagination.limit) || 10,
-    totalItems: Number(pagination.totalItems) || 0,
-    totalPages: Number(pagination.totalPages) || 1,
-  };
+ return {
+  page: Number(pagination.page) || 1,
+  limit: Number(pagination.limit) || 10,
+  totalItems: Number(pagination.totalItems) || 0,
+  totalPages: Number(pagination.totalPages) || 1,
+ };
 }
 
 /**
@@ -31,9 +31,9 @@ export function normalizePagination(
  * @returns True if page is valid, false otherwise
  */
 export function isValidPage(page: number, totalPages: number): boolean {
-  const pageNum = Number(page);
-  const totalPagesNum = Number(totalPages);
-  return pageNum >= 1 && pageNum <= totalPagesNum;
+ const pageNum = Number(page);
+ const totalPagesNum = Number(totalPages);
+ return pageNum >= 1 && pageNum <= totalPagesNum;
 }
 
 /**
@@ -44,23 +44,23 @@ export function isValidPage(page: number, totalPages: number): boolean {
  * @returns Page number clamped between 1 and totalPages
  */
 export function getSafePage(page: number, totalPages: number): number {
-  const pageNum = Number(page) || 1;
-  const totalPagesNum = Number(totalPages) || 1;
-  return Math.max(1, Math.min(pageNum, totalPagesNum));
+ const pageNum = Number(page) || 1;
+ const totalPagesNum = Number(totalPages) || 1;
+ return Math.max(1, Math.min(pageNum, totalPagesNum));
 }
 
 /**
  * Check if we're on the first page
  */
 export function isFirstPage(pagination: PaginationMeta): boolean {
-  return Number(pagination.page) <= 1;
+ return Number(pagination.page) <= 1;
 }
 
 /**
  * Check if we're on the last page
  */
 export function isLastPage(pagination: PaginationMeta): boolean {
-  return Number(pagination.page) >= Number(pagination.totalPages);
+ return Number(pagination.page) >= Number(pagination.totalPages);
 }
 
 /**
@@ -71,9 +71,9 @@ export function isLastPage(pagination: PaginationMeta): boolean {
  * @returns Zero-based offset for database queries
  */
 export function getOffset(page: number, limit: number): number {
-  const pageNum = Number(page) || 1;
-  const limitNum = Number(limit) || 10;
-  return (pageNum - 1) * limitNum;
+ const pageNum = Number(page) || 1;
+ const limitNum = Number(limit) || 10;
+ return (pageNum - 1) * limitNum;
 }
 
 /**
@@ -85,24 +85,24 @@ export function getOffset(page: number, limit: number): number {
  * @returns URLSearchParams object
  */
 export function buildPaginationParams(
-  page?: number,
-  limit?: number,
-  additionalParams?: Record<string, string | undefined>,
+ page?: number,
+ limit?: number,
+ additionalParams?: Record<string, string | undefined>,
 ): URLSearchParams {
-  const params = new URLSearchParams();
+ const params = new URLSearchParams();
 
-  if (page) params.set("page", String(page));
-  if (limit) params.set("limit", String(limit));
+ if (page) params.set("page", String(page));
+ if (limit) params.set("limit", String(limit));
 
-  if (additionalParams) {
-    Object.entries(additionalParams).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        params.set(key, String(value));
-      }
-    });
-  }
+ if (additionalParams) {
+  Object.entries(additionalParams).forEach(([key, value]) => {
+   if (value !== undefined && value !== null) {
+    params.set(key, String(value));
+   }
+  });
+ }
 
-  return params;
+ return params;
 }
 
 /**
@@ -112,35 +112,35 @@ export function buildPaginationParams(
  * @returns Object with pagination info
  */
 export function getPaginationInfo(pagination: PaginationMeta) {
-  const page = Number(pagination.page);
-  const limit = Number(pagination.limit);
-  const totalItems = Number(pagination.totalItems);
+ const page = Number(pagination.page);
+ const limit = Number(pagination.limit);
+ const totalItems = Number(pagination.totalItems);
 
-  const startItem = (page - 1) * limit + 1;
-  const endItem = Math.min(page * limit, totalItems);
+ const startItem = (page - 1) * limit + 1;
+ const endItem = Math.min(page * limit, totalItems);
 
-  return {
-    startItem,
-    endItem,
-    totalItems,
-    hasItems: totalItems > 0,
-  };
+ return {
+  startItem,
+  endItem,
+  totalItems,
+  hasItems: totalItems > 0,
+ };
 }
 
 /** Page selection is authoritative; a preserved old page param must not override it. */
 export function buildPaginationUrl(
-  baseUrl: string,
-  page?: number,
-  searchParams?: Record<string, string | undefined>,
+ baseUrl: string,
+ page?: number,
+ searchParams?: Record<string, string | undefined>,
 ): string {
-  const params = new URLSearchParams();
-  const pageNumber = Math.floor(page ?? 1);
-  if (Number.isFinite(pageNumber) && pageNumber > 1)
-    params.set("page", String(pageNumber));
-  for (const [key, value] of Object.entries(searchParams ?? {})) {
-    if (key !== "page" && value !== undefined && value !== null && value !== "")
-      params.set(key, value);
-  }
-  const query = params.toString();
-  return query ? `${baseUrl}?${query}` : baseUrl;
+ const params = new URLSearchParams();
+ const pageNumber = Math.floor(page ?? 1);
+ if (Number.isFinite(pageNumber) && pageNumber > 1)
+  params.set("page", String(pageNumber));
+ for (const [key, value] of Object.entries(searchParams ?? {})) {
+  if (key !== "page" && value !== undefined && value !== null && value !== "")
+   params.set(key, value);
+ }
+ const query = params.toString();
+ return query ? `${baseUrl}?${query}` : baseUrl;
 }
