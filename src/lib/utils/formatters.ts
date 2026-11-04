@@ -4,7 +4,7 @@
  */
 export function formatCurrency(
   amount: number,
-  currency: string = "EGP",
+  currency: string = "USD",
   locale?: string
 ): string {
   // If no locale provided, try to detect from document lang or default to en-US
