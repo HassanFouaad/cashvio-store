@@ -44,7 +44,7 @@ If your environment does not auto-load `.cursor/rules/`, read these always-on st
 
 Front-loaded because these are the easiest to violate by accident.
 
-- `any` or loose `unknown` casts. Missing explicit return types on public functions or API callers.
+- `any` or loose `unknown` casts. Missing explicit return types on public functions or API callers. Enums in `types/` or component files (use `features/<domain>/enums/*.enum.ts`).
 - Hardcoded hex colors (e.g. `#059669` or `bg-[#10b981]`) — merchant themes are dynamically white-labeled; always use semantic theme tokens (`bg-primary`, `text-primary-foreground`, `bg-card`, `border-border`).
 - Physical directional CSS (`pl-`, `pr-`, `ml-`, `mr-`, `left-`, `right-`, `text-left`, `text-right`) — always use Tailwind logical properties (`ps-`, `pe-`, `ms-`, `me-`, `start-`, `end-`, `text-start`, `text-end`).
 - Directional icons (chevrons, back arrows, next buttons) without `rtl:rotate-180`.

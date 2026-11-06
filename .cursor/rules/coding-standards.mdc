@@ -40,6 +40,7 @@ export async function getProducts(
 - **No Module Constants or Magic Strings inside Component JSX**:
   - Extract configuration arrays, timeouts, regex patterns, and query keys to feature `constants/` or module level `*.constants.ts`.
   - Use Enums for statuses, methods, and types (`FulfillmentMethod`, `PaymentMethod`, `OrderStatus`, `Locale`, `Theme`).
+  - **Enums live in `enums/` only (CRITICAL)** — every `export enum` belongs in `features/<domain>/enums/*.enum.ts` (or `lib/<area>/enums/` for shared values). Never define enums in `types/`, DTO, or component files.
 
 ```typescript
 // ❌ FORBIDDEN — Inline anonymous types and magic strings
