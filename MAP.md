@@ -18,7 +18,6 @@
 │  ├── 📄 next.svg
 │  ├── 📄 vercel.svg
 │  ├── 📄 window.svg
-├── 📄 railpack.json
 ├── 📄 README.md
 └── 📂 scripts/
 │  ├── 📄 generate-code-index.js
