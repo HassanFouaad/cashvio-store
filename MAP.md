@@ -9,7 +9,6 @@
 │  ├── 📄 en.json
 ├── 📄 next-env.d.ts
 ├── 📄 next.config.ts
-├── 📄 nixpacks.toml
 ├── 📄 package.json
 ├── 📄 postcss.config.mjs
 └── 📂 public/
@@ -19,6 +18,7 @@
 │  ├── 📄 next.svg
 │  ├── 📄 vercel.svg
 │  ├── 📄 window.svg
+├── 📄 railpack.json
 ├── 📄 README.md
 └── 📂 scripts/
 │  ├── 📄 generate-code-index.js
