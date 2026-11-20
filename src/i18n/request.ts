@@ -12,12 +12,12 @@ export const defaultLocale = Locale.ARABIC;
 export type LocaleType = Locale;
 
 export default getRequestConfig(async () => {
-  // 1. ?lang= override forwarded by the middleware (hreflang URLs) —
-  //    must win over the cookie so the CURRENT request renders correctly
+  // 1. Resolved storefront locale forwarded by the proxy, including ?lang=
+  //    and first-visit browser detection, for the CURRENT render.
   const headersList = await headers();
   const overrideValue = headersList.get(LOCALE_OVERRIDE_HEADER);
 
-  // 2. Locale cookie (set by middleware with auto-detection)
+  // 2. Host-only storefront cookie (never the global Cashvio locale).
   const cookieStore = await cookies();
   const cookieValue = cookieStore.get(CookieName.LOCALE)?.value;
 

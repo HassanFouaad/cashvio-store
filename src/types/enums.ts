@@ -32,7 +32,8 @@ export enum Direction {
  * Cookie names
  */
 export enum CookieName {
-  LOCALE = 'NEXT_LOCALE',
+  // Host-only shopper preference, independent of global Cashvio locales.
+  LOCALE = 'sf_locale',
   THEME = 'theme',
 }
 

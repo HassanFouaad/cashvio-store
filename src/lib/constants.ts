@@ -21,7 +21,7 @@ export const VISITOR_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 2;
 /** Store ID cookie lifetime: 1 year (seconds) */
 export const STORE_ID_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
-/** Locale cookie lifetime: 1 year (seconds) — store-scoped NEXT_LOCALE */
+/** Locale cookie lifetime: 1 year (seconds) — store-scoped sf_locale */
 export const LOCALE_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
 /**
@@ -45,7 +45,7 @@ export const OG_IMAGE_WIDTH = 1200;
 export const OG_IMAGE_HEIGHT = 630;
 
 /**
- * Internal request header set by the middleware when ?lang= is present so
+ * Internal request header set by the proxy with the resolved locale so
  * the CURRENT render uses the requested language (the cookie only affects
  * subsequent requests).
  */

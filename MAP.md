@@ -340,6 +340,7 @@
 │  ├── 📄 cart-preview-state.test.ts
 │  ├── 📄 hero-images.test.ts
 │  ├── 📄 shopping-query.test.ts
+│  ├── 📄 storefront-locale.test.ts
 │  ├── 📄 storefront-messages.test.ts
 │  ├── 📄 theme-palette.test.ts
 │  ├── 📄 theme-preview.test.ts

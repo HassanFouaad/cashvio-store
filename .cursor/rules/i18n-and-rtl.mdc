@@ -35,9 +35,10 @@ The `store-front` application is bilingual (`en` and `ar`), with **Arabic (`ar`)
 - **No URL Segment Prefix**: The storefront does NOT use `/en/` or `/ar/` paths. All routes are flat (`/products`, `/cart`, `/checkout`).
 - **Locale Resolution Priority**:
   1. `?lang=en|ar` query parameter (forwarded via `x-sf-locale` header in middleware).
-  2. `NEXT_LOCALE` cookie (store-scoped, 1-year lifetime).
+  2. `sf_locale` cookie (host-only per store, path `/`, SameSite=Lax, 1-year lifetime). Never read, copy, write or clear global `cv_language` or legacy/global `NEXT_LOCALE`.
   3. `Accept-Language` browser header parsing (on first visit).
   4. Default: `Locale.ARABIC` (`'ar'`).
+- **Current Render**: The proxy forwards the resolved locale in `x-sf-locale` for every request, including first-visit browser detection. Both desktop and mobile switchers write only `sf_locale` and strip `lang` while preserving other URL state.
 - **Hreflang Alternates**: `buildLanguageAlternates(path)` generates language URLs via `?lang=en` and `?lang=ar` with `x-default` pointing to the canonical path.
 
 ## 3. RTL / LTR Layout Rules (CRITICAL)

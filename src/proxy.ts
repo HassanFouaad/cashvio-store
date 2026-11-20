@@ -18,7 +18,7 @@ import { CookieName, isValidLocale, Locale } from "./types/enums";
  * Proxy Cookie Configuration
  *
  * Store-front uses store-specific cookies for:
- * - Locale (NEXT_LOCALE): Specific to each store
+ * - Locale (sf_locale): Specific to each store
  * - Visitor ID (sf_visitor_id): Specific to each store
  * - Store ID (sf_store_id): For API requests
  *
@@ -107,7 +107,9 @@ function handleLocaleAndVisitor(request: NextRequest): NextResponse {
   if (langOverride) {
     detectedLocale = langOverride;
     needsLocaleCookie = langOverride !== localeCookie;
-  } else if (!localeCookie || !isValidLocale(localeCookie)) {
+  } else if (localeCookie && isValidLocale(localeCookie)) {
+    detectedLocale = localeCookie;
+  } else {
     needsLocaleCookie = true;
 
     // Auto-detect locale from Accept-Language header
@@ -144,31 +146,14 @@ function handleLocaleAndVisitor(request: NextRequest): NextResponse {
     visitorId = generateVisitorId();
   }
 
-  // If nothing needs forwarding or persisting, pass through untouched
-  if (
-    !needsLocaleCookie &&
-    !needsVisitorCookie &&
-    !langOverride &&
-    !themePreviewHeader
-  ) {
-    return NextResponse.next();
+  // Forward the selected locale to the CURRENT render, including first-visit
+  // browser detection. Always replace any incoming internal locale header.
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(LOCALE_OVERRIDE_HEADER, detectedLocale);
+  if (themePreviewHeader) {
+    requestHeaders.set(THEME_PREVIEW_HEADER, themePreviewHeader);
   }
-
-  // Forward per-request overrides (language, theme preview) to the CURRENT
-  // render via request headers — response cookies only affect later requests.
-  let response: NextResponse;
-  if (langOverride || themePreviewHeader) {
-    const requestHeaders = new Headers(request.headers);
-    if (langOverride) {
-      requestHeaders.set(LOCALE_OVERRIDE_HEADER, langOverride);
-    }
-    if (themePreviewHeader) {
-      requestHeaders.set(THEME_PREVIEW_HEADER, themePreviewHeader);
-    }
-    response = NextResponse.next({ request: { headers: requestHeaders } });
-  } else {
-    response = NextResponse.next();
-  }
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
 
   if (needsLocaleCookie) {
     response.cookies.set(CookieName.LOCALE, detectedLocale, {
