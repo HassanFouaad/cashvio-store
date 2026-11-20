@@ -2,6 +2,8 @@
 
 Index of project standards for Cashvio public multi-tenant storefront (`store-front`). Read only what the task needs.
 
+This is a component of one Cashvio project. Whole-project changes use the central `cashvio-workflow/tasks/` agreement, with storefront scope, dependencies and evidence contributing to one integrated acceptance result. Read the workspace project entry point when available; missing shared access is a dependency.
+
 Standards live in exactly two places:
 
 - `.agents/skills/<name>/SKILL.md` — task-specific standards and step-by-step workflows
@@ -81,9 +83,9 @@ Front-loaded because these are the easiest to violate by accident.
 
 ## Stack
 
-- **Framework**: Next.js 16.1.2 (App Router, Turbopack, React Server Components)
-- **UI & Runtime**: React 19.2.3 + TypeScript 5.8 (Strict mode)
-- **Styling**: Tailwind CSS v4.1.18 (`@tailwindcss/postcss`, semantic `@theme` tokens)
+- **Framework**: Next.js 16 (App Router, Turbopack, React Server Components); exact versions are in `package.json`
+- **UI & Runtime**: React 19 + TypeScript 6 (Strict mode); Node is pinned in `.node-version`
+- **Styling**: Tailwind CSS v4 (`@tailwindcss/postcss`, semantic `@theme` tokens)
 - **Localization**: `next-intl` (Bilingual: Arabic default, English secondary, RTL-first)
 - **State Management**: Zustand (Guest Cart Store + persistent visitor session ID)
 - **Icons**: `lucide-react` (Theme-governed stroke widths via `data-sf-icons`)
@@ -97,10 +99,11 @@ Front-loaded because these are the easiest to violate by accident.
 
 - **Dev**: `yarn dev` (runs Turbopack on port 4000)
 - **Build**: `yarn build` (`next build`)
-- **Start Production**: `yarn start` (runs on port 4000)
+- **Start Production**: `yarn start` (`next start`; use `PORT` or `-p` explicitly when a custom production port is required)
 - **Lint**: `yarn lint` (`eslint .`)
 - **Index**: `yarn index:code` · check `yarn index:code:check` (`MAP.md` file tree)
 - **Hooks**: `yarn prepare` (Husky; pre-commit syncs `MAP.md`)
+- **Complete local lane**: `yarn verify:ci` (foundation hygiene, map check, lint, types, contracts and build)
 
 ---
 
@@ -127,7 +130,6 @@ src/
 │   └── pages/[slug]/         # Dynamic merchant static content / policy pages
 ├── components/
 │   ├── common/               # Shared search inputs, header, footer, bottom navigation
-│   ├── home/                 # Homepage hero banners and promo sections
 │   ├── icons/                # Brand and payment SVGs (Instapay, Wallet)
 │   └── ui/                   # CVA Button, Input, Select, Skeleton, SafeHtmlRenderer
 ├── features/
@@ -140,15 +142,12 @@ src/
 ├── lib/
 │   ├── analytics/            # Unified tracking adapters (GTM, Meta Pixel, TikTok Pixel)
 │   ├── api/                  # ApiClient singleton, endpoints catalog, resolveRequestStore
-│   ├── seo/                  # Dynamic metadata builder, hreflang alternates, canonicals
 │   ├── theme/                # Theme resolver, CSS variable builder, dynamic font presets
 │   ├── utils/                # cn, currency/date formatters, JSON-LD serializer, phone, whatsapp
 │   └── visitor/              # Anonymous visitor ID management & FingerprintJS
-├── messages/
-│   ├── en.json               # English translations
-│   └── ar.json               # Arabic translations (Default)
 ├── providers/                # StoreProvider, ThemeProvider, VisitorProvider
-└── middleware.ts             # Subdomain routing, locale detection, and theme preview header forwarding
+└── proxy.ts                  # Subdomain routing, locale detection, theme preview forwarding
+messages/{en,ar}.json          # Root-level English and Arabic translations
 ```
 
 ---
@@ -164,7 +163,7 @@ src/
 
 ### Multi-Tenancy & App Router Pages
 
-- Subdomain routing, middleware, and store context: see `.cursor/rules/multi-tenancy-and-routing.mdc` and `.agents/skills/store-front-multi-tenant-resolution/SKILL.md`
+- Subdomain routing, proxy, and store context: see `.cursor/rules/multi-tenancy-and-routing.mdc` and `.agents/skills/store-front-multi-tenant-resolution/SKILL.md`
 - Server component data fetching, `Promise.all`, and skeletons: see `.agents/skills/store-front-app-router-pages/SKILL.md`
 - Product Details Page (PDP) layout variants & modifier groups: see `.agents/skills/store-front-product-details-pdp/SKILL.md`
 - Product Listing Page (PLP), search, sorting, and category filters: see `.agents/skills/store-front-product-listing-plp/SKILL.md`

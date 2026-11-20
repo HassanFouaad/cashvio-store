@@ -1,3 +1,8 @@
+---
+description: English/Arabic key parity, query/cookie locale selection and logical RTL layouts.
+alwaysApply: true
+---
+
 # Internationalization (i18n) & RTL Architecture (CRITICAL)
 
 The `store-front` application is bilingual (`en` and `ar`), with **Arabic (`ar`) as the primary default locale**. All user-visible strings, aria-labels, layouts, and typography must adhere strictly to these invariants.
@@ -34,7 +39,7 @@ The `store-front` application is bilingual (`en` and `ar`), with **Arabic (`ar`)
 
 - **No URL Segment Prefix**: The storefront does NOT use `/en/` or `/ar/` paths. All routes are flat (`/products`, `/cart`, `/checkout`).
 - **Locale Resolution Priority**:
-  1. `?lang=en|ar` query parameter (forwarded via `x-sf-locale` header in middleware).
+   1. `?lang=en|ar` query parameter (forwarded via `x-sf-locale` header in `src/proxy.ts`).
   2. `sf_locale` cookie (host-only per store, path `/`, SameSite=Lax, 1-year lifetime). Never read, copy, write or clear global `cv_language` or legacy/global `NEXT_LOCALE`.
   3. `Accept-Language` browser header parsing (on first visit).
   4. Default: `Locale.ARABIC` (`'ar'`).

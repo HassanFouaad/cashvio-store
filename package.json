@@ -2,6 +2,7 @@
   "name": "store-front",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "yarn@1.22.22",
   "scripts": {
     "dev": "next dev --turbopack --port 4000",
     "build": "next build",
@@ -9,6 +10,8 @@
     "test:theme": "node --import ./scripts/test-ts-loader.mjs --test test/theme-preview.test.ts test/theme-palette.test.ts test/storefront-messages.test.ts test/hero-images.test.ts",
     "test:shopping": "node --import ./scripts/test-ts-loader.mjs --test test/shopping-query.test.ts test/cart-preview-state.test.ts test/storefront-locale.test.ts",
     "verify": "yarn lint && yarn typecheck && yarn test:theme && yarn test:shopping && yarn build",
+    "quality:foundations": "node scripts/check-foundations.mjs",
+    "verify:ci": "yarn quality:foundations && yarn index:code:check && yarn verify",
     "start": "next start",
     "lint": "eslint",
     "index:code": "node scripts/generate-code-index.js",

@@ -1,3 +1,8 @@
+---
+description: ApiClient, endpoint catalog, response/error contracts and request-scoped data fetching.
+alwaysApply: true
+---
+
 # API Client & Data Fetching (CRITICAL)
 
 All network communication with the Cashvio backend occurs through the centralized `ApiClient` (`src/lib/api/client.ts`).
@@ -17,10 +22,10 @@ The singleton `apiClient` instance wraps native `fetch` with automatic timeout h
 
 ## 2. Automatic Header Injection
 
-Every request automatically receives:
+The client supplies these headers:
 1. `Content-Type: application/json` (unless overridden)
 2. `Accept-Language: <en|ar>` (from `getApiLocale()`)
-3. `X-Store-Id: <store-uuid>` (from `getApiStoreId()`)
+3. `X-Store-Id: <store-uuid>` when `getApiStoreId()` returns an ID; the initial store lookup establishes this request context
 
 Never construct custom fetch requests or pass `X-Store-Id` manually in query strings.
 

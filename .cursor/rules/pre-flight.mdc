@@ -1,3 +1,8 @@
+---
+description: Select applicable storefront skills and verify changed code against the current task.
+alwaysApply: true
+---
+
 # Pre-Flight Check (MANDATORY)
 
 **Before writing or modifying ANY code in `store-front`, you MUST:**

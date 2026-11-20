@@ -1,3 +1,8 @@
+---
+description: Merchant-controlled theme tokens, structural attributes, UI primitives and light/dark contracts.
+alwaysApply: true
+---
+
 # Theme Engine & Design System (CRITICAL)
 
 The `store-front` application is a multi-tenant white-label commerce surface. It has **NO fixed brand color** (never hardcode `#059669` or static theme colors). The entire visual identity is dynamically governed by the merchant theme engine.

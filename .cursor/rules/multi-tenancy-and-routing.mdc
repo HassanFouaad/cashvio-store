@@ -1,3 +1,8 @@
+---
+description: Host routing, request-bound store context, active storefront gates and dynamic rendering.
+alwaysApply: true
+---
+
 # Multi-Tenancy & Routing Architecture (CRITICAL)
 
 The `store-front` application is a multi-tenant platform where each merchant storefront is resolved dynamically via subdomain.
@@ -7,7 +12,7 @@ The `store-front` application is a multi-tenant platform where each merchant sto
 ```
 HTTP Request (Host: storeA.cash-vio.com)
   │
-  ├── 1. middleware.ts: Parses subdomain with getStoreSubdomain(hostname)
+   ├── 1. proxy.ts: Parses subdomain with getStoreSubdomain(hostname)
   │      - Validates against RESERVED_SUBDOMAINS ('www', 'api', 'admin', etc.)
   │      - Enforces root-only access on main/apex domain
   │      - Attaches locale and visitor cookies
@@ -26,7 +31,7 @@ HTTP Request (Host: storeA.cash-vio.com)
 ## 2. Invariant Store Context Rules
 
 - **Never bypass `resolveRequestStore()`**: Server components, layouts, and `generateMetadata` must always resolve store context via `resolveRequestStore()` in `src/lib/api/resolve-request-store.ts`.
-- **Never query without `X-Store-Id`**: All public backend queries (`/public/products`, `/public/categories`, `/public/orders`, etc.) require `X-Store-Id`. In client components, `StoreProvider` and the layout inline script ensure `window.__STORE_ID__` and cookie `sf_store_id` are populated.
+- **Resolve context before store-scoped queries**: Product/category/order operations use the store context established by `resolveRequestStore()`. Its bootstrap lookup and explicitly global endpoints do not require an already-resolved store ID. In client components, `StoreProvider` and the layout inline script populate `window.__STORE_ID__` and cookie `sf_store_id`. The backend validates the route's actual scope; this header is not authentication.
 - **Inactive Storefront Gate**: When `store.storeFront.status !== StoreFrontStatus.ACTIVE`, `src/app/layout.tsx` must immediately render `StoreErrorComponent` (type `INACTIVE`) and prevent browsing or purchasing.
 
 ```typescript

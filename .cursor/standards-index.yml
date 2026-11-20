@@ -21,7 +21,7 @@ routing-and-pages:
   store-front-app-router-pages:
     description: Next.js App Router server components, force-dynamic rendering, parallel Promise.all fetches, loading skeletons
   store-front-multi-tenant-resolution:
-    description: Subdomain resolution, middleware routing, store context injection, and active storefront enforcement
+    description: Host/subdomain resolution through proxy.ts, request-bound store and locale context, and active storefront enforcement.
   store-front-product-details-pdp:
     description: Product Details Page (PDP) layout variants, variant matrix, modifier groups, and Product JSON-LD schema
   store-front-product-listing-plp:

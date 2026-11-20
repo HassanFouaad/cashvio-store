@@ -1,3 +1,8 @@
+---
+description: Storefront TypeScript, naming, typed boundaries, file organization and Yarn conventions.
+alwaysApply: true
+---
+
 # Coding Standards & TypeScript Discipline (CRITICAL — Never Violate)
 
 These rules apply to ALL code written for the `store-front` project. Violations are never acceptable.

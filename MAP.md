@@ -20,6 +20,7 @@
 │  ├── 📄 window.svg
 ├── 📄 README.md
 └── 📂 scripts/
+│  ├── 📄 check-foundations.mjs
 │  ├── 📄 generate-code-index.js
 │  ├── 📄 husky-sync-map.sh
 │  ├── 📄 test-ts-loader.mjs
