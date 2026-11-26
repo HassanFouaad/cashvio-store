@@ -3,7 +3,11 @@ import {
   PublicProductImageDto,
   PublicProductVariantDto,
 } from "@/features/products/types/product.types";
-import { formatCurrency } from "@/lib/utils/formatters";
+
+interface PriceRange {
+  minPrice: number;
+  maxPrice: number;
+}
 
 /**
  * Product card translations interface
@@ -74,39 +78,8 @@ export function isProductInStock(
   return variants.some((v) => v.inStock);
 }
 
-/**
- * Format product price or price range
- * Returns formatted string for display
- */
-export function formatProductPrice(
-  product: PublicProductDto,
-  currency: string,
-  locale: string
-): string | null {
-  const variants = product.variants || [];
-
-  if (variants.length === 0) return null;
-
-  // Single variant - return single price
-  if (variants.length === 1) {
-    return formatCurrency(variants[0].sellingPrice, currency, locale);
-  }
-
-  // Multiple variants - check if all have same price
-  const prices = variants.map((v) => v.sellingPrice);
-  const minPrice = Math.min(...prices);
-  const maxPrice = Math.max(...prices);
-
-  // All variants have same price
-  if (minPrice === maxPrice) {
-    return formatCurrency(minPrice, currency, locale);
-  }
-
-  // Show price range
-  return `${formatCurrency(minPrice, currency, locale)} - ${formatCurrency(
-    maxPrice,
-    currency,
-    locale
-  )}`;
+export function getPriceRange(prices: number[]): PriceRange | null {
+  if (prices.length === 0) return null;
+  return { minPrice: Math.min(...prices), maxPrice: Math.max(...prices) };
 }
 

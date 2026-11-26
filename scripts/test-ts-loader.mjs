@@ -9,9 +9,9 @@ const projectRoot = new URL("../", import.meta.url);
 
 registerHooks({
   resolve(specifier, context, nextResolve) {
-    // Next.js exposes this entry without an extension to its bundler.
-    if (specifier === "next/server")
-      return nextResolve("next/server.js", context);
+    // Next.js exposes these entries without extensions to its bundler.
+    if (["next/server", "next/link", "next/navigation", "next/script"].includes(specifier))
+      return nextResolve(`${specifier}.js`, context);
     const isAlias = specifier.startsWith("@/");
     const isLocal =
       specifier.startsWith(".") &&

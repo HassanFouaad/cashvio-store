@@ -1,4 +1,5 @@
 import { DeliveryZoneFeeType } from '@/features/checkout/types/checkout.types';
+import { formatCurrency } from '@/lib/utils/formatters';
 
 /**
  * Formats a delivery-zone fee for city dropdown labels.
@@ -9,6 +10,7 @@ export function formatDeliveryZoneFeeLabel(
   feeValue: number,
   currency: string,
   freeLabel: string,
+  locale: string,
 ): string {
   if (feeValue === 0) {
     return freeLabel;
@@ -18,7 +20,7 @@ export function formatDeliveryZoneFeeLabel(
     return `${feeValue}%`;
   }
 
-  return `+${feeValue} ${currency}`;
+  return formatCurrency(feeValue, currency, locale, true);
 }
 
 /**
@@ -30,12 +32,14 @@ export function formatDeliveryZoneCityOptionLabel(
   feeValue: number,
   currency: string,
   freeLabel: string,
+  locale: string,
 ): string {
   const feeLabel = formatDeliveryZoneFeeLabel(
     feeType,
     feeValue,
     currency,
     freeLabel,
+    locale,
   );
   return `${cityName} (${feeLabel})`;
 }

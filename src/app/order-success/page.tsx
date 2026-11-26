@@ -1,5 +1,6 @@
 "use client";
 
+import { Money } from "@/components/ui/money";
 import { Button } from "@/components/ui/button";
 import { PickupLocationCard } from "@/features/checkout/components/pickup-location-card";
 import { FulfillmentMethod } from "@/features/checkout/types/checkout.types";
@@ -7,7 +8,6 @@ import {
     getOrderSuccessRecap,
     type OrderSuccessRecap,
 } from "@/features/checkout/utils/order-success-recap";
-import { formatCurrency } from "@/lib/utils/formatters";
 import { Check, CheckCircle, Copy, Home, PackageSearch, UtensilsCrossed } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -258,9 +258,12 @@ function OrderSuccessContent() {
             )}
             <div className="px-4 py-3 border-t border-border flex items-center justify-between">
               <span className="text-sm font-semibold">{t("total")}</span>
-              <span className="font-semibold tabular-nums">
-                {formatCurrency(recap.totalAmount, recap.currency, locale)}
-              </span>
+              <Money
+                amount={recap.totalAmount}
+                currency={recap.currency}
+                locale={locale}
+                className="font-semibold"
+              />
             </div>
           </div>
         )}

@@ -3,8 +3,8 @@
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { Money } from "@/components/ui/money";
 import { PublicModifierGroupDto } from "@/features/products/types/product.types";
-import { formatCurrency } from "@/lib/utils/formatters";
 
 interface ModifierGroupsPickerProps {
   groups: PublicModifierGroupDto[];
@@ -99,9 +99,11 @@ export function ModifierGroupsPicker({
                             : "text-muted-foreground"
                         }`}
                       >
-                        {modifier.priceDelta > 0
-                          ? `+${formatCurrency(modifier.priceDelta, currency, locale)}`
-                          : t("free")}
+                        {modifier.priceDelta > 0 ? (
+                          <Money amount={modifier.priceDelta} currency={currency} locale={locale} showPlusSign />
+                        ) : (
+                          t("free")
+                        )}
                       </span>
                     </span>
                     {isSelected && (

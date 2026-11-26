@@ -1,5 +1,6 @@
 "use client";
 
+import { Money } from "@/components/ui/money";
 import { Button } from "@/components/ui/button";
 import { ApiCartItemModifier } from "@/features/cart/api/cart.types";
 import { CART_MAX_DISTINCT_LINES } from "@/features/cart/constants";
@@ -338,21 +339,19 @@ export function AddToCartSection({
         <div className="space-y-3">
           {/* Price */}
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span className="sf-price text-2xl sm:text-3xl font-semibold tabular-nums">
-              {formatCurrency(
-                selectedVariant.sellingPrice + modifiersTotal,
-                currency,
-                locale,
-              )}
-            </span>
+            <Money
+              amount={selectedVariant.sellingPrice + modifiersTotal}
+              currency={currency}
+              locale={locale}
+              className="text-2xl font-semibold sm:text-3xl"
+            />
             {selectedHasDiscount && selectedOriginalUnitPrice != null && (
-              <span className="sf-price text-sm text-muted-foreground line-through tabular-nums">
-                {formatCurrency(
-                  selectedOriginalUnitPrice + modifiersTotal,
-                  currency,
-                  locale,
-                )}
-              </span>
+              <Money
+                amount={selectedOriginalUnitPrice + modifiersTotal}
+                currency={currency}
+                locale={locale}
+                className="text-sm text-muted-foreground line-through"
+              />
             )}
             {selectedHasDiscount && selectedSavingPerUnit > 0 && (
               <span className="text-sm font-medium text-success tabular-nums">
@@ -372,7 +371,7 @@ export function AddToCartSection({
                 })}
               </span>
             )}
-            {product.taxIncluded && product.taxRate && (
+            {product.taxIncluded && (product.taxRate ?? 0) > 0 && (
               <span className="text-sm text-muted-foreground">
                 {t("taxIncluded")}
               </span>
@@ -459,23 +458,16 @@ export function AddToCartSection({
                     {variant.originalSellingPrice != null &&
                     CatalogueDiscountUtils.hasVariantDiscount(variant) ? (
                       <span className="inline-flex flex-col items-start gap-0.5">
-                        <span className="sf-price tabular-nums">
-                          {formatCurrency(
-                            variant.sellingPrice,
-                            currency,
-                            locale,
-                          )}
-                        </span>
-                        <span className="sf-price line-through tabular-nums">
-                          {formatCurrency(
-                            variant.originalSellingPrice,
-                            currency,
-                            locale,
-                          )}
-                        </span>
+                        <Money amount={variant.sellingPrice} currency={currency} locale={locale} />
+                        <Money
+                          amount={variant.originalSellingPrice}
+                          currency={currency}
+                          locale={locale}
+                          className="line-through"
+                        />
                       </span>
                     ) : (
-                      formatCurrency(variant.sellingPrice, currency, locale)
+                      <Money amount={variant.sellingPrice} currency={currency} locale={locale} />
                     )}
                   </div>
                   {isOos && (
@@ -726,12 +718,12 @@ export function AddToCartSection({
               <p className="text-xs text-muted-foreground truncate">
                 {selectedVariant.name || product.name}
               </p>
-              <p className="sf-price text-base font-semibold tabular-nums">
-                {formatCurrency(
-                  selectedVariant.sellingPrice + modifiersTotal,
-                  currency,
-                  locale,
-                )}
+              <p className="text-base font-semibold">
+                <Money
+                  amount={selectedVariant.sellingPrice + modifiersTotal}
+                  currency={currency}
+                  locale={locale}
+                />
               </p>
             </div>
             {isInCart ? (

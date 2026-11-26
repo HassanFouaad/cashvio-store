@@ -91,6 +91,7 @@
 │    └── 📂 ui/
 │      ├── 📄 button.tsx
 │      ├── 📄 input.tsx
+│      ├── 📄 money.tsx
 │      ├── 📄 phone-input.tsx
 │      ├── 📄 safe-html-renderer.tsx
 │      ├── 📄 select.tsx
@@ -340,6 +341,7 @@
 └── 📂 test/
 │  ├── 📄 cart-preview-state.test.ts
 │  ├── 📄 hero-images.test.ts
+│  ├── 📄 money.test.tsx
 │  ├── 📄 shopping-query.test.ts
 │  ├── 📄 storefront-locale.test.ts
 │  ├── 📄 storefront-messages.test.ts

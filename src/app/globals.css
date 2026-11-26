@@ -520,13 +520,19 @@ html[data-sf-icons="BOLD"] svg.lucide {
    THEME ENGINE - PER-THEME MICRO IDENTITY
    ============================================ */
 
-/* TECH: prices read as spec values — system mono with tabular numerals.
-   Product surfaces mark prices with .sf-price; the attribute is only set
-   for themed stores, so default stores stay byte-identical. */
-html[data-sf-theme="TECH"] .sf-price {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.95em;
-  letter-spacing: -0.01em;
+.sf-price {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: normal;
+}
+
+.sf-price-currency {
+  font-size: 0.8em;
+  white-space: nowrap;
+}
+
+.sf-price-currency:lang(ar) {
+  font-family: var(--font-cairo), system-ui, sans-serif;
 }
 
 /* ============================================

@@ -1,6 +1,9 @@
+import type { ReactElement } from "react";
+
+import { Money } from "@/components/ui/money";
 import { PublicProductDto } from "@/features/products/types/product.types";
-import { formatProductPrice } from "@/features/products/utils/product-helpers";
 import { CatalogueDiscountUtils } from "@/features/products/utils/catalogue-discount.utils";
+import { getPriceRange } from "@/features/products/utils/product-helpers";
 import { cn } from "@/lib/utils/cn";
 
 interface PriceDisplayProps {
@@ -19,40 +22,59 @@ export function PriceDisplay({
   effectiveClassName,
   originalClassName,
   overlay = false,
-}: PriceDisplayProps) {
-  const effectivePrice = formatProductPrice(product, currency, locale);
-  const originalPrice = CatalogueDiscountUtils.formatOriginalProductPrice(
-    product,
-    currency,
-    locale,
+}: PriceDisplayProps): ReactElement | null {
+  const variants = product.variants ?? [];
+  const effectivePrice = getPriceRange(
+    variants.map((variant) => variant.sellingPrice),
   );
-  const hasDiscount = CatalogueDiscountUtils.hasProductDiscount(product);
-  const showStrikeThrough =
-    CatalogueDiscountUtils.shouldShowCardStrikeThrough(product);
-
   if (!effectivePrice) {
     return null;
   }
 
-  const effectiveClasses = cn(
-    "sf-price tabular-nums",
-    overlay ? "text-media-foreground" : "text-foreground",
-    effectiveClassName,
-  );
-  const originalClasses = cn(
-    "sf-price text-xs tabular-nums line-through",
-    overlay ? "text-media-foreground/85" : "text-muted-foreground",
-    originalClassName,
+  const originalPrice = CatalogueDiscountUtils.shouldShowCardStrikeThrough(
+    product,
+  )
+    ? getPriceRange(
+        variants
+          .map((variant) => variant.originalSellingPrice)
+          .filter((price): price is number => price != null && price > 0),
+      )
+    : null;
+  const currentPrice = (
+    <p
+      className={cn(
+        overlay ? "text-media-foreground" : "text-foreground",
+        effectiveClassName,
+      )}
+    >
+      <Money
+        amount={effectivePrice.minPrice}
+        maximumAmount={effectivePrice.maxPrice}
+        currency={currency}
+        locale={locale}
+      />
+    </p>
   );
 
-  if (!hasDiscount || !originalPrice || !showStrikeThrough) {
-    return <p className={effectiveClasses}>{effectivePrice}</p>;
-  }
+  if (!originalPrice) return currentPrice;
 
   return (
     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-      <p className={effectiveClasses}>{effectivePrice}</p>
-      <p className={originalClasses}>{originalPrice}</p>
+      {currentPrice}
+      <p
+        className={cn(
+          "text-xs line-through",
+          overlay ? "text-media-foreground/85" : "text-muted-foreground",
+          originalClassName,
+        )}
+      >
+        <Money
+          amount={originalPrice.minPrice}
+          maximumAmount={originalPrice.maxPrice}
+          currency={currency}
+          locale={locale}
+        />
+      </p>
     </div>
   );
 }

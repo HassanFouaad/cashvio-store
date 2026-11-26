@@ -1,5 +1,6 @@
 "use client";
 
+import { Money } from "@/components/ui/money";
 import { Button } from "@/components/ui/button";
 import { createPaymentSession } from "@/features/checkout/api/checkout-api";
 import {
@@ -10,7 +11,6 @@ import {
 import { trackOrder } from "@/features/order-tracking/api/track-order";
 import { PaymentStatus } from "@/features/order-tracking/types/order-tracking.types";
 import { getApiStoreId } from "@/lib/api/types";
-import { formatCurrency } from "@/lib/utils/formatters";
 import {
   AlertCircle,
   CreditCard,
@@ -218,9 +218,12 @@ function PaymentResultContent() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">{t("amount")}</span>
-              <span className="font-semibold">
-                {formatCurrency(context.totalAmount, context.currency, locale)}
-              </span>
+              <Money
+                amount={context.totalAmount}
+                currency={context.currency}
+                locale={locale}
+                className="font-semibold"
+              />
             </div>
           </div>
 

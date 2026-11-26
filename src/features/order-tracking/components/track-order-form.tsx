@@ -1,12 +1,12 @@
 "use client";
 
+import { Money } from "@/components/ui/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { FulfillmentMethod } from "@/features/checkout/types/checkout.types";
 import { getOrderSuccessRecap } from "@/features/checkout/utils/order-success-recap";
 import { StoreFrontSocialMediaDto } from "@/features/store/types/store.types";
-import { formatCurrency } from "@/lib/utils/formatters";
 import { buildStoreWhatsAppLink } from "@/lib/utils/whatsapp";
 import {
     Check,
@@ -359,9 +359,12 @@ export function TrackOrderForm({
                   <span className="text-muted-foreground">
                     ×{item.quantity}
                   </span>
-                  <span className="font-medium">
-                    {formatCurrency(item.lineTotal, result.currency, locale)}
-                  </span>
+                  <Money
+                    amount={item.lineTotal}
+                    currency={result.currency}
+                    locale={locale}
+                    className="font-medium"
+                  />
                 </div>
               </div>
             ))}
@@ -372,17 +375,23 @@ export function TrackOrderForm({
             {result.totalDiscount > 0 && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t("discount")}</span>
-                <span className="font-medium text-success">
-                  -{formatCurrency(result.totalDiscount, result.currency, locale)}
-                </span>
+                <Money
+                  amount={-result.totalDiscount}
+                  currency={result.currency}
+                  locale={locale}
+                  className="font-medium text-success"
+                />
               </div>
             )}
             {result.totalTax > 0 && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t("tax")}</span>
-                <span className="font-medium">
-                  {formatCurrency(result.totalTax, result.currency, locale)}
-                </span>
+                <Money
+                  amount={result.totalTax}
+                  currency={result.currency}
+                  locale={locale}
+                  className="font-medium"
+                />
               </div>
             )}
             {result.serviceFees > 0 && (
@@ -390,9 +399,12 @@ export function TrackOrderForm({
                 <span className="text-muted-foreground">
                   {t("serviceFees")}
                 </span>
-                <span className="font-medium">
-                  {formatCurrency(result.serviceFees, result.currency, locale)}
-                </span>
+                <Money
+                  amount={result.serviceFees}
+                  currency={result.currency}
+                  locale={locale}
+                  className="font-medium"
+                />
               </div>
             )}
             {result.deliveryFees > 0 && (
@@ -400,9 +412,12 @@ export function TrackOrderForm({
                 <span className="text-muted-foreground">
                   {t("deliveryFees")}
                 </span>
-                <span className="font-medium">
-                  {formatCurrency(result.deliveryFees, result.currency, locale)}
-                </span>
+                <Money
+                  amount={result.deliveryFees}
+                  currency={result.currency}
+                  locale={locale}
+                  className="font-medium"
+                />
               </div>
             )}
             {result.paymentMethod && (
@@ -419,9 +434,12 @@ export function TrackOrderForm({
             )}
             <div className="flex justify-between pt-2 border-t border-border">
               <span className="font-semibold">{t("total")}</span>
-              <span className="font-semibold tabular-nums">
-                {formatCurrency(result.totalAmount, result.currency, locale)}
-              </span>
+              <Money
+                amount={result.totalAmount}
+                currency={result.currency}
+                locale={locale}
+                className="font-semibold"
+              />
             </div>
           </div>
         </div>

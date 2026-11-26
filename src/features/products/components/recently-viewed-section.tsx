@@ -1,5 +1,6 @@
 "use client";
 
+import { Money } from "@/components/ui/money";
 import {
   getRecentlyViewedServerSnapshot,
   getRecentlyViewedSnapshot,
@@ -7,7 +8,6 @@ import {
   recordRecentlyViewed,
   subscribeRecentlyViewed,
 } from "@/lib/recently-viewed";
-import { formatCurrency } from "@/lib/utils/formatters";
 import { History } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
@@ -87,8 +87,8 @@ export function RecentlyViewedSection({
                 {entry.name}
               </p>
               {typeof entry.price === "number" && entry.price > 0 && (
-                <p className="sf-price text-xs sm:text-sm font-semibold tabular-nums mt-0.5">
-                  {formatCurrency(entry.price, currency, locale)}
+                <p className="mt-0.5 text-xs font-semibold sm:text-sm">
+                  <Money amount={entry.price} currency={currency} locale={locale} />
                 </p>
               )}
             </Link>

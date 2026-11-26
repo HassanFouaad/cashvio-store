@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Money } from "@/components/ui/money";
 import { cn } from "@/lib/utils/cn";
-import { formatCurrency } from "@/lib/utils/formatters";
 import { AlertTriangle, Loader2, Minus, Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -199,8 +199,13 @@ export function CartItem({
               className="text-xs text-muted-foreground"
             >
               + {modifier.name}
-              {modifier.priceDelta > 0 &&
-                ` (${formatCurrency(modifier.priceDelta, currency, locale)})`}
+              {modifier.priceDelta > 0 && (
+                <>
+                  {" ("}
+                  <Money amount={modifier.priceDelta} currency={currency} locale={locale} />
+                  {")"}
+                </>
+              )}
             </p>
           ))}
 
@@ -211,13 +216,19 @@ export function CartItem({
           )}
 
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <p className="text-sm font-semibold sf-price tabular-nums">
-              {formatCurrency(displayUnitPrice, currency, locale)}
-            </p>
+            <Money
+              amount={displayUnitPrice}
+              currency={currency}
+              locale={locale}
+              className="text-sm font-semibold"
+            />
             {hasDiscount && listUnitPrice != null && listUnitPrice > displayUnitPrice && (
-              <p className="text-xs text-muted-foreground sf-price line-through tabular-nums">
-                {formatCurrency(listUnitPrice, currency, locale)}
-              </p>
+              <Money
+                amount={listUnitPrice}
+                currency={currency}
+                locale={locale}
+                className="text-xs text-muted-foreground line-through"
+              />
             )}
           </div>
         </div>
@@ -309,7 +320,7 @@ export function CartItem({
             {/* Show pending indicator or total */}
             <span
               className={cn(
-                "text-sm font-semibold tabular-nums flex items-center gap-1",
+                "text-sm font-semibold flex items-center gap-1",
                 (quantityExceedsStock || quantityExceedsMaxPerOrder) &&
                   "text-destructive",
               )}
@@ -317,13 +328,15 @@ export function CartItem({
               {isPending && (
                 <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
               )}
-              {formatCurrency(
-                quantityExceedsStock || quantityExceedsMaxPerOrder
-                  ? validQuantity * displayUnitPrice
-                  : displayLineTotal,
-                currency,
-                locale,
-              )}
+              <Money
+                amount={
+                  quantityExceedsStock || quantityExceedsMaxPerOrder
+                    ? validQuantity * displayUnitPrice
+                    : displayLineTotal
+                }
+                currency={currency}
+                locale={locale}
+              />
             </span>
 
             <Button

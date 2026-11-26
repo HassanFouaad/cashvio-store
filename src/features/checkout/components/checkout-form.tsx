@@ -1,5 +1,6 @@
 "use client";
 
+import { Money } from "@/components/ui/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -1221,6 +1222,7 @@ export function CheckoutForm({
                           currentCountry.cities[0].feeValue,
                           currency,
                           t("free"),
+                          locale,
                         )}
                       </div>
                     ) : (
@@ -1239,6 +1241,7 @@ export function CheckoutForm({
                               city.feeValue,
                               currency,
                               t("free"),
+                              locale,
                             ),
                           }),
                         )}
@@ -1520,9 +1523,11 @@ export function CheckoutForm({
           {preview && (
             <div className="flex justify-between text-base font-semibold">
               <span>{tCart("total")}</span>
-              <span className="tabular-nums">
-                {formatCurrency(preview.totalAmount, currency, locale)}
-              </span>
+              <Money
+                amount={preview.totalAmount}
+                currency={currency}
+                locale={locale}
+              />
             </div>
           )}
           <PlaceOrderButton
@@ -1555,9 +1560,12 @@ export function CheckoutForm({
               <h2 className="text-lg font-semibold">{tCart("orderSummary")}</h2>
               <div className="flex items-center gap-2">
                 {preview && (
-                  <span className="text-sm font-semibold tabular-nums lg:hidden">
-                    {formatCurrency(preview.totalAmount, currency, locale)}
-                  </span>
+                  <Money
+                    amount={preview.totalAmount}
+                    currency={currency}
+                    locale={locale}
+                    className="text-sm font-semibold lg:hidden"
+                  />
                 )}
                 <ChevronDown
                   className={`h-5 w-5 text-muted-foreground transition-transform lg:hidden ${
@@ -1591,9 +1599,12 @@ export function CheckoutForm({
                         {tCart("subtotal")} ({items.length}{" "}
                         {items.length === 1 ? tCart("item") : tCart("items")})
                       </span>
-                      <span className="font-medium">
-                        {formatCurrency(preview.subtotal, currency, locale)}
-                      </span>
+                      <Money
+                        amount={preview.subtotal}
+                        currency={currency}
+                        locale={locale}
+                        className="font-medium"
+                      />
                     </div>
 
                     {preview.totalTax > 0 && (
@@ -1601,9 +1612,12 @@ export function CheckoutForm({
                         <span className="text-muted-foreground">
                           {tCart("tax")}
                         </span>
-                        <span className="font-medium">
-                          {formatCurrency(preview.totalTax, currency, locale)}
-                        </span>
+                        <Money
+                          amount={preview.totalTax}
+                          currency={currency}
+                          locale={locale}
+                          className="font-medium"
+                        />
                       </div>
                     )}
 
@@ -1612,14 +1626,12 @@ export function CheckoutForm({
                         <span className="text-muted-foreground">
                           {catalogueDiscountLabel}
                         </span>
-                        <span className="font-medium text-success">
-                          -
-                          {formatCurrency(
-                            catalogueDiscountTotal,
-                            currency,
-                            locale,
-                          )}
-                        </span>
+                        <Money
+                          amount={-catalogueDiscountTotal}
+                          currency={currency}
+                          locale={locale}
+                          className="font-medium text-success"
+                        />
                       </div>
                     )}
 
@@ -1628,14 +1640,12 @@ export function CheckoutForm({
                         <span className="text-muted-foreground">
                           {t("discount")}
                         </span>
-                        <span className="font-medium text-success">
-                          -
-                          {formatCurrency(
-                            additionalDiscountTotal,
-                            currency,
-                            locale,
-                          )}
-                        </span>
+                        <Money
+                          amount={-additionalDiscountTotal}
+                          currency={currency}
+                          locale={locale}
+                          className="font-medium text-success"
+                        />
                       </div>
                     )}
 
@@ -1645,13 +1655,12 @@ export function CheckoutForm({
                         <span className="text-muted-foreground">
                           {t("serviceFees")}
                         </span>
-                        <span className="font-medium">
-                          {formatCurrency(
-                            preview.serviceFees,
-                            currency,
-                            locale,
-                          )}
-                        </span>
+                        <Money
+                          amount={preview.serviceFees}
+                          currency={currency}
+                          locale={locale}
+                          className="font-medium"
+                        />
                       </div>
                     )}
 
@@ -1671,13 +1680,12 @@ export function CheckoutForm({
                         <span className="text-muted-foreground">
                           {t("deliveryFees")}
                         </span>
-                        <span className="font-medium">
-                          {formatCurrency(
-                            preview.deliveryFees,
-                            currency,
-                            locale,
-                          )}
-                        </span>
+                        <Money
+                          amount={preview.deliveryFees}
+                          currency={currency}
+                          locale={locale}
+                          className="font-medium"
+                        />
                       </div>
                     ) : null}
 
@@ -1710,13 +1718,12 @@ export function CheckoutForm({
                         <span className="text-muted-foreground">
                           {t("paymentFee")}
                         </span>
-                        <span className="font-medium">
-                          {formatCurrency(
-                            preview.paymentFees,
-                            currency,
-                            locale,
-                          )}
-                        </span>
+                        <Money
+                          amount={preview.paymentFees}
+                          currency={currency}
+                          locale={locale}
+                          className="font-medium"
+                        />
                       </div>
                     )}
                     {(preview.paymentFees ?? 0) < 0 && (
@@ -1724,13 +1731,12 @@ export function CheckoutForm({
                         <span className="text-muted-foreground">
                           {t("paymentDiscount")}
                         </span>
-                        <span className="font-medium text-success">
-                          {formatCurrency(
-                            preview.paymentFees,
-                            currency,
-                            locale,
-                          )}
-                        </span>
+                        <Money
+                          amount={preview.paymentFees}
+                          currency={currency}
+                          locale={locale}
+                          className="font-medium text-success"
+                        />
                       </div>
                     )}
                   </div>
@@ -1744,14 +1750,12 @@ export function CheckoutForm({
                           <span className="text-sm font-medium font-mono truncate">
                             {preview.couponDiscount.couponCode}
                           </span>
-                          <span className="text-sm text-success shrink-0">
-                            -
-                            {formatCurrency(
-                              preview.couponDiscount.appliedAmount,
-                              currency,
-                              locale,
-                            )}
-                          </span>
+                          <Money
+                            amount={-preview.couponDiscount.appliedAmount}
+                            currency={currency}
+                            locale={locale}
+                            className="text-sm text-success shrink-0"
+                          />
                         </div>
                         <button
                           type="button"
@@ -1807,9 +1811,12 @@ export function CheckoutForm({
                       <span className="text-base font-semibold">
                         {tCart("total")}
                       </span>
-                      <span className="text-lg font-semibold tabular-nums">
-                        {formatCurrency(preview.totalAmount, currency, locale)}
-                      </span>
+                      <Money
+                        amount={preview.totalAmount}
+                        currency={currency}
+                        locale={locale}
+                        className="text-lg font-semibold"
+                      />
                     </div>
                   </div>
                 </>

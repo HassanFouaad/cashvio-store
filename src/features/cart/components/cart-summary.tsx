@@ -1,5 +1,6 @@
 "use client";
 
+import { Money } from "@/components/ui/money";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CartErrorBanner } from "@/features/cart/components/cart-error-banner";
@@ -111,12 +112,12 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
     showPreviewSkeleton ? (
       <Skeleton className="h-4 w-14" />
     ) : (
-      <span
-        className={`font-medium tabular-nums ${isNegative ? "text-success" : ""}`}
-      >
-        {isNegative && value > 0 ? "-" : ""}
-        {formatCurrency(value, currency, locale)}
-      </span>
+      <Money
+        amount={isNegative && value > 0 ? -value : value}
+        currency={currency}
+        locale={locale}
+        className={isNegative ? "font-medium text-success" : "font-medium"}
+      />
     );
 
   return (
@@ -340,9 +341,7 @@ export function CartSummary({ currency, locale }: CartSummaryProps) {
             {showPreviewSkeleton ? (
               <Skeleton className="h-5 w-20" />
             ) : (
-              <span className="tabular-nums">
-                {formatCurrency(preview?.totalAmount ?? 0, currency, locale)}
-              </span>
+              <Money amount={preview?.totalAmount ?? 0} currency={currency} locale={locale} />
             )}
           </div>
         </div>

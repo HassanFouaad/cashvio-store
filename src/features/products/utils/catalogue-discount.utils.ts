@@ -122,39 +122,6 @@ export class CatalogueDiscountUtils {
     });
   }
 
-  static formatOriginalProductPrice(
-    product: PublicProductDto,
-    currency: string,
-    locale: string,
-  ): string | null {
-    if (!CatalogueDiscountUtils.shouldShowCardStrikeThrough(product)) {
-      return null;
-    }
-
-    const variants = product.variants ?? [];
-    const originals = variants
-      .filter((variant) => variant.discount != null)
-      .map((variant) => variant.originalSellingPrice)
-      .filter((price): price is number => price != null && price > 0);
-
-    if (originals.length === 0) {
-      return null;
-    }
-
-    const minOriginal = Math.min(...originals);
-    const maxOriginal = Math.max(...originals);
-
-    if (minOriginal === maxOriginal) {
-      return formatCurrency(minOriginal, currency, locale);
-    }
-
-    return `${formatCurrency(minOriginal, currency, locale)} - ${formatCurrency(
-      maxOriginal,
-      currency,
-      locale,
-    )}`;
-  }
-
   static getPreviewCatalogueDiscountLabel(
     items: OrderPreviewItem[] | undefined,
   ): string | null {
